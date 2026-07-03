@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --accent: #6366f1;
+  --glass-blur: 16px;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .kbd-hint { display: none !important; }
+}
+
+.nx-drag { touch-action: none; }
+
+/* Animations reduites (confort / accessibilite). */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* Liquid glass : sur toutes les surfaces vitrees, on ajoute une saturation
+   (couleurs qui transparaissent), un lisere lumineux fin et un reflet en haut,
+   pour un rendu "verre" coherent sans alourdir l'epure. */
+[class~="backdrop-blur-[var(--glass-blur)]"] {
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+html {
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background-color: #09090b;
+  color: #f4f4f5;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* Barre de defilement discrete et coherente avec le theme sombre. */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+@keyframes nexus-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.94);
+  }
+  60% {
+    transform: translateY(-2px) scale(1.005);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.nexus-fade-in {
+  animation: nexus-fade-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Retour tactile : tout bouton s'enfonce legerement au clic. */
+button:active {
+  transform: scale(0.96);
+}
+button {
+  transition: transform 120ms ease;
+}
+
+@keyframes nexus-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.nexus-pop {
+  animation: nexus-pop 240ms ease-out;
+}
