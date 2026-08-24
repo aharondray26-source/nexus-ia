@@ -52,25 +52,25 @@ export default function TopBar() {
           title="Ouvrir Boîte Mail & Gmail"
           className="flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-xs text-amber-300 hover:bg-amber-500/20 transition-all"
         >
-          <Mail size={14} />
+          <Mail size={14} className="text-amber-400" />
           <span className="hidden xl:inline text-[11px] font-semibold">Mail</span>
         </button>
 
         <button
           onClick={() => openApp("messages", { width: 820, height: 580 })}
           title="Ouvrir la Messagerie Instantanée"
-          className="flex items-center gap-1.5 rounded-lg border border-nexus-border bg-transparent px-2 py-1 text-[11px] text-nexus-muted transition-colors hover:border-white/20 hover:text-nexus-text"
+          className="flex items-center gap-1.5 rounded-lg border border-cyan-500/25 bg-cyan-500/[0.08] px-2 py-1 text-[11px] text-cyan-300 transition-colors hover:bg-cyan-500/15"
         >
-          <MessageSquare size={14} />
+          <MessageSquare size={14} className="text-cyan-400" />
           <span className="hidden xl:inline text-[11px]">Message</span>
         </button>
 
         <button
           onClick={() => openApp("cloud", { width: 780, height: 580 })}
           title="Ouvrir Nexus Cloud & Google Drive"
-          className="flex items-center gap-1.5 rounded-lg border border-nexus-border bg-transparent px-2 py-1 text-[11px] text-nexus-muted transition-colors hover:border-white/20 hover:text-nexus-text"
+          className="flex items-center gap-1.5 rounded-lg border border-cyan-500/25 bg-cyan-500/[0.08] px-2 py-1 text-[11px] text-cyan-300 transition-colors hover:bg-cyan-500/15"
         >
-          <Cloud size={14} />
+          <Cloud size={14} className="text-cyan-400" />
           <span className="hidden xl:inline text-[11px] font-semibold">Cloud</span>
         </button>
 
@@ -81,12 +81,12 @@ export default function TopBar() {
         >
           {theme === "dark" ? (
             <>
-              <Sun className="w-3.5 h-3.5" />
+              <Sun className="w-3.5 h-3.5 text-amber-400" />
               <span className="hidden sm:inline">Clair</span>
             </>
           ) : (
             <>
-              <Moon className="w-3.5 h-3.5" />
+              <Moon className="w-3.5 h-3.5 text-indigo-400" />
               <span className="hidden sm:inline">Sombre</span>
             </>
           )}
@@ -98,7 +98,7 @@ export default function TopBar() {
           className="flex items-center gap-1.5 rounded-lg border border-nexus-border bg-transparent px-2 py-1 text-[11px] text-nexus-muted transition-colors hover:border-white/20 hover:text-nexus-text"
           title="Télécharger tout le projet en ZIP"
         >
-          <Package size={14} />
+          <Package size={14} className="text-cyan-400" />
           <span className="hidden md:inline">Code ZIP</span>
         </a>
 

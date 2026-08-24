@@ -185,3 +185,55 @@ button:active {
     color-mix(in srgb, var(--accent) 52%, transparent)
   );
 }
+
+/* ============ CURSEURS facon Apple : capsule blanche, verre au toucher ============ */
+input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 26px; background: transparent; cursor: pointer;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 5px; border-radius: 999px;
+  background: rgba(255,255,255,0.10);
+  box-shadow: inset 0 1px 1px rgba(0,0,0,0.30);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px; height: 25px;          /* capsule ovale, comme Apple */
+  margin-top: -10px; border-radius: 999px;
+  background: rgba(255,255,255,0.96);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.7);
+  transition: transform .24s cubic-bezier(.32,.72,0,1),
+              background .24s cubic-bezier(.32,.72,0,1),
+              box-shadow .24s cubic-bezier(.32,.72,0,1);
+}
+input[type="range"]:hover::-webkit-slider-thumb { transform: scale(1.08); }
+/* Au toucher : la capsule grossit et devient du verre translucide */
+input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.22);
+  background: rgba(255,255,255,0.42);
+  -webkit-backdrop-filter: blur(14px) saturate(1.8);
+  backdrop-filter: blur(14px) saturate(1.8);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.55);
+}
+input[type="range"]::-moz-range-track {
+  height: 5px; border-radius: 999px; background: rgba(255,255,255,0.10);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 15px; height: 25px; border: 0; border-radius: 999px;
+  background: rgba(255,255,255,0.96);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.45);
+  transition: transform .24s cubic-bezier(.32,.72,0,1), background .24s;
+}
+input[type="range"]:active::-moz-range-thumb {
+  transform: scale(1.22); background: rgba(255,255,255,0.42);
+}
+
+/* ============ FINITIONS : mouvements plus fins et plus progressifs ============ */
+button, a, [role="button"], input, select, textarea {
+  transition-timing-function: cubic-bezier(.32,.72,0,1);
+  transition-duration: .22s;
+}
+button:active { transform: scale(.985); }   /* appui subtil, plus "cher" */
+
+/* Comportement verre au survol, partout ou il y a deja une surface vitree */
+[class~="backdrop-blur-[var(--glass-blur)]"] { transition: backdrop-filter .3s cubic-bezier(.32,.72,0,1), background-color .3s; }
