@@ -190,7 +190,7 @@ export default function Maps() {
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 disabled:opacity-50"
+            className="px-4 py-2 nx-grad hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 disabled:opacity-50"
           >
             {loading ? "..." : "Rechercher"}
           </button>

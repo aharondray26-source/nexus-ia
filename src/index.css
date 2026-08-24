@@ -175,3 +175,13 @@ button:active {
 .liquid-ripple:active {
   animation: liquid-ripple 400ms ease-out;
 }
+
+/* --- Epuration visuelle : un seul degrade, derive de la couleur d'accent.
+   Remplace les degrades arc-en-ciel (rose/violet/cyan) qui surchargeaient l'ecran. --- */
+.nx-grad {
+  background-image: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--accent) 88%, transparent),
+    color-mix(in srgb, var(--accent) 52%, transparent)
+  );
+}

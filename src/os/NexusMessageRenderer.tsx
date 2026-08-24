@@ -113,7 +113,7 @@ export const NexusMessageRenderer: React.FC<NexusMessageRendererProps> = ({
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => handleTestCodeInPlayground(codeString)}
-                      className="flex items-center gap-1 text-[10px] text-white font-bold bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90 transition-all py-0.5 px-2.5 rounded shadow"
+                      className="flex items-center gap-1 text-[10px] text-white font-bold nx-grad hover:opacity-90 transition-all py-0.5 px-2.5 rounded shadow"
                       title="Ouvrir et exécuter dans le Bac à Sable Nexus"
                     >
                       <Play className="w-2.5 h-2.5 fill-white" />

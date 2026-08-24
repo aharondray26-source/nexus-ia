@@ -143,7 +143,7 @@ export default function Home() {
         {/* AI Command & Quick Prompt Search Bar */}
         <div className="w-full max-w-xl space-y-3">
           <div className="relative group">
-            <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 opacity-30 group-hover:opacity-75 blur-md transition duration-500" />
+            <div className="absolute -inset-1 rounded-3xl nx-grad opacity-30 group-hover:opacity-75 blur-md transition duration-500" />
             <button
               onClick={() => setPaletteOpen(true)}
               className="relative flex w-full items-center justify-between gap-3 rounded-2xl border border-nexus-border bg-nexus-panel px-5 py-3.5 text-sm text-nexus-text backdrop-blur-2xl transition-all duration-300 hover:bg-nexus-card shadow-2xl"
@@ -319,7 +319,7 @@ export default function Home() {
             animate={{ opacity: 1, scale: 1 }}
             className="flex w-full max-w-md flex-col items-center gap-4 rounded-3xl border border-cyan-500/30 bg-slate-950/90 p-8 text-center shadow-2xl backdrop-blur-2xl relative overflow-hidden"
           >
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400" />
+            <div className="absolute top-0 left-0 right-0 h-1 nx-grad" />
             <Logo size={42} />
             <h2 className="text-xl font-extrabold text-white tracking-tight">
               Bienvenue sur Nexus OS Pro
@@ -333,7 +333,7 @@ export default function Home() {
             </p>
             <button
               onClick={dismissWelcome}
-              className="mt-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 px-8 py-3 text-xs font-extrabold text-white shadow-xl hover:scale-105 transition-all"
+              className="mt-2 rounded-2xl nx-grad px-8 py-3 text-xs font-extrabold text-white shadow-xl hover:scale-105 transition-all"
             >
               Explorer Nexus OS
             </button>

@@ -430,7 +430,7 @@ export default function Settings() {
             <a
               href="/api/export-zip"
               download="nexus-os-source-code.zip"
-              className="shrink-0 flex items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-2 text-xs font-bold text-slate-950 hover:brightness-110 transition-all shadow-md shadow-cyan-500/20"
+              className="shrink-0 flex items-center gap-2 rounded-lg nx-grad px-4 py-2 text-xs font-bold text-slate-950 hover:brightness-110 transition-all shadow-md shadow-cyan-500/20"
             >
               <span>⬇️ Télécharger .ZIP</span>
             </a>

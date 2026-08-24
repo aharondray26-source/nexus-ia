@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Sun, Moon, Cloud, Mail } from "lucide-react";
+import { Sun, Moon, Cloud, Mail, MessageSquare, Package } from "lucide-react";
 import { useWindows } from "./useWindows";
 import { useSettings } from "./useSettings";
 import Logo from "./Logo";
@@ -52,42 +52,42 @@ export default function TopBar() {
           title="Ouvrir Boîte Mail & Gmail"
           className="flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-xs text-amber-300 hover:bg-amber-500/20 transition-all"
         >
-          <Mail size={14} className="text-amber-400" />
+          <Mail size={14} />
           <span className="hidden xl:inline text-[11px] font-semibold">Mail</span>
         </button>
 
         <button
           onClick={() => openApp("messages", { width: 820, height: 580 })}
           title="Ouvrir la Messagerie Instantanée"
-          className="flex items-center gap-1.5 rounded-lg border border-nexus-border bg-nexus-panel/60 px-2 py-1 text-xs text-nexus-text hover:border-cyan-500/50 hover:bg-nexus-panel transition-all"
+          className="flex items-center gap-1.5 rounded-lg border border-nexus-border bg-transparent px-2 py-1 text-[11px] text-nexus-muted transition-colors hover:border-white/20 hover:text-nexus-text"
         >
-          <span className="text-cyan-400 font-bold">💬</span>
+          <MessageSquare size={14} />
           <span className="hidden xl:inline text-[11px]">Message</span>
         </button>
 
         <button
           onClick={() => openApp("cloud", { width: 780, height: 580 })}
           title="Ouvrir Nexus Cloud & Google Drive"
-          className="flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-2 py-1 text-xs text-cyan-300 hover:bg-cyan-500/20 transition-all"
+          className="flex items-center gap-1.5 rounded-lg border border-nexus-border bg-transparent px-2 py-1 text-[11px] text-nexus-muted transition-colors hover:border-white/20 hover:text-nexus-text"
         >
-          <Cloud size={14} className="text-cyan-400" />
+          <Cloud size={14} />
           <span className="hidden xl:inline text-[11px] font-semibold">Cloud</span>
         </button>
 
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           title={theme === "dark" ? "Passer en Mode Clair (Lumineux)" : "Passer en Mode Sombre (Nuit)"}
-          className="flex items-center gap-1.5 rounded-lg border border-nexus-border bg-nexus-panel/60 px-2 sm:px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-nexus-text transition-all hover:border-cyan-500/50 hover:bg-nexus-panel shadow-sm active:scale-95 shrink-0"
+          className="flex items-center gap-1.5 rounded-lg border border-nexus-border bg-transparent px-2 py-1 text-[11px] text-nexus-muted transition-colors hover:border-white/20 hover:text-nexus-text"
         >
           {theme === "dark" ? (
             <>
-              <Sun className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-              <span className="hidden sm:inline text-amber-200/90">Clair</span>
+              <Sun className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Clair</span>
             </>
           ) : (
             <>
-              <Moon className="w-3.5 h-3.5 text-indigo-500" />
-              <span className="hidden sm:inline text-indigo-700 font-bold">Sombre</span>
+              <Moon className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Sombre</span>
             </>
           )}
         </button>
@@ -95,10 +95,10 @@ export default function TopBar() {
         <a
           href="/api/export-zip"
           download="nexus-os-source-code.zip"
-          className="flex items-center gap-1 rounded-lg border border-cyan-500/40 bg-cyan-500/10 px-2 sm:px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-cyan-300 transition-all hover:bg-cyan-500/20 hover:border-cyan-400 shadow-sm"
+          className="flex items-center gap-1.5 rounded-lg border border-nexus-border bg-transparent px-2 py-1 text-[11px] text-nexus-muted transition-colors hover:border-white/20 hover:text-nexus-text"
           title="Télécharger tout le projet en ZIP"
         >
-          <span>📦</span>
+          <Package size={14} />
           <span className="hidden md:inline">Code ZIP</span>
         </a>
 

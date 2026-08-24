@@ -462,7 +462,7 @@ export default function NexusAssistant() {
             {/* Header */}
             <div className="flex items-center justify-between border-b border-nexus-border pb-3 pt-1">
               <div className="flex items-center gap-2.5">
-                <div className="relative flex items-center justify-center h-7 w-7 rounded-full bg-gradient-to-tr from-cyan-500 via-purple-500 to-pink-500 p-0.5 shadow-md">
+                <div className="relative flex items-center justify-center h-7 w-7 rounded-full nx-grad p-0.5 shadow-md">
                   <div className="h-full w-full rounded-full bg-nexus-panel flex items-center justify-center">
                     <Sparkles className="w-3.5 h-3.5 text-cyan-300 animate-pulse" />
                   </div>
@@ -517,7 +517,7 @@ export default function NexusAssistant() {
                       <div
                         className={`max-w-[88%] rounded-2xl p-3.5 shadow-md ${
                           m.role === "user"
-                            ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-br-none font-medium shadow-cyan-600/20"
+                            ? "nx-grad text-white rounded-br-none font-medium shadow-cyan-600/20"
                             : "bg-slate-900/90 text-slate-100 border border-white/10 rounded-bl-none shadow-black/40"
                         }`}
                       >
@@ -581,7 +581,7 @@ export default function NexusAssistant() {
                     <div className="rounded-2xl bg-slate-900/90 border border-cyan-500/30 p-3.5 text-slate-200 text-xs flex items-center gap-3 shadow-lg">
                       <div className="relative flex items-center justify-center">
                         <span className="absolute h-6 w-6 rounded-full bg-cyan-400/30 animate-ping" />
-                        <span className="relative h-3 w-3 rounded-full bg-gradient-to-r from-pink-500 to-cyan-400 animate-spin" />
+                        <span className="relative h-3 w-3 rounded-full nx-grad animate-spin" />
                       </div>
                       <span className="text-[11px] font-medium text-cyan-200">
                         {thinkingPhase ? "Analyse contextuelle & Fichiers..." : "Recherche Web & Rédaction..."}
@@ -763,7 +763,7 @@ export default function NexusAssistant() {
             >
               <div className="relative flex items-center justify-center h-3 w-3">
                 <span className="absolute h-full w-full rounded-full bg-cyan-400 animate-ping opacity-75" />
-                <span className="relative h-2.5 w-2.5 rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-cyan-400" />
+                <span className="relative h-2.5 w-2.5 rounded-full nx-grad" />
               </div>
               <span className="tracking-tight text-white font-extrabold text-xs">Nexus IA Pro</span>
               <span className="shrink-0 text-[10px] text-cyan-300 bg-cyan-500/20 px-2 py-0.5 rounded-full font-semibold border border-cyan-500/30">

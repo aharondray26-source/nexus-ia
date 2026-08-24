@@ -29,13 +29,17 @@ Netlify gratuit ne fait **que du statique**. Conséquence : ces routes renverron
 **Filet de sécurité existant** : `nexusBrain.ts` bascule automatiquement sur la clé Gemini de l'utilisateur (bouton « Clé API » dans l'app), puis sur un moteur local. Donc **ça marche quand même**, mais l'architecture est double et confuse.
 *Ce que j'aurais fait :* soit tout passer en Netlify Functions, soit assumer le 100 % client avec clé utilisateur, mais pas les deux.
 
-### b) Épuration : le site s'est densifié
+### b) Épuration — PASSE 1 FAITE (aucune fonction retirée)
+Corrigé : les **37 dégradés arc-en-ciel** (rose/violet/cyan) sont unifiés en **une seule teinte**, dérivée de la couleur d'accent choisie. Barre du haut apaisée : emojis remplacés par des icônes fines, boutons pleins colorés (Cloud, Code ZIP) rendus discrets, clignotement supprimé, toutes les couleurs qui se battaient (ambre/cyan/indigo) unifiées. **Les 43 apps et toutes les fonctions sont intactes.**
+
+Reste à faire : ranger les 43 apps en catégories, alléger encore la barre du haut.
+
+### b-bis) Densification (constat initial)
 De 30 à **43 applications**, une barre du haut chargée (Nexus Control Pro, Cloud, Clair, Code ZIP, +, Recherche), un assistant flottant, une « Dynamic Island », des dégradés violet/rose très marqués.
 *Ce que j'aurais fait :* regrouper les 43 apps en catégories, alléger la barre du haut à 3 éléments max, et garder les dégradés pour les accents seulement.
 
-### c) Secrets exposés
-`firebase-applet-config.json` contient une **clé API Firebase en clair** dans un dépôt public. (Les clés web Firebase sont semi-publiques par design, mais il faut **verrouiller les règles de sécurité Firebase**, sinon n'importe qui peut lire/écrire ta base.)
-*À faire :* vérifier les règles Firestore/Storage dans la console Firebase.
+### c) ~~Secrets exposés~~ — CORRIGÉ / FAUSSE ALERTE
+Vérification faite : Firebase ne sert **qu'à la connexion Google** (`firebase/auth`), il n'y a **aucune base de données** (pas de Firestore, pas de Storage). La clé web Firebase est publique par design et il n'y a rien derrière à voler. **Rien à faire.**
 
 ### d) Modèles Gemini possiblement inexistants
 `nexusBrain.ts` essaie `gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-3.5-pro`… Ces noms **n'existent probablement pas**. Le dernier de la liste (`gemini-flash-latest`) devrait fonctionner. À tester avec une vraie clé.

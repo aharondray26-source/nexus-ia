@@ -262,7 +262,7 @@ export default function Annales() {
 
         <button
           onClick={() => triggerDownloadPdf(selectedDoc)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 text-white text-xs font-bold hover:opacity-90 transition-all shadow-md active:scale-95 shrink-0"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl nx-grad text-white text-xs font-bold hover:opacity-90 transition-all shadow-md active:scale-95 shrink-0"
           title="Télécharger le PDF sélectionné"
         >
           <Download className="w-3.5 h-3.5" />

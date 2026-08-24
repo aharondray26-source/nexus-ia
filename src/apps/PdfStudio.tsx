@@ -810,7 +810,7 @@ export default function PdfStudio() {
               className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-xs font-extrabold text-white shadow-xl transition-all active:scale-95 ${
                 isProcessing
                   ? "bg-slate-700 cursor-not-allowed"
-                  : "bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 shadow-red-600/30"
+                  : "nx-grad hover:from-red-500 hover:to-pink-500 shadow-red-600/30"
               }`}
             >
               {isProcessing ? (

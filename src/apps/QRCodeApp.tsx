@@ -288,7 +288,7 @@ export default function QRCodeApp() {
       {/* Top Header Navigation Tabs */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-800 bg-slate-900/80">
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-500/20">
+          <div className="p-2 rounded-xl nx-grad text-white shadow-md shadow-cyan-500/20">
             <QrCode className="w-4 h-4" />
           </div>
           <div>
@@ -567,7 +567,7 @@ export default function QRCodeApp() {
                 <button
                   onClick={handleDownload}
                   disabled={!qrDataUrl}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-xl font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all disabled:opacity-40"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 nx-grad hover:from-cyan-400 hover:to-blue-500 text-white rounded-xl font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all disabled:opacity-40"
                 >
                   <Download className="w-4 h-4" />
                   <span>Télécharger PNG</span>
@@ -603,7 +603,7 @@ export default function QRCodeApp() {
                 {!isCameraActive ? (
                   <button
                     onClick={startCamera}
-                    className="w-full py-2.5 px-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-bold text-xs shadow-lg transition-all"
+                    className="w-full py-2.5 px-4 nx-grad text-white rounded-xl font-bold text-xs shadow-lg transition-all"
                   >
                     Activer la Caméra
                   </button>

@@ -377,7 +377,7 @@ export default function NexusCloud() {
             <span className="text-xs font-bold text-white">3.2 GB / 15 GB</span>
           </div>
           <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
-            <div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500 w-[22%]" />
+            <div className="h-full rounded-full nx-grad w-[22%]" />
           </div>
           <p className="text-[10px] text-slate-500 mt-1.5">11.8 GB disponibles sur votre stockage gratuit</p>
         </div>

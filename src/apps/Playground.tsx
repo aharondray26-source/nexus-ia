@@ -26,7 +26,7 @@ const SAMPLES = {
     <p class="text-xs text-slate-400">Ce code est exécuté en temps réel dans le Bac à Sable haute performance de Nexus OS !</p>
     
     <div class="pt-2">
-      <button id="demoBtn" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-xs shadow-lg shadow-cyan-500/25 hover:scale-105 active:scale-95 transition-all">
+      <button id="demoBtn" class="px-5 py-2.5 rounded-2xl nx-grad text-white font-bold text-xs shadow-lg shadow-cyan-500/25 hover:scale-105 active:scale-95 transition-all">
         Cliquer pour Déclencher
       </button>
     </div>
@@ -226,7 +226,7 @@ ${codeToSet}
         <div className="flex items-center gap-1.5">
           <button
             onClick={handleForceRun}
-            className="flex items-center gap-1 px-3 py-1 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90 text-white font-bold text-xs shadow-md transition-all"
+            className="flex items-center gap-1 px-3 py-1 rounded-lg nx-grad hover:opacity-90 text-white font-bold text-xs shadow-md transition-all"
             title="Exécuter immédiatement le code"
           >
             <Play className="w-3 h-3 fill-white" />

@@ -538,7 +538,7 @@ export default function Docs() {
 
           <button
             onClick={handleDirectDownloadDoc}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-xs font-bold hover:opacity-90 transition-all shadow-md active:scale-95"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl nx-grad text-white text-xs font-bold hover:opacity-90 transition-all shadow-md active:scale-95"
             title="Télécharger sur votre ordinateur"
           >
             <Download className="w-3.5 h-3.5" />
@@ -547,7 +547,7 @@ export default function Docs() {
 
           <button
             onClick={() => setShowAiModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold hover:opacity-95 shadow-md shadow-purple-600/20 transition-all active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl nx-grad text-white text-xs font-bold hover:opacity-95 shadow-md shadow-purple-600/20 transition-all active:scale-95"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">IA Rédaction</span>
@@ -790,7 +790,7 @@ export default function Docs() {
               <button
                 type="submit"
                 disabled={isAiGenerating || !aiPrompt.trim()}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-xs font-bold text-white hover:opacity-95 disabled:opacity-40 flex items-center gap-2 shadow-lg shadow-purple-600/20 active:scale-95 transition-all"
+                className="px-4 py-2 rounded-xl nx-grad text-xs font-bold text-white hover:opacity-95 disabled:opacity-40 flex items-center gap-2 shadow-lg shadow-purple-600/20 active:scale-95 transition-all"
               >
                 {isAiGenerating ? (
                   <>

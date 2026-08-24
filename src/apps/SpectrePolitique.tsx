@@ -255,7 +255,7 @@ export default function SpectrePolitique() {
       {/* Header Bar */}
       <div className="flex items-center justify-between gap-2 bg-slate-900/90 p-2.5 rounded-xl border border-white/10 shrink-0 shadow-md">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-gradient-to-tr from-rose-500 via-purple-500 to-blue-500 text-white shadow-md">
+          <div className="p-2 rounded-xl nx-grad text-white shadow-md">
             <Compass className="w-4 h-4 animate-spin-slow" />
           </div>
           <div>
@@ -296,7 +296,7 @@ export default function SpectrePolitique() {
         <button
           type="submit"
           disabled={loading}
-          className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-rose-600 via-purple-600 to-blue-600 px-4 py-2 text-xs font-bold text-white hover:opacity-90 shadow-md active:scale-95 transition-all shrink-0"
+          className="flex items-center gap-1.5 rounded-xl nx-grad px-4 py-2 text-xs font-bold text-white hover:opacity-90 shadow-md active:scale-95 transition-all shrink-0"
         >
           {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
           <span>Analyser</span>
@@ -370,11 +370,11 @@ export default function SpectrePolitique() {
                 <div className="relative h-4 w-full rounded-full bg-slate-800 p-0.5 border border-white/10 overflow-hidden flex shadow-inner">
                   <div
                     style={{ width: `${currentAnalysis.gauchePercent}%` }}
-                    className="h-full bg-gradient-to-r from-rose-600 to-rose-400 rounded-l-full transition-all duration-500"
+                    className="h-full nx-grad rounded-l-full transition-all duration-500"
                   />
                   <div
                     style={{ width: `${currentAnalysis.droitePercent}%` }}
-                    className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-r-full transition-all duration-500"
+                    className="h-full nx-grad rounded-r-full transition-all duration-500"
                   />
                 </div>
               </div>

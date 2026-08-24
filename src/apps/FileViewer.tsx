@@ -206,7 +206,7 @@ export default function FileViewer() {
 
           <button
             onClick={() => triggerDownload(file.blob, file.name)}
-            className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:opacity-90 shadow-md shadow-cyan-500/20 active:scale-95 transition-all"
+            className="flex items-center gap-1.5 rounded-lg nx-grad px-3 py-1.5 text-xs font-bold text-white hover:opacity-90 shadow-md shadow-cyan-500/20 active:scale-95 transition-all"
             title="Télécharger le fichier sur votre appareil"
           >
             <Download className="w-3.5 h-3.5" />
@@ -367,7 +367,7 @@ export default function FileViewer() {
             </p>
             <button
               onClick={() => triggerDownload(file.blob, file.name)}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-xs font-bold text-white hover:opacity-90 shadow-lg active:scale-95 transition-all"
+              className="flex items-center gap-2 rounded-xl nx-grad px-4 py-2 text-xs font-bold text-white hover:opacity-90 shadow-lg active:scale-95 transition-all"
             >
               <Download className="w-4 h-4" />
               <span>Télécharger le fichier</span>

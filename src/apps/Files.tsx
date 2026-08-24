@@ -264,7 +264,7 @@ export default function Files() {
               onClick={() => setCurrentFolder("ALL")}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                 currentFolder === "ALL"
-                  ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-semibold shadow-md shadow-cyan-600/20"
+                  ? "nx-grad text-white font-semibold shadow-md shadow-cyan-600/20"
                   : "text-slate-300 hover:bg-white/5 hover:text-white"
               }`}
             >
@@ -333,7 +333,7 @@ export default function Files() {
         <div className="pt-3 border-t border-white/10">
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-xs font-bold hover:opacity-95 shadow-lg shadow-cyan-500/20 active:scale-98 transition-all"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl nx-grad text-white text-xs font-bold hover:opacity-95 shadow-lg shadow-cyan-500/20 active:scale-98 transition-all"
           >
             <UploadCloud className="w-4 h-4" />
             <span>Importer fichier</span>
@@ -689,7 +689,7 @@ export default function Files() {
               <button
                 type="submit"
                 disabled={!newFolderName.trim()}
-                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-xs font-bold text-white disabled:opacity-50"
+                className="px-3.5 py-1.5 rounded-xl nx-grad text-xs font-bold text-white disabled:opacity-50"
               >
                 Créer
               </button>

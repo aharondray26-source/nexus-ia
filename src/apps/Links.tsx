@@ -141,7 +141,7 @@ export default function Links() {
       {/* Top Bar Header */}
       <div className="p-3.5 border-b border-slate-800 bg-slate-900/80 backdrop-blur-md flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-500/20">
+          <div className="p-2 rounded-xl nx-grad text-white shadow-md shadow-cyan-500/20">
             <Briefcase className="w-4 h-4" />
           </div>
           <div>
@@ -164,7 +164,7 @@ export default function Links() {
 
           <button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold rounded-xl shadow-md transition-all shrink-0 active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 nx-grad hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold rounded-xl shadow-md transition-all shrink-0 active:scale-95"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Ajouter</span>

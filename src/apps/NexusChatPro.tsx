@@ -438,7 +438,7 @@ Je suis votre assistant IA haute performance propulsé par **Gemini 3.6 Flash**.
           {/* New Chat Button */}
           <button
             onClick={createNewSession}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-xl font-semibold text-xs shadow-lg shadow-cyan-500/20 transition-all active:scale-95"
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 nx-grad hover:from-cyan-400 hover:to-blue-500 text-white rounded-xl font-semibold text-xs shadow-lg shadow-cyan-500/20 transition-all active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>Nouveau Chat</span>
@@ -511,7 +511,7 @@ Je suis votre assistant IA haute performance propulsé par **Gemini 3.6 Flash**.
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md gap-3">
           <div className="flex items-center gap-3">
             {sidebarCollapsed && <div className="w-6" />}
-            <div className="p-2 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-500/20">
+            <div className="p-2 rounded-xl nx-grad text-white shadow-md shadow-cyan-500/20">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
@@ -611,7 +611,7 @@ Je suis votre assistant IA haute performance propulsé par **Gemini 3.6 Flash**.
                 className={`flex gap-3 max-w-5xl mx-auto ${isUser ? "justify-end" : "justify-start"}`}
               >
                 {!isUser && (
-                  <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-cyan-600 via-blue-600 to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-cyan-500/20">
+                  <div className="w-9 h-9 rounded-2xl nx-grad flex items-center justify-center text-white shrink-0 shadow-lg shadow-cyan-500/20">
                     <Bot className="w-5 h-5" />
                   </div>
                 )}
@@ -619,7 +619,7 @@ Je suis votre assistant IA haute performance propulsé par **Gemini 3.6 Flash**.
                 <div
                   className={`flex flex-col gap-2 max-w-[88%] ${
                     isUser
-                      ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white p-4 rounded-2xl rounded-tr-none shadow-md"
+                      ? "nx-grad text-white p-4 rounded-2xl rounded-tr-none shadow-md"
                       : "bg-slate-900/90 border border-slate-800/90 p-5 rounded-2xl rounded-tl-none text-slate-200 shadow-2xl"
                   }`}
                 >
@@ -755,7 +755,7 @@ Je suis votre assistant IA haute performance propulsé par **Gemini 3.6 Flash**.
             <button
               onClick={handleSend}
               disabled={!input.trim() || loading}
-              className="p-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white disabled:opacity-40 font-bold transition-all shadow-md active:scale-95"
+              className="p-3 rounded-xl nx-grad hover:from-cyan-400 hover:to-blue-500 text-white disabled:opacity-40 font-bold transition-all shadow-md active:scale-95"
             >
               <Send className="w-4 h-4" />
             </button>
