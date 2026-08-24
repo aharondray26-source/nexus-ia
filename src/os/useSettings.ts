@@ -25,54 +25,72 @@ export const WALLPAPERS: { key: string; label: string; css: string }[] = [
   {
     key: "monde",
     label: "Monde",
-    css: "radial-gradient(900px 500px at 50% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 65%), url('/world.svg') center 45%/88% no-repeat, #060609",
+    css: "radial-gradient(900px 500px at 50% 0%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 65%), url('/world.svg') center 45%/88% no-repeat, var(--nexus-bg)",
   },
   {
     key: "monde-froid",
     label: "Monde froid",
-    css: "radial-gradient(900px 520px at 50% 8%, rgba(56,189,248,0.16), transparent 60%), url('/world.svg') center 45%/86% no-repeat, #05070d",
+    css: "radial-gradient(900px 520px at 50% 8%, rgba(56,189,248,0.18), transparent 60%), url('/world.svg') center 45%/86% no-repeat, var(--nexus-bg)",
   },
   {
     key: "grille",
     label: "Grille",
-    css: "repeating-linear-gradient(0deg, rgba(255,255,255,0.045) 0 1px, transparent 1px 42px), repeating-linear-gradient(90deg, rgba(255,255,255,0.045) 0 1px, transparent 1px 42px), radial-gradient(800px 460px at 50% -8%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 62%), #060609",
+    css: "repeating-linear-gradient(0deg, var(--nexus-border) 0 1px, transparent 1px 42px), repeating-linear-gradient(90deg, var(--nexus-border) 0 1px, transparent 1px 42px), radial-gradient(800px 460px at 50% -8%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 62%), var(--nexus-bg)",
   },
   {
     key: "constellation",
     label: "Constellation",
-    css: "radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1.6px) 0 0/26px 26px, radial-gradient(700px 460px at 50% 6%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 62%), #060609",
+    css: "radial-gradient(var(--nexus-border) 1px, transparent 1.6px) 0 0/26px 26px, radial-gradient(700px 460px at 50% 6%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 62%), var(--nexus-bg)",
   },
   {
     key: "circuit",
     label: "Circuit",
-    css: "repeating-linear-gradient(90deg, rgba(56,189,248,0.05) 0 1px, transparent 1px 60px), repeating-linear-gradient(0deg, rgba(56,189,248,0.05) 0 1px, transparent 1px 60px), radial-gradient(700px 500px at 50% 110%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 60%), #05070d",
+    css: "repeating-linear-gradient(90deg, rgba(56,189,248,0.08) 0 1px, transparent 1px 60px), repeating-linear-gradient(0deg, rgba(56,189,248,0.08) 0 1px, transparent 1px 60px), radial-gradient(700px 500px at 50% 110%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%), var(--nexus-bg)",
   },
   {
     key: "ardoise",
     label: "Ardoise",
-    css: "radial-gradient(1200px 620px at 50% -12%, rgba(255,255,255,0.05), transparent 60%), #09090b",
+    css: "radial-gradient(1200px 620px at 50% -12%, var(--nexus-border), transparent 60%), var(--nexus-bg)",
   },
   {
     key: "aurore",
     label: "Aurore",
-    css: "radial-gradient(900px 520px at 22% -8%, color-mix(in srgb, var(--accent) 38%, transparent), transparent 60%), #09090b",
+    css: "radial-gradient(900px 520px at 22% -8%, color-mix(in srgb, var(--accent) 38%, transparent), transparent 60%), var(--nexus-bg)",
   },
   {
     key: "prisme",
     label: "Prisme",
-    css: "radial-gradient(620px 440px at 14% 22%, color-mix(in srgb, var(--accent) 32%, transparent), transparent 60%), radial-gradient(720px 520px at 86% 82%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%), #09090b",
+    css: "radial-gradient(620px 440px at 14% 22%, color-mix(in srgb, var(--accent) 32%, transparent), transparent 60%), radial-gradient(720px 520px at 86% 82%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%), var(--nexus-bg)",
   },
   {
     key: "vague",
     label: "Vague",
-    css: "linear-gradient(155deg, #09090b 42%, color-mix(in srgb, var(--accent) 24%, #09090b))",
+    css: "linear-gradient(155deg, var(--nexus-bg) 42%, color-mix(in srgb, var(--accent) 24%, var(--nexus-bg)))",
   },
   {
     key: "brume",
     label: "Brume",
-    css: "radial-gradient(520px 520px at 72% 28%, color-mix(in srgb, var(--accent) 24%, transparent), transparent 60%), radial-gradient(520px 420px at 18% 74%, rgba(255,255,255,0.05), transparent 60%), #09090b",
+    css: "radial-gradient(520px 520px at 72% 28%, color-mix(in srgb, var(--accent) 24%, transparent), transparent 60%), radial-gradient(520px 420px at 18% 74%, var(--nexus-border), transparent 60%), var(--nexus-bg)",
   },
 ];
+
+// Polices d'ecran adaptees et style Tech
+export const FONTS = [
+  { key: "system", name: "Système Épuré (Défaut)", family: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif", style: "Standard UI" },
+  { key: "jakarta", name: "Plus Jakarta Tech", family: "'Plus Jakarta Sans', sans-serif", style: "Tech Pro Interface" },
+  { key: "orbitron", name: "Orbitron Cyber HUD", family: "'Orbitron', sans-serif", style: "Futuriste Cyber Matrix" },
+  { key: "jetbrains", name: "JetBrains Mono Code", family: "'JetBrains Mono', monospace", style: "Développeur & Code" },
+  { key: "outfit", name: "Outfit Design", family: "'Outfit', sans-serif", style: "Géométrique & Élégant" },
+  { key: "space", name: "Space Grotesk", family: "'Space Grotesk', sans-serif", style: "Modern Cyberpunk" },
+  { key: "syne", name: "Syne Avant-Garde", family: "'Syne', sans-serif", style: "Sleek Minimalist" },
+];
+
+export function applyFont(fontKey: string) {
+  if (typeof document !== "undefined") {
+    const found = FONTS.find((f) => f.key === fontKey) || FONTS[0];
+    document.documentElement.style.setProperty("--nexus-font", found.family);
+  }
+}
 
 const DEFAULT_ACCENT = ACCENTS[0].value;
 
@@ -95,14 +113,27 @@ const DEFAULT_WIDGETS: HomeWidgets = {
 // Resout le CSS du fond d'ecran choisi ("perso" = image importee).
 export function resolveWallpaper(key: string, custom: string | null): string {
   if (key === "perso" && custom) {
-    return `linear-gradient(rgba(6,6,9,0.35), rgba(6,6,9,0.35)), url('${custom}') center/cover no-repeat, #060609`;
+    return `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url('${custom}') center/cover no-repeat, var(--nexus-bg)`;
   }
   const found = WALLPAPERS.find((w) => w.key === key);
   return found ? found.css : WALLPAPERS[0].css;
 }
 
+export type ThemeMode = "dark" | "light";
+
+export function applyTheme(mode: ThemeMode) {
+  if (typeof document !== "undefined") {
+    document.documentElement.classList.toggle("light-mode", mode === "light");
+    document.documentElement.style.colorScheme = mode;
+  }
+}
+
 interface SettingsState {
+  theme: ThemeMode;
+  setTheme: (mode: ThemeMode) => void;
   accent: string;
+  font: string;
+  setFont: (font: string) => void;
   glass: number;
   setGlass: (v: number) => void;
   dockPos: DockPos;
@@ -115,6 +146,8 @@ interface SettingsState {
   setReduceMotion: (on: boolean) => void;
   largeText: boolean;
   setLargeText: (on: boolean) => void;
+  autoMinimizeInactive: boolean;
+  setAutoMinimizeInactive: (on: boolean) => void;
   userName: string;
   background: string;
   wallpaper: string;
@@ -165,15 +198,31 @@ function load<T>(key: string, fallback: T): T {
 
 const initialAccent = load<string>("nexus.accent", DEFAULT_ACCENT);
 applyAccent(initialAccent);
+const initialFont = load<string>("nexus.font", "system");
+applyFont(initialFont);
 const initialGlass = load<number>("nexus.glass", 46);
 applyGlass(initialGlass);
 const initialMotion = load<boolean>("nexus.reduceMotion", false);
 applyMotion(initialMotion);
 const initialText = load<boolean>("nexus.largeText", false);
 applyText(initialText);
+const initialTheme = load<ThemeMode>("nexus.theme", "dark");
+applyTheme(initialTheme);
 
 export const useSettings = create<SettingsState>((set) => ({
+  theme: initialTheme,
+  setTheme: (mode) => {
+    applyTheme(mode);
+    localStorage.setItem("nexus.theme", JSON.stringify(mode));
+    set({ theme: mode });
+  },
   accent: initialAccent,
+  font: initialFont,
+  setFont: (font) => {
+    applyFont(font);
+    localStorage.setItem("nexus.font", JSON.stringify(font));
+    set({ font });
+  },
   glass: initialGlass,
   setGlass: (v) => {
     applyGlass(v);
@@ -201,6 +250,11 @@ export const useSettings = create<SettingsState>((set) => ({
     applyText(on);
     localStorage.setItem("nexus.largeText", JSON.stringify(on));
     set({ largeText: on });
+  },
+  autoMinimizeInactive: load<boolean>("nexus.autoMinimizeInactive", false),
+  setAutoMinimizeInactive: (on) => {
+    localStorage.setItem("nexus.autoMinimizeInactive", JSON.stringify(on));
+    set({ autoMinimizeInactive: on });
   },
   userName: load<string>("nexus.userName", ""),
   background: load<string>("nexus.background", "nuit"),
@@ -243,7 +297,11 @@ export const useSettings = create<SettingsState>((set) => ({
     }),
   reset: () => {
     applyAccent(DEFAULT_ACCENT);
+    applyTheme("dark");
+    applyFont("system");
     localStorage.removeItem("nexus.accent");
+    localStorage.removeItem("nexus.font");
+    localStorage.removeItem("nexus.theme");
     localStorage.removeItem("nexus.userName");
     localStorage.removeItem("nexus.background");
     localStorage.removeItem("nexus.wallpaper");
@@ -259,6 +317,7 @@ export const useSettings = create<SettingsState>((set) => ({
     applyText(false);
     set({
       accent: DEFAULT_ACCENT,
+      font: "system",
       reduceMotion: false,
       largeText: false,
       userName: "",

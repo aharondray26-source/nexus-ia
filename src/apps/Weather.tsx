@@ -40,16 +40,15 @@ interface Day {
 }
 
 export default function Weather() {
-  const [city, setCity] = usePersistentState<string>("nexus.weatherCity", "");
+  const [city, setCity] = usePersistentState<string>("nexus.weatherCity", "Paris");
   const [input, setInput] = useState(city);
   const [current, setCurrent] = useState<Current | null>(null);
   const [days, setDays] = useState<Day[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function load(e: FormEvent) {
-    e.preventDefault();
-    const name = input.trim();
+  async function fetchCityWeather(cityName: string) {
+    const name = cityName.trim();
     if (!name) return;
     setLoading(true);
     setError(null);
@@ -88,10 +87,20 @@ export default function Weather() {
       );
       setCity(name);
     } catch {
-      setError("Connexion indisponible. Reessaie dans un instant.");
+      setError("Connexion météo indisponible.");
     } finally {
       setLoading(false);
     }
+  }
+
+  // Load default on mount
+  if (!current && !loading && !error) {
+    fetchCityWeather(city || "Paris");
+  }
+
+  function load(e: FormEvent) {
+    e.preventDefault();
+    fetchCityWeather(input);
   }
 
   return (

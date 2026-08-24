@@ -8,6 +8,15 @@ interface Entry {
 
 const CHANGELOG: Entry[] = [
   {
+    date: "Prochainement",
+    title: "La suite arrive",
+    items: [
+      "De nouvelles fonctions utiles, pensees pour le quotidien.",
+      "Correction de petits bugs et d'incoherences.",
+      "Un cote visuel encore plus soigne.",
+    ],
+  },
+  {
     date: "Juillet 2026",
     title: "Fichiers, verre et editeur video",
     items: [

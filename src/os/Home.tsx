@@ -1,45 +1,27 @@
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Sparkles, Search, Compass, Rocket, Zap, Shield, Grid, LayoutGrid, Cpu, Wrench, Gamepad2, Palette } from "lucide-react";
 import { useWindows } from "./useWindows";
 import { useSettings, resolveWallpaper } from "./useSettings";
-import { APPS } from "./appsRegistry";
+import { APPS, AppDefinition } from "./appsRegistry";
 import { getActivity } from "../lib/activity";
 import { searchShortcutLabel } from "../lib/platform";
 import HomeWidgets from "./HomeWidgets";
 import Icon from "./Icons";
 import Logo from "./Logo";
 
-// Ecran d'accueil, affiche uniquement quand aucune fenetre n'est ouverte.
-// Il porte le fond d'ecran, l'heure, la salutation, une barre de recherche
-// bien visible (pour ne pas oublier Cmd+K), et des raccourcis rapides.
-const QUICK = ["today", "ai", "notes", "learn", "focus", "maps"];
-
-// Pensees sobres, une par jour (locales : aucune dependance au reseau).
 const QUOTES = [
-  "La constance vaut mieux que l'intensite.",
-  "Ce qui est note n'encombre plus l'esprit.",
+  "La constance vaut mieux que l'intensité.",
+  "Ce qui est noté n'encombre plus l'esprit.",
   "Commencer petit, mais commencer.",
-  "La clarte de l'espace fait la clarte des idees.",
-  "Un jour a la fois, une chose a la fois.",
+  "La clarté de l'espace fait la clarté des idées.",
+  "Un jour à la fois, une chose à la fois.",
   "Le calme est une forme de puissance.",
   "Apprendre un peu chaque jour finit par tout changer.",
-  "La simplicite est la sophistication supreme.",
+  "La simplicité est la sophistication suprême.",
   "Ce que tu fais chaque jour compte plus que ce que tu fais parfois.",
-  "L'attention est la ressource la plus precieuse.",
-  "Terminer vaut mieux que perfectionner.",
-  "Les grandes choses sont une suite de petites choses.",
-  "Ecrire, c'est penser deux fois.",
-  "Moins d'onglets, plus d'idees.",
-  "Le silence aussi est un outil.",
-  "Relire hier eclaire aujourd'hui.",
-  "Une question bien posee est a moitie resolue.",
-  "Ranger dehors, c'est ranger dedans.",
-  "La curiosite ne vieillit pas.",
-  "Demain commence ce soir.",
+  "L'attention est la ressource la plus précieuse.",
 ];
-
-// Lien "code source" (open source), discret. A remplacer par l'adresse du
-// depot GitHub une fois le code publie.
-const SOURCE_URL = "https://github.com/";
 
 function quoteOfTheDay(): string {
   const now = new Date();
@@ -48,9 +30,11 @@ function quoteOfTheDay(): string {
   return QUOTES[day % QUOTES.length];
 }
 
+type CategoryType = "all" | "ai" | "productivity" | "entertainment" | "creation";
+
 export default function Home() {
   const [now, setNow] = useState(new Date());
-  // Carte de bienvenue : montree une seule fois, a la toute premiere visite.
+  const [selectedCategory, setSelectedCategory] = useState<CategoryType>("all");
   const [welcomed, setWelcomed] = useState<boolean>(() => {
     try {
       return localStorage.getItem("nexus.welcomed") === "1";
@@ -62,11 +46,10 @@ export default function Home() {
   function dismissWelcome() {
     try {
       localStorage.setItem("nexus.welcomed", "1");
-    } catch {
-      // Stockage indisponible : on ignore.
-    }
+    } catch {}
     setWelcomed(true);
   }
+
   const setPaletteOpen = useWindows((s) => s.setPaletteOpen);
   const openApp = useWindows((s) => s.openApp);
   const userName = useSettings((s) => s.userName);
@@ -89,151 +72,272 @@ export default function Home() {
       : hour < 12
       ? "Bonjour"
       : hour < 18
-      ? "Bon apres-midi"
+      ? "Bon après-midi"
       : "Bonsoir";
-
-  const quickApps = QUICK.map((id) => APPS.find((a) => a.id === id)).filter(
-    (a): a is (typeof APPS)[number] => Boolean(a)
-  );
 
   const activity = getActivity();
 
+  // Categorize apps for discovery
+  const getCategoryApps = (): AppDefinition[] => {
+    const visibleApps = APPS.filter((a) => !a.hidden);
+    if (selectedCategory === "ai") {
+      return visibleApps.filter((a) => ["nexus-chat", "ai", "cloud", "messages", "notes", "files", "sheet", "terminal", "web"].includes(a.id));
+    }
+    if (selectedCategory === "productivity") {
+      return visibleApps.filter((a) => ["cloud", "messages", "tasks", "calendar", "calculator", "converter", "clock", "weather", "mail", "learn", "annales", "dictionary", "translator", "today"].includes(a.id));
+    }
+    if (selectedCategory === "entertainment") {
+      return visibleApps.filter((a) => ["game", "recipes", "deals", "news", "focus", "soundscapes", "onthisday"].includes(a.id));
+    }
+    if (selectedCategory === "creation") {
+      return visibleApps.filter((a) => ["whiteboard", "image", "video", "notes"].includes(a.id));
+    }
+    return visibleApps;
+  };
+
+  const currentApps = getCategoryApps();
+
+  const handleTriggerAiPrompt = (promptText: string) => {
+    window.dispatchEvent(new CustomEvent("nexus:open-ai"));
+  };
+
   return (
     <div
-      className="absolute inset-0 overflow-hidden"
+      className="absolute inset-0 overflow-y-auto select-none py-10 px-4 sm:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       onDoubleClick={(e) => {
-        // Double-clic sur le vide : ouvre la recherche (reflexe de bureau).
         if (e.target === e.currentTarget) setPaletteOpen(true);
       }}
     >
       <div
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none fixed inset-0 transition-all duration-700"
         style={{ background: css }}
       />
 
-      <div
-        className="nexus-fade-in relative z-10 flex h-full flex-col items-center justify-center gap-8 px-6"
-        onDoubleClick={(e) => {
-          if (e.target === e.currentTarget) setPaletteOpen(true);
-        }}
-      >
-        <div className="text-center">
-          <div className="text-6xl font-extralight tracking-tight text-nexus-text">
+      <div className="relative z-10 flex min-h-full flex-col items-center justify-center gap-8 max-w-5xl mx-auto py-6">
+        {/* Clock & Greeting Hero */}
+        <div className="text-center space-y-2 drop-shadow-2xl">
+          <div className="text-6xl sm:text-7xl font-extralight tracking-tight text-white font-sans">
             {now.toLocaleTimeString("fr-FR", {
               hour: "2-digit",
               minute: "2-digit",
             })}
           </div>
-          <div className="mt-2 text-sm capitalize text-nexus-muted">
+          <div className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-cyan-200/90">
             {now.toLocaleDateString("fr-FR", {
               weekday: "long",
               day: "numeric",
               month: "long",
             })}
           </div>
-          <div className="mt-4 text-lg font-light text-nexus-text">
-            {salut}
-            {userName ? `, ${userName}` : ""}
-          </div>
+          <h1 className="text-xl sm:text-2xl font-bold text-nexus-text pt-1 flex items-center justify-center gap-2">
+            <span>{salut}{userName ? `, ${userName}` : ""}</span>
+            <span className="inline-block animate-bounce">✨</span>
+          </h1>
           {widgets.quote && (
-            <p className="mt-2 text-xs italic text-nexus-muted/80">
+            <p className="text-xs italic text-nexus-muted max-w-md mx-auto">
               « {quoteOfTheDay()} »
             </p>
           )}
         </div>
 
-        <button
-          onClick={() => setPaletteOpen(true)}
-          className="flex w-full max-w-md items-center justify-between gap-3 rounded-2xl border border-nexus-border bg-nexus-panel/70 px-5 py-3.5 text-sm text-nexus-muted backdrop-blur-[var(--glass-blur)] transition-all duration-300 hover:border-white/20 hover:bg-nexus-panel/90"
-        >
-          <span className="flex items-center gap-2.5">
-            <Icon name="search" size={18} />
-            Rechercher ou ouvrir un espace
-          </span>
-          <kbd className="kbd-hint rounded border border-nexus-border px-1.5 py-0.5 text-[10px]">
-            {searchShortcutLabel()}
-          </kbd>
-        </button>
-
-        <HomeWidgets />
-
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          {quickApps.map((app) => (
+        {/* AI Command & Quick Prompt Search Bar */}
+        <div className="w-full max-w-xl space-y-3">
+          <div className="relative group">
+            <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 opacity-30 group-hover:opacity-75 blur-md transition duration-500" />
             <button
-              key={app.id}
-              onClick={() => openApp(app.id, { width: app.width, height: app.height })}
-              className="group flex w-20 flex-col items-center gap-2 rounded-xl border border-transparent px-2 py-3 transition-all duration-200 hover:border-nexus-border hover:bg-white/[0.03]"
+              onClick={() => setPaletteOpen(true)}
+              className="relative flex w-full items-center justify-between gap-3 rounded-2xl border border-nexus-border bg-nexus-panel px-5 py-3.5 text-sm text-nexus-text backdrop-blur-2xl transition-all duration-300 hover:bg-nexus-card shadow-2xl"
             >
-              <span
-                className="text-nexus-muted transition-all group-hover:text-nexus-text"
-                style={iconColors ? { color: app.hue, opacity: 0.9 } : undefined}
-              >
-                <Icon name={app.icon} size={24} />
+              <span className="flex items-center gap-3">
+                <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse" />
+                <span className="text-xs sm:text-sm font-medium">Lancer une recherche ou poser une question à l'IA...</span>
               </span>
-              <span className="text-[11px] text-nexus-muted transition-colors group-hover:text-nexus-text">
-                {app.title}
-              </span>
+              <kbd className="kbd-hint rounded-lg border border-nexus-border bg-nexus-card px-2.5 py-1 text-[10px] text-cyan-400 font-mono shadow-inner">
+                {searchShortcutLabel()}
+              </kbd>
             </button>
-          ))}
+          </div>
+
+          {/* AI Quick Prompts Pills */}
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <button
+              onClick={() => handleTriggerAiPrompt("Résoudre un devoir ou un problème")}
+              className="px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-200 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md"
+            >
+              <Zap className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Devoirs & AI</span>
+            </button>
+            <button
+              onClick={() => openApp("game", { width: 760, height: 620 })}
+              className="px-3 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-200 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md"
+            >
+              <Gamepad2 className="w-3.5 h-3.5 text-purple-400" />
+              <span>Partie d'Échecs</span>
+            </button>
+            <button
+              onClick={() => openApp("recipes", { width: 680, height: 520 })}
+              className="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-200 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md"
+            >
+              <Compass className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Recettes du Chef</span>
+            </button>
+            <button
+              onClick={() => openApp("whiteboard", { width: 720, height: 520 })}
+              className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-200 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md"
+            >
+              <Palette className="w-3.5 h-3.5 text-amber-400" />
+              <span>Tableau Blanc</span>
+            </button>
+          </div>
         </div>
 
-        {/* Rendu sobre de ton activite (pas de "flammes", un simple reflet). */}
+        {/* Live Widgets Section */}
+        <HomeWidgets />
+
+        {/* Apps Discovery Hub Section */}
+        <div className="w-full bg-nexus-panel border border-nexus-border rounded-3xl p-5 sm:p-6 backdrop-blur-3xl shadow-2xl space-y-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-nexus-border pb-4">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                <LayoutGrid className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-base font-extrabold text-nexus-text tracking-wide">
+                  Catalogue des Applications & Outils
+                </h2>
+                <p className="text-xs text-nexus-muted">
+                  {currentApps.length} applications prêtes à être exécutées
+                </p>
+              </div>
+            </div>
+
+            {/* Category Filter Tabs */}
+            <div className="flex items-center gap-1 bg-nexus-card p-1 rounded-2xl border border-nexus-border text-xs">
+              <button
+                onClick={() => setSelectedCategory("all")}
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all ${
+                  selectedCategory === "all" ? "bg-cyan-600 text-white shadow-md" : "text-nexus-muted hover:text-nexus-text"
+                }`}
+              >
+                Toutes
+              </button>
+              <button
+                onClick={() => setSelectedCategory("ai")}
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all ${
+                  selectedCategory === "ai" ? "bg-purple-600 text-white shadow-md" : "text-nexus-muted hover:text-nexus-text"
+                }`}
+              >
+                🤖 IA & Pro
+              </button>
+              <button
+                onClick={() => setSelectedCategory("productivity")}
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all ${
+                  selectedCategory === "productivity" ? "bg-emerald-600 text-white shadow-md" : "text-nexus-muted hover:text-nexus-text"
+                }`}
+              >
+                🛠️ Outils
+              </button>
+              <button
+                onClick={() => setSelectedCategory("entertainment")}
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all ${
+                  selectedCategory === "entertainment" ? "bg-pink-600 text-white shadow-md" : "text-nexus-muted hover:text-nexus-text"
+                }`}
+              >
+                🎮 Loisirs
+              </button>
+              <button
+                onClick={() => setSelectedCategory("creation")}
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all ${
+                  selectedCategory === "creation" ? "bg-amber-600 text-white shadow-md" : "text-nexus-muted hover:text-nexus-text"
+                }`}
+              >
+                🎨 Création
+              </button>
+            </div>
+          </div>
+
+          {/* Apps Cards Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 pt-2">
+            {currentApps.map((app) => (
+              <motion.button
+                key={app.id}
+                whileHover={{ scale: 1.04, y: -2 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => openApp(app.id, { width: app.width, height: app.height })}
+                className="group flex flex-col items-center gap-2 rounded-2xl border border-nexus-border bg-nexus-card p-3.5 backdrop-blur-xl transition-all duration-300 hover:border-cyan-400/50 hover:bg-nexus-card-hover shadow-lg relative overflow-hidden text-center"
+              >
+                {/* Subtle Glow on Hover */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-15 transition-opacity duration-300 pointer-events-none"
+                  style={{ backgroundColor: app.hue }}
+                />
+
+                <span
+                  className="p-2.5 rounded-2xl bg-nexus-panel border border-nexus-border group-hover:scale-110 transition-transform shadow-md"
+                  style={{ color: iconColors ? app.hue : "#38bdf8" }}
+                >
+                  <Icon name={app.icon} size={26} />
+                </span>
+
+                <div className="min-w-0 w-full">
+                  <h3 className="text-xs font-bold text-nexus-text group-hover:text-cyan-400 transition-colors truncate">
+                    {app.title}
+                  </h3>
+                  <span className="text-[10px] text-nexus-muted block truncate capitalize font-mono mt-0.5">
+                    {app.id}
+                  </span>
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+
+        {/* Activity Summary Badge */}
         {widgets.activity && activity.daysActive > 0 && (
-          <div className="flex items-center gap-4 rounded-full border border-nexus-border bg-nexus-panel/50 px-5 py-2 text-[11px] text-nexus-muted backdrop-blur-[var(--glass-blur)]">
-            <span>
-              <span className="text-nexus-text">{activity.daysActive}</span> jour
-              {activity.daysActive > 1 ? "s" : ""} ici
+          <div className="flex items-center gap-4 rounded-full border border-white/15 bg-black/60 px-6 py-2.5 text-xs text-slate-200 backdrop-blur-2xl shadow-xl">
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-white font-bold">{activity.daysActive}</span> jour{activity.daysActive > 1 ? "s" : ""} actif
             </span>
-            <span className="h-3 w-px bg-nexus-border" />
+            <span className="h-3 w-px bg-white/20" />
             <span>
-              <span className="text-nexus-text">{activity.notes}</span> note
-              {activity.notes > 1 ? "s" : ""}
+              <span className="text-white font-bold">{activity.notes}</span> note{activity.notes > 1 ? "s" : ""}
             </span>
-            <span className="h-3 w-px bg-nexus-border" />
+            <span className="h-3 w-px bg-white/20" />
             <span>
-              <span className="text-nexus-text">{activity.tasksDone}</span> tache
-              {activity.tasksDone > 1 ? "s" : ""} faite
-              {activity.tasksDone > 1 ? "s" : ""}
+              <span className="text-white font-bold">{activity.tasksDone}</span> tâche{activity.tasksDone > 1 ? "s" : ""} accomplie{activity.tasksDone > 1 ? "s" : ""}
             </span>
           </div>
         )}
       </div>
 
-      {/* Lien open source, tres discret (pour les curieux qui scrutent). */}
-      <a
-        href={SOURCE_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2 text-[10px] text-nexus-muted/40 transition-colors hover:text-nexus-muted"
-      >
-        Code source · open source
-      </a>
-
-      {/* Bienvenue : une seule fois, a la premiere visite. */}
+      {/* Welcome Overlay */}
       {!welcomed && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="nexus-fade-in flex w-full max-w-sm flex-col items-center gap-4 rounded-2xl border border-nexus-border bg-nexus-panel p-7 text-center shadow-2xl">
-            <Logo size={34} />
-            <h2 className="text-lg font-medium text-nexus-text">
-              Bienvenue sur Nexus
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xl">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex w-full max-w-md flex-col items-center gap-4 rounded-3xl border border-cyan-500/30 bg-slate-950/90 p-8 text-center shadow-2xl backdrop-blur-2xl relative overflow-hidden"
+          >
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400" />
+            <Logo size={42} />
+            <h2 className="text-xl font-extrabold text-white tracking-tight">
+              Bienvenue sur Nexus OS Pro
             </h2>
-            <p className="text-sm leading-relaxed text-nexus-muted">
-              Ton espace de travail tout-en-un. Chaque icone de la barre de
-              gauche ouvre un outil dans sa propre fenetre. Retrouve tout avec{" "}
-              <kbd className="rounded border border-nexus-border px-1.5 py-0.5 text-[10px]">
+            <p className="text-xs leading-relaxed text-slate-300">
+              Votre environnement multitâche intelligent nouvelle génération. Accédez aux applications depuis le catalogue, la barre latérale ou la recherche rapide avec{" "}
+              <kbd className="rounded border border-white/20 px-2 py-0.5 text-[10px] text-cyan-300 bg-cyan-950 font-mono">
                 {searchShortcutLabel()}
               </kbd>
-              . Tes notes et fichiers sont enregistres automatiquement sur ton
-              appareil : rien n'est envoye ni collecte.
+              .
             </p>
             <button
               onClick={dismissWelcome}
-              className="mt-1 rounded-lg border px-6 py-2.5 text-sm font-medium transition-colors"
-              style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
+              className="mt-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-purple-600 px-8 py-3 text-xs font-extrabold text-white shadow-xl hover:scale-105 transition-all"
             >
-              C'est parti
+              Explorer Nexus OS
             </button>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>

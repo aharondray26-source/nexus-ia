@@ -1,9 +1,8 @@
-node_modules
-dist
-dist-ssr
-*.local
+node_modules/
+build/
+dist/
+coverage/
 .DS_Store
-
-# Rust / Tauri
-src-tauri/target
-src-tauri/gen
+*.log
+.env*
+!.env.example

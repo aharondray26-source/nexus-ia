@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { usePersistentState } from "../lib/persist";
 import { useSettings } from "./useSettings";
 import { useWindows } from "./useWindows";

@@ -1,12 +1,34 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import {defineConfig} from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
-// Configuration Vite. Le port est fige pour que Tauri sache ou se connecter.
-export default defineConfig({
-  plugins: [react()],
-  clearScreen: false,
-  server: {
-    port: 1420,
-    strictPort: true,
-  },
+export default defineConfig(() => {
+  return {
+    plugins: [
+      react(), 
+      tailwindcss(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        manifest: false, // We already have our own site.webmanifest and meta tags in index.html
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+          maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+        }
+      })
+    ],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, '.'),
+      },
+    },
+    server: {
+      // HMR is disabled in AI Studio via DISABLE_HMR env var.
+      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
+      hmr: process.env.DISABLE_HMR !== 'true',
+      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
+      watch: process.env.DISABLE_HMR === 'true' ? null : {},
+    },
+  };
 });

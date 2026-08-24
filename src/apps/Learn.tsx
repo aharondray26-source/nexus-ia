@@ -152,6 +152,7 @@ interface Lesson {
   title: string;
   body: string;
   url?: string;
+  image?: string;
 }
 
 export default function Learn() {
@@ -175,7 +176,7 @@ export default function Learn() {
       const searchData = await searchRes.json();
       const best = searchData?.query?.search?.[0];
       if (!best) {
-        setError(`Rien trouve pour « ${term} ».`);
+        setError(`Rien trouvé pour « ${term} ».`);
         return;
       }
       const sumRes = await fetch(
@@ -185,11 +186,12 @@ export default function Learn() {
       const data = await sumRes.json();
       setLesson({
         title: data.title ?? best.title,
-        body: data.extract ?? "Resume indisponible.",
+        body: data.extract ?? "Résumé indisponible.",
         url: data.content_urls?.desktop?.page,
+        image: data.thumbnail?.source || data.originalimage?.source,
       });
     } catch {
-      setError("Connexion indisponible. Reessaie dans un instant.");
+      setError("Connexion indisponible. Réessaie dans un instant.");
     } finally {
       setLoading(false);
     }
@@ -248,14 +250,29 @@ export default function Learn() {
           ))}
         </div>
 
-        {loading && <p className="text-sm text-nexus-muted">Chargement...</p>}
-        {error && <p className="text-sm text-nexus-muted">{error}</p>}
+        {loading && (
+          <div className="flex items-center gap-2 text-xs text-nexus-muted py-4">
+            <span className="h-2 w-2 rounded-full bg-cyan-400 animate-ping" />
+            Recherche Wikipédia en cours...
+          </div>
+        )}
+        {error && <p className="text-xs text-red-400 bg-red-500/10 p-3 rounded-xl border border-red-500/20">{error}</p>}
         {lesson && !loading && (
-          <article className="rounded-xl border border-nexus-border bg-nexus-bg p-4">
-            <h3 className="text-sm font-semibold text-nexus-text">
-              {lesson.title}
+          <article className="rounded-2xl border border-nexus-border bg-nexus-panel/50 p-4 shadow-xl backdrop-blur-md space-y-3">
+            {lesson.image && (
+              <img
+                src={lesson.image}
+                alt={lesson.title}
+                className="h-44 w-full rounded-xl object-cover border border-white/10 shadow-md"
+              />
+            )}
+            <h3 className="text-base font-bold text-white flex items-center justify-between">
+              <span>{lesson.title}</span>
+              <span className="text-[10px] text-cyan-400 bg-cyan-500/20 px-2 py-0.5 rounded-full font-semibold">
+                Savoir Wikipédia
+              </span>
             </h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-nexus-muted">
+            <p className="text-xs leading-relaxed text-nexus-muted">
               {lesson.body}
             </p>
             {lesson.url && (
@@ -263,10 +280,9 @@ export default function Learn() {
                 href={lesson.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-3 inline-block text-xs underline decoration-nexus-border underline-offset-4 hover:decoration-white/40"
-                style={{ color: "var(--accent)" }}
+                className="inline-flex items-center gap-1 text-xs text-cyan-400 font-semibold hover:underline"
               >
-                Approfondir
+                Consulter la fiche complète sur Wikipédia →
               </a>
             )}
           </article>

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { usePersistentState } from "../lib/persist";
+import { useWindows } from "../os/useWindows";
+import { Mail, Cloud, Trash2, Send } from "lucide-react";
 
 interface Note {
   id: string;
@@ -22,7 +24,12 @@ function relativeDate(ts: number): string {
 }
 
 export default function Notes() {
+  const openApp = useWindows((s) => s.openApp);
   const [notes, setNotes] = usePersistentState<Note[]>("nexus.notes", []);
+  const [cloudFiles, setCloudFiles] = usePersistentState<{ name: string; size: string }[]>(
+    "nexus.cloudFiles",
+    []
+  );
   const [activeId, setActiveId] = useState<string | null>(notes[0]?.id ?? null);
 
   const active = notes.find((n) => n.id === activeId) ?? null;
@@ -110,14 +117,42 @@ export default function Notes() {
             />
             <div className="flex items-center justify-between border-y border-nexus-border py-1.5 text-[10px] text-nexus-muted">
               <span>
-                {words} mot{words > 1 ? "s" : ""} · enregistre automatiquement
+                {words} mot{words > 1 ? "s" : ""} · enregistré
               </span>
-              <button
-                onClick={() => deleteNote(active.id)}
-                className="transition-colors hover:text-red-400"
-              >
-                Supprimer
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    openApp("mail", { width: 840, height: 600 });
+                  }}
+                  className="flex items-center gap-1 text-amber-400 hover:text-amber-300 font-medium transition-colors"
+                  title="Envoyer la note par e-mail"
+                >
+                  <Mail size={12} />
+                  <span>Mail</span>
+                </button>
+                <button
+                  onClick={() => {
+                    const fileName = `${active.title || "Note"}.txt`;
+                    if (!cloudFiles.some((f) => f.name === fileName)) {
+                      setCloudFiles((prev) => [{ name: fileName, size: `${words * 5} B` }, ...prev]);
+                    }
+                    openApp("cloud", { width: 780, height: 580 });
+                  }}
+                  className="flex items-center gap-1 text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                  title="Enregistrer la note sur Nexus Cloud"
+                >
+                  <Cloud size={12} />
+                  <span>Cloud</span>
+                </button>
+                <button
+                  onClick={() => deleteNote(active.id)}
+                  className="flex items-center gap-1 text-red-400 hover:text-red-300 transition-colors"
+                  title="Supprimer la note"
+                >
+                  <Trash2 size={12} />
+                  <span>Supprimer</span>
+                </button>
+              </div>
             </div>
             <textarea
               value={active.body}

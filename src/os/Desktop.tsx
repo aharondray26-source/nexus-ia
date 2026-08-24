@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Dock from "./Dock";
 import TopBar from "./TopBar";
 import Window from "./Window";
@@ -10,6 +10,7 @@ import { getApp } from "./appsRegistry";
 import { isTauri } from "../lib/tauri";
 import { recordVisit } from "../lib/activity";
 import { useIsMobile } from "../lib/useIsMobile";
+import NexusAssistant from "./NexusAssistant";
 
 // Le bureau : assemble la barre du haut, le dock, les fenetres ouvertes et la
 // barre de commande. Gere aussi les raccourcis clavier globaux.
@@ -17,16 +18,38 @@ export default function Desktop() {
   const windows = useWindows((s) => s.windows);
   const togglePalette = useWindows((s) => s.togglePalette);
   const setPaletteOpen = useWindows((s) => s.setPaletteOpen);
+  const autoMinimizeInactiveWindows = useWindows((s) => s.autoMinimizeInactiveWindows);
   const isMobile = useIsMobile();
   const background = useSettings((s) => s.background);
   const wallpaper = useSettings((s) => s.wallpaper);
   const customWallpaper = useSettings((s) => s.customWallpaper);
   const dockPos = useSettings((s) => s.dockPos);
+  const autoMinimizeInactive = useSettings((s) => s.autoMinimizeInactive);
+
+  const [aiState, setAiState] = useState<{ active: boolean; thinking?: boolean }>({ active: false });
+
+  // Verification periodique des fenetres inactives (2 min)
+  useEffect(() => {
+    if (!autoMinimizeInactive) return;
+    const timer = setInterval(() => {
+      autoMinimizeInactiveWindows(120000);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [autoMinimizeInactive, autoMinimizeInactiveWindows]);
+
+  useEffect(() => {
+    const handleAiEvent = (e: Event) => {
+      const customEv = e as CustomEvent;
+      setAiState(customEv.detail || { active: false });
+    };
+    window.addEventListener("nexus:ai-active", handleAiEvent);
+    return () => window.removeEventListener("nexus:ai-active", handleAiEvent);
+  }, []);
 
   // Position effective de la barre : en portrait telephone, toujours en bas.
   const pos: DockPos = isMobile ? "bottom" : dockPos;
   const horizontalDock = pos === "top" || pos === "bottom";
-  const dockEl = <Dock horizontal={horizontalDock} />;
+  const dockEl = <Dock horizontal={horizontalDock} pos={pos} />;
 
   // Chaque ambiance dessine un fond different (subtil, jamais agressif).
   const backgrounds: Record<string, string> = {
@@ -114,6 +137,22 @@ export default function Desktop() {
       {pos === "bottom" && dockEl}
 
       <CommandPalette />
+
+      <NexusAssistant />
+
+      {/* Siri 2026/2027 Apple Intelligence Iridescent Edge Aura */}
+      {aiState.active && (
+        <div
+          className="pointer-events-none fixed inset-0 z-40 transition-all duration-700"
+          style={{
+            boxShadow: aiState.thinking
+              ? "inset 0 0 50px rgba(236, 72, 153, 0.45), inset 0 0 100px rgba(56, 189, 248, 0.45)"
+              : "inset 0 0 35px rgba(168, 85, 247, 0.35), inset 0 0 70px rgba(56, 189, 248, 0.35)",
+          }}
+        >
+          <div className="h-full w-full border-2 border-cyan-400/40 opacity-70 animate-pulse" />
+        </div>
+      )}
 
       {/* Petite barre en bas listant les fenetres reduites, pour les rouvrir. */}
       <MinimizedBar />

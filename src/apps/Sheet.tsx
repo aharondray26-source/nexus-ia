@@ -195,6 +195,27 @@ function display(ref: string, cells: Cells): string {
   }
 }
 
+function csvEscape(v: string): string {
+  return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+}
+// Analyse une ligne CSV (gere les guillemets et les virgules echappees).
+function parseCsvLine(line: string): string[] {
+  const out: string[] = [];
+  let cur = "", inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (inQ) {
+      if (c === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+      else if (c === '"') inQ = false;
+      else cur += c;
+    } else if (c === '"') inQ = true;
+    else if (c === ",") { out.push(cur); cur = ""; }
+    else cur += c;
+  }
+  out.push(cur);
+  return out;
+}
+
 export default function Sheet() {
   const [cells, setCells] = usePersistentState<Cells>("nexus.sheet", {});
   const [focused, setFocused] = useState<string | null>(null);
@@ -208,6 +229,33 @@ export default function Sheet() {
     });
   }
 
+  // Exporte les valeurs calculees en fichier CSV (ouvrable dans Excel/Sheets).
+  function exportCSV() {
+    const lines: string[] = [];
+    for (let r = 1; r <= ROWS; r++) {
+      lines.push(COLS.map((c) => csvEscape(display(`${c}${r}`, cells))).join(","));
+    }
+    const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "tableur-nexus.csv";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // Importe un CSV : remplit les cellules a partir de A1.
+  async function importCSV(file: File) {
+    const text = await file.text();
+    const next: Cells = {};
+    text.split(/\r?\n/).forEach((line, r) => {
+      if (r >= ROWS || line === "") return;
+      parseCsvLine(line).forEach((v, ci) => {
+        if (ci < COLS.length && v !== "") next[`${COLS[ci]}${r + 1}`] = v;
+      });
+    });
+    setCells(next);
+  }
+
   return (
     <div className="flex h-full flex-col gap-2">
       <div className="flex items-center justify-between">
@@ -215,12 +263,29 @@ export default function Sheet() {
           Formules avec <kbd className="rounded border border-nexus-border px-1 py-0.5 text-[9px]">=</kbd>{" "}
           : =A1+B2, =SOMME(A1:A5), =MOYENNE(B1:B9), =MAX(...)
         </span>
-        <button
-          onClick={() => setCells({})}
-          className="rounded-md border border-nexus-border px-2.5 py-1 text-[11px] text-nexus-muted transition-colors hover:text-red-400"
-        >
-          Tout effacer
-        </button>
+        <div className="flex items-center gap-1.5">
+          <label className="cursor-pointer rounded-md border border-nexus-border px-2.5 py-1 text-[11px] text-nexus-muted transition-colors hover:text-nexus-text">
+            Importer CSV
+            <input
+              type="file"
+              accept=".csv,text/csv"
+              className="hidden"
+              onChange={(e) => e.target.files?.[0] && importCSV(e.target.files[0])}
+            />
+          </label>
+          <button
+            onClick={exportCSV}
+            className="rounded-md border border-nexus-border px-2.5 py-1 text-[11px] text-nexus-muted transition-colors hover:text-nexus-text"
+          >
+            Exporter CSV
+          </button>
+          <button
+            onClick={() => setCells({})}
+            className="rounded-md border border-nexus-border px-2.5 py-1 text-[11px] text-nexus-muted transition-colors hover:text-red-400"
+          >
+            Effacer
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-auto rounded-lg border border-nexus-border">

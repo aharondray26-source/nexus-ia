@@ -5,11 +5,16 @@ export default {
     extend: {
       colors: {
         nexus: {
-          bg: "#09090b",
-          panel: "#0c0c0f",
-          border: "#27272a",
-          text: "#f4f4f5",
-          muted: "#a1a1aa",
+          bg: "var(--nexus-bg)",
+          panel: "var(--nexus-panel)",
+          "panel-solid": "var(--nexus-panel-solid)",
+          border: "var(--nexus-border)",
+          text: "var(--nexus-text)",
+          muted: "var(--nexus-muted)",
+          card: "var(--nexus-card)",
+          "card-hover": "var(--nexus-card-hover)",
+          input: "var(--nexus-input-bg)",
+          "input-border": "var(--nexus-input-border)",
         },
       },
       backdropBlur: {

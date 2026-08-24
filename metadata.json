@@ -1,0 +1,6 @@
+{
+  "name": "Nexus IA",
+  "description": "Hub de productivité unifié avec IA, bureau virtuel et suite d'applications integrées",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

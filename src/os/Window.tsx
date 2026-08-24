@@ -1,8 +1,9 @@
-import { useRef, useState, type ReactNode } from "react";
+import React, { useRef, useState, type ReactNode } from "react";
 import { useWindows, type OpenWindow } from "./useWindows";
 import { useIsMobile } from "../lib/useIsMobile";
 
 interface WindowProps {
+  key?: React.Key;
   win: OpenWindow;
   title: string;
   hue?: string;
@@ -33,10 +34,10 @@ function Control({
         onClick();
       }}
       aria-label={label}
-      className="flex h-3.5 w-3.5 items-center justify-center rounded-full text-[8px] font-bold text-black/60 transition-opacity"
+      className="flex h-4 w-4 sm:h-3.5 sm:w-3.5 items-center justify-center rounded-full text-[9px] sm:text-[8px] font-extrabold text-black/80 sm:text-black/60 transition-opacity active:scale-95"
       style={{ backgroundColor: color }}
     >
-      <span className="opacity-0 transition-opacity group-hover/ctrl:opacity-100">
+      <span className="opacity-100 sm:opacity-0 transition-opacity group-hover/ctrl:opacity-100">
         {symbol}
       </span>
     </button>
@@ -52,6 +53,8 @@ export default function Window({ win, title, hue, children }: WindowProps) {
   const resizeWindow = useWindows((s) => s.resizeWindow);
   const setBounds = useWindows((s) => s.setBounds);
   const toggleMinimize = useWindows((s) => s.toggleMinimize);
+  const isAutoOrganized = useWindows((s) => s.isAutoOrganized);
+  const toggleAutoOrganize = useWindows((s) => s.toggleAutoOrganize);
 
   const drag = useRef<{ dx: number; dy: number } | null>(null);
   const resize = useRef<Dir | null>(null);
@@ -120,10 +123,15 @@ export default function Window({ win, title, hue, children }: WindowProps) {
     focusWindow(win.id);
   }
 
+  const handleOrganizeClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleAutoOrganize();
+  };
+
   return (
     <div
       onMouseDown={() => focusWindow(win.id)}
-      className="nexus-fade-in absolute flex flex-col overflow-hidden rounded-xl border border-nexus-border bg-nexus-panel/95 shadow-2xl backdrop-blur-[var(--glass-blur)] transition-[transform,opacity] duration-300 ease-in-out"
+      className="nexus-fade-in absolute flex flex-col overflow-hidden rounded-xl border border-nexus-border bg-nexus-panel/95 shadow-2xl backdrop-blur-[var(--glass-blur)] transition-all duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)]"
       style={{
         left: isMobile ? 0 : win.x,
         top: isMobile ? 0 : win.y,
@@ -142,7 +150,7 @@ export default function Window({ win, title, hue, children }: WindowProps) {
       }}
     >
       <div className="flex items-center gap-2 border-b border-nexus-border px-3 py-2">
-        {/* Ilot de boutons, totalement independant de la zone de deplacement. */}
+        {/* Ilot de boutons (fermer, reduire, agrandir) sur le coté gauche */}
         <div className="group/ctrl flex items-center gap-1.5">
           <Control color="#f87171" symbol="✕" onClick={animatedClose} label="Fermer" />
           <Control color="#fbbf24" symbol="–" onClick={() => toggleMinimize(win.id)} label="Reduire" />
@@ -150,13 +158,14 @@ export default function Window({ win, title, hue, children }: WindowProps) {
             <Control color="#34d399" symbol="◻" onClick={toggleMaximize} label="Agrandir" />
           )}
         </div>
-        {/* Zone de deplacement : tout le reste de la barre. */}
+
+        {/* Zone de deplacement : le centre de la barre. */}
         <div
           onPointerDown={onTitlePointerDown}
           onPointerMove={onTitlePointerMove}
           onPointerUp={endPointer}
           onDoubleClick={toggleMaximize}
-          className="nx-drag flex flex-1 cursor-grab items-center justify-end self-stretch active:cursor-grabbing"
+          className="nx-drag flex flex-1 cursor-grab items-center justify-center self-stretch active:cursor-grabbing"
         >
           <span className="flex select-none items-center gap-1.5 text-xs font-medium text-nexus-muted">
             {hue && (
@@ -168,6 +177,34 @@ export default function Window({ win, title, hue, children }: WindowProps) {
             {title}
           </span>
         </div>
+
+        {/* Cote oppose (droit) : Bouton interrupteur ovale Nexus d'organisation automatique */}
+        {!isMobile && (
+          <button
+            type="button"
+            onClick={handleOrganizeClick}
+            title={isAutoOrganized ? "Mode organisation intelligente actif (cliquer pour désactiver)" : "Activer l'organisation intelligente automatique des fenêtres"}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all duration-300 text-[10px] font-bold ${
+              isAutoOrganized
+                ? "bg-cyan-500/25 border-cyan-400 text-cyan-300 shadow-[0_0_14px_rgba(56,189,248,0.45)] ring-1 ring-cyan-400/30"
+                : "bg-nexus-card border-nexus-border text-nexus-muted hover:border-cyan-500/50 hover:text-nexus-text"
+            }`}
+          >
+            <span className={`text-[11px] transition-transform ${isAutoOrganized ? "text-cyan-300 animate-spin" : "text-cyan-400"}`}>✦</span>
+            <span className="hidden sm:inline">Organisé</span>
+            <div
+              className={`w-5 h-3 rounded-full p-0.5 transition-colors duration-200 ${
+                isAutoOrganized ? "bg-cyan-400 shadow-inner" : "bg-slate-700/80"
+              }`}
+            >
+              <div
+                className={`w-2 h-2 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                  isAutoOrganized ? "translate-x-2 bg-slate-950" : "translate-x-0"
+                }`}
+              />
+            </div>
+          </button>
+        )}
       </div>
 
       <div className="flex-1 overflow-auto p-4">{children}</div>

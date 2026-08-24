@@ -1,11 +1,90 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.js";
 
 :root {
   color-scheme: dark;
   --accent: #6366f1;
   --glass-blur: 16px;
+  --nexus-bg: #09090b;
+  --nexus-panel: rgba(12, 12, 15, 0.88);
+  --nexus-panel-solid: #0c0c0f;
+  --nexus-border: rgba(255, 255, 255, 0.12);
+  --nexus-text: #f4f4f5;
+  --nexus-muted: #94a3b8;
+  --nexus-card: rgba(24, 24, 27, 0.75);
+  --nexus-card-hover: rgba(39, 39, 42, 0.9);
+  --nexus-input-bg: rgba(9, 9, 11, 0.8);
+  --nexus-input-border: rgba(255, 255, 255, 0.16);
+}
+
+html.light-mode {
+  color-scheme: light;
+  --nexus-bg: #f1f5f9;
+  --nexus-panel: rgba(255, 255, 255, 0.92);
+  --nexus-panel-solid: #ffffff;
+  --nexus-border: rgba(15, 23, 42, 0.12);
+  --nexus-text: #0f172a;
+  --nexus-muted: #475569;
+  --nexus-card: rgba(255, 255, 255, 0.82);
+  --nexus-card-hover: rgba(241, 245, 249, 0.95);
+  --nexus-input-bg: #ffffff;
+  --nexus-input-border: #cbd5e1;
+}
+
+html {
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background-color: var(--nexus-bg);
+  color: var(--nexus-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+/* Fluid transition on theme change */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Light Mode Refinement Rules */
+html.light-mode body {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+html.light-mode [class*="backdrop-blur"] {
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
+  box-shadow: 0 16px 36px -10px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--nexus-border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--nexus-muted);
 }
 
 @media (hover: none), (pointer: coarse) {
@@ -22,82 +101,58 @@
   transition-duration: 0.001ms !important;
 }
 
-/* Liquid glass : sur toutes les surfaces vitrees, on ajoute une saturation
-   (couleurs qui transparaissent), un lisere lumineux fin et un reflet en haut,
-   pour un rendu "verre" coherent sans alourdir l'epure. */
-[class~="backdrop-blur-[var(--glass-blur)]"] {
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
-}
-
-html {
-  touch-action: manipulation;
-  -webkit-text-size-adjust: 100%;
-}
-
-html,
-body,
-#root {
-  height: 100%;
-  margin: 0;
-}
-
-body {
-  background-color: #09090b;
-  color: #f4f4f5;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  overflow: hidden;
-}
-
-/* Barre de defilement discrete et coherente avec le theme sombre. */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-thumb {
-  background: #27272a;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
-}
-
+/* Micro-Interactions Animations */
 @keyframes nexus-fade-in {
-  from {
+  0% {
     opacity: 0;
-    transform: translateY(16px) scale(0.94);
+    transform: translateY(20px) scale(0.92);
+    filter: blur(6px);
   }
-  60% {
-    transform: translateY(-2px) scale(1.005);
+  65% {
+    opacity: 0.95;
+    transform: translateY(-3px) scale(1.015);
+    filter: blur(0px);
   }
-  to {
+  100% {
     opacity: 1;
     transform: translateY(0) scale(1);
+    filter: blur(0px);
   }
 }
 
 .nexus-fade-in {
-  animation: nexus-fade-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: nexus-fade-in 340ms cubic-bezier(0.16, 1.25, 0.3, 1);
 }
 
-/* Retour tactile : tout bouton s'enfonce legerement au clic. */
-button:active {
-  transform: scale(0.96);
-}
+/* Tactile Liquid Button Physics */
 button {
-  transition: transform 120ms ease;
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 220ms ease,
+              background-color 180ms ease,
+              border-color 180ms ease,
+              opacity 180ms ease,
+              filter 180ms ease;
+  will-change: transform;
+}
+
+button:hover {
+  transform: translateY(-1.5px) scale(1.02);
+}
+
+button:active {
+  transform: translateY(1.5px) scale(0.92) !important;
+  filter: brightness(1.1);
 }
 
 @keyframes nexus-pop {
   0% {
     transform: scale(1);
   }
-  50% {
-    transform: scale(1.25);
+  40% {
+    transform: scale(1.32);
+  }
+  75% {
+    transform: scale(0.95);
   }
   100% {
     transform: scale(1);
@@ -105,5 +160,18 @@ button {
 }
 
 .nexus-pop {
-  animation: nexus-pop 240ms ease-out;
+  animation: nexus-pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes liquid-ripple {
+  0% {
+    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 16px rgba(56, 189, 248, 0);
+  }
+}
+
+.liquid-ripple:active {
+  animation: liquid-ripple 400ms ease-out;
 }

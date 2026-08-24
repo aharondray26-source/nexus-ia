@@ -67,6 +67,12 @@ kbd{border:1px solid #27272a;border-radius:4px;padding:1px 6px;font-size:10px;co
       <div class="desc">Le classique. Pommes d'or, obstacles, vitesse qui grimpe.</div>
       <div class="best" id="bestSnake"></div>
     </div>
+    <div class="card" id="play2048">
+      <div class="ico">▦</div>
+      <div class="name">2048</div>
+      <div class="desc">Fusionne les tuiles pour atteindre 2048. Simple, hypnotique.</div>
+      <div class="best" id="best2048"></div>
+    </div>
   </div>
   <div class="hint">Deplacement : <kbd>fleches</kbd> ou <kbd>ZQSD</kbd> &nbsp;·&nbsp; Dash : <kbd>espace</kbd> &nbsp;·&nbsp; Pause : <kbd>P</kbd> &nbsp;·&nbsp; Menu : <kbd>Echap</kbd><br>Sur mobile : glisse pour bouger · double-tape pour le dash · balaye pour tourner</div>
 </div>
@@ -122,6 +128,7 @@ function toMenu(){
   show($("upgrade"), false); show($("hud"), false);
   $("bestArena").textContent = "Record : " + store.get("arcade.best.arena");
   $("bestSnake").textContent = "Record : " + store.get("arcade.best.snake");
+  $("best2048").textContent = "Record : " + store.get("arcade.best.2048");
   ctx.clearRect(0,0,W,H);
 }
 function gameOver(title, score, bestKey, line){
@@ -135,11 +142,18 @@ $("btnMenu").onclick = toMenu;
 $("btnRetry").onclick = () => { show($("over"), false); (mode === "arena" ? startArena : startSnake)(); };
 $("playArena").onclick = () => startArena();
 $("playSnake").onclick = () => startSnake();
+$("play2048").onclick = () => start2048();
 
 function onKey(k){
   if(k === "escape"){ if(mode !== "menu") toMenu(); return; }
   if(k === "p" && mode !== "menu" && $("over").classList.contains("hidden") && $("upgrade").classList.contains("hidden")){
     paused = !paused; show($("pause"), paused);
+  }
+  if(mode === "g2048" && G && !G.dead && !paused){
+    if(k==="arrowleft"||k==="a"||k==="q") move2048("l");
+    else if(k==="arrowright"||k==="d") move2048("r");
+    else if(k==="arrowup"||k==="w"||k==="z") move2048("u");
+    else if(k==="arrowdown"||k==="s") move2048("d");
   }
 }
 
@@ -415,6 +429,76 @@ function drawSnake(){
   ctx.globalAlpha=1; ctx.shadowBlur=0;
 }
 
+/* ================================ 2048 ================================ */
+let G = null;
+function start2048(){
+  mode = "g2048"; paused = false;
+  show($("menu"), false); show($("over"), false); show($("upgrade"), false); show($("hud"), true);
+  G = { grid: Array.from({length:4},()=>[0,0,0,0]), score: 0, dead: false, pop: 0 };
+  addTile(); addTile();
+  drawHud2048();
+}
+function addTile(){
+  const empty = [];
+  for(let y=0;y<4;y++) for(let x=0;x<4;x++) if(!G.grid[y][x]) empty.push([x,y]);
+  if(!empty.length) return;
+  const [x,y] = empty[Math.floor(Math.random()*empty.length)];
+  G.grid[y][x] = Math.random()<.9 ? 2 : 4;
+}
+function slide2048(row){
+  const a = row.filter(v=>v); let gained = 0;
+  for(let i=0;i<a.length-1;i++){ if(a[i]===a[i+1]){ a[i]*=2; gained+=a[i]; a.splice(i+1,1); } }
+  while(a.length<4) a.push(0);
+  return [a, gained];
+}
+const transpose = g => g[0].map((_,i)=>g.map(r=>r[i]));
+const revRows = g => g.map(r=>r.slice().reverse());
+function move2048(dir){
+  let t = G.grid.map(r=>r.slice());
+  const before = JSON.stringify(t);
+  if(dir==="u"||dir==="d") t = transpose(t);
+  if(dir==="r"||dir==="d") t = revRows(t);
+  let gained = 0;
+  t = t.map(r=>{ const [nr,gn]=slide2048(r); gained+=gn; return nr; });
+  if(dir==="r"||dir==="d") t = revRows(t);
+  if(dir==="u"||dir==="d") t = transpose(t);
+  if(JSON.stringify(t) !== before){
+    G.grid = t; G.score += gained; G.pop = 1; addTile();
+    if(over2048()){ G.dead = true; gameOver("2048 TERMINE", G.score, "arcade.best.2048", "Meilleure tuile : "+maxTile()); }
+  }
+  drawHud2048();
+}
+function over2048(){
+  for(let y=0;y<4;y++) for(let x=0;x<4;x++){
+    if(!G.grid[y][x]) return false;
+    if(x<3 && G.grid[y][x]===G.grid[y][x+1]) return false;
+    if(y<3 && G.grid[y][x]===G.grid[y+1][x]) return false;
+  }
+  return true;
+}
+function maxTile(){ return Math.max(...G.grid.flat()); }
+function drawHud2048(){ $("hudLeft").textContent = "SCORE " + G.score; $("hudCombo").textContent=""; $("hudHearts").textContent=""; }
+function draw2048(){
+  ctx.fillStyle="#060609"; ctx.fillRect(0,0,W,H);
+  const size=Math.min(W,H)-80, cell=size/4, ox=(W-size)/2, oy=(H-size)/2, pad=cell*.08;
+  ctx.fillStyle="rgba(255,255,255,.03)";
+  roundRect(ox-pad, oy-pad, size+pad*2, size+pad*2, 10); ctx.fill();
+  G.pop = Math.max(0, G.pop - .08);
+  for(let y=0;y<4;y++) for(let x=0;x<4;x++){
+    const v=G.grid[y][x], px=ox+x*cell+pad, py=oy+y*cell+pad, s=cell-pad*2;
+    ctx.fillStyle = v ? `rgba(255,255,255,${0.05 + Math.min(0.24, Math.log2(v)*0.028)})` : "rgba(255,255,255,.02)";
+    roundRect(px, py, s, s, 8); ctx.fill();
+    if(v){
+      if(v>=128){ ctx.shadowColor="#6ee7f9"; ctx.shadowBlur=10; } else ctx.shadowBlur=0;
+      ctx.fillStyle = v>=128 ? "#6ee7f9" : "#f4f4f5";
+      ctx.font = `600 ${v>=1024?cell*.24:cell*.34}px -apple-system,sans-serif`;
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText(v, px+s/2, py+s/2+1); ctx.shadowBlur=0;
+    }
+  }
+}
+function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
 /* ==================== CONTROLES TACTILES (mobile) ==================== */
 let touchPos = null, lastTap = 0, swipeStart = null;
 addEventListener("touchstart", e => {
@@ -431,6 +515,12 @@ addEventListener("touchend", e => {
       if(Math.abs(dx)>Math.abs(dy)){ if(dx>0&&d.x!==-1) S.nextDir={x:1,y:0}; else if(dx<0&&d.x!==1) S.nextDir={x:-1,y:0}; }
       else { if(dy>0&&d.y!==-1) S.nextDir={x:0,y:1}; else if(dy<0&&d.y!==1) S.nextDir={x:0,y:-1}; } }
   }
+  if(mode==="g2048" && swipeStart && G && !G.dead){
+    const t=e.changedTouches[0]; const dx=t.clientX-swipeStart.x, dy=t.clientY-swipeStart.y;
+    if(Math.abs(dx)>24||Math.abs(dy)>24){
+      if(Math.abs(dx)>Math.abs(dy)) move2048(dx>0?"r":"l"); else move2048(dy>0?"d":"u");
+    }
+  }
   swipeStart=null;
 }, { passive:true });
 
@@ -443,6 +533,7 @@ function loop(now){
   if(mode==="arena" && A){ if(playing && A.phase==="fight") updateArena(dt); drawArena(); }
   if(mode==="snake" && S && playing && !S.dead){ updateSnake(dt); drawSnake(); }
   else if(mode==="snake" && S){ drawSnake(); }
+  if(mode==="g2048" && G){ draw2048(); }
   requestAnimationFrame(loop);
 }
 toMenu();

@@ -35,24 +35,24 @@ export default function About() {
       <div className="flex items-center gap-3">
         <Logo size={30} />
         <div>
-          <h2 className="text-base font-medium text-nexus-text">Nexus</h2>
-          <p className="text-xs text-nexus-muted">Ton espace de travail tout-en-un</p>
+          <h2 className="text-base font-medium text-nexus-text">Nexus OS</h2>
+          <p className="text-xs text-nexus-muted">Votre espace de travail universel tout-en-un</p>
         </div>
       </div>
 
       <p className="text-sm leading-relaxed text-nexus-muted">
-        Nexus reunit au meme endroit tout ce dont tu as besoin pour travailler,
-        apprendre et te concentrer : acces aux intelligences artificielles, notes,
-        taches, apprentissage, dictionnaire, traducteur, cartes, musique et plus.
+        Nexus réunit au même endroit tout ce dont vous avez besoin pour travailler,
+        apprendre et vous concentrer : accès aux intelligences artificielles, notes,
+        tâches, apprentissage, dictionnaire, traducteur, cartes, musique et plus encore.
         <br />
-        <span className="text-nexus-text">Gratuit, sans inscription</span>, et tes
-        donnees restent sur ton appareil : rien n'est envoye ni collecte.
+        <span className="text-nexus-text">Gratuit, sans inscription</span>, et vos
+        données restent sur votre appareil : rien n'est envoyé ni collecté à votre insu.
       </p>
 
       <div className="rounded-xl border border-nexus-border bg-nexus-bg p-3 text-xs leading-relaxed text-nexus-muted">
-        <span className="text-nexus-text">Pourquoi ce site ?</span> Parce qu'ouvrir
-        dix onglets pour dix outils, c'est fatigant. Nexus rassemble l'essentiel
-        dans un espace calme et epure.
+        <span className="text-nexus-text">Pourquoi Nexus OS ?</span> Parce qu'ouvrir
+        dix onglets pour dix outils différents est Inefficace. Nexus rassemble l'essentiel
+        dans un espace calme, rapide et épuré.
       </div>
 
       <div className="flex flex-col gap-2">
@@ -61,10 +61,10 @@ export default function About() {
         </span>
         <button
           onClick={() => openApp("mail", { width: 440, height: 440 })}
-          className="w-fit rounded-lg border px-4 py-2 text-sm"
+          className="w-fit rounded-lg border px-4 py-2 text-sm font-medium transition-opacity hover:opacity-80"
           style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
         >
-          Nous ecrire
+          Nous écrire
         </button>
       </div>
 
@@ -77,7 +77,7 @@ export default function About() {
             onClick={copyLink}
             className="rounded-lg border border-nexus-border px-3 py-1.5 text-xs text-nexus-text transition-colors hover:bg-white/[0.06]"
           >
-            {copied ? "Lien copie !" : "Copier le lien"}
+            {copied ? "Lien copié !" : "Copier le lien"}
           </button>
           <button
             onClick={() =>
