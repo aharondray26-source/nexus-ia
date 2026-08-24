@@ -8,6 +8,7 @@ import { initAuth, googleSignIn } from "../lib/googleAuth";
 export default function GoogleAccount() {
   const [user, setUser] = useState<{ name: string; photo: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -24,6 +25,7 @@ export default function GoogleAccount() {
   async function connect() {
     if (busy) return;
     setBusy(true);
+    setError(null);
     try {
       const res = await googleSignIn();
       if (res?.user) {
@@ -32,8 +34,19 @@ export default function GoogleAccount() {
           photo: res.user.photoURL || "",
         });
       }
-    } catch {
-      // Connexion annulee ou popup bloquee : on ne casse rien.
+    } catch (e: any) {
+      // On MONTRE l'erreur au lieu de l'avaler : sinon "j'appuie, il se passe rien".
+      const code = e?.code || "";
+      const msg =
+        code === "auth/unauthorized-domain"
+          ? "Ce site n'est pas encore autorise dans Firebase. Ajoute le domaine dans Firebase > Authentication > Settings > Authorized domains."
+          : code === "auth/popup-blocked"
+          ? "Ton navigateur a bloque la fenetre de connexion. Autorise les pop-ups pour ce site."
+          : code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request"
+          ? "Connexion annulee."
+          : e?.message || "Connexion impossible.";
+      setError(msg);
+      window.setTimeout(() => setError(null), 9000);
     } finally {
       setBusy(false);
     }
@@ -60,6 +73,12 @@ export default function GoogleAccount() {
   }
 
   return (
+    <div className="relative">
+      {error && (
+        <div className="absolute right-0 top-8 z-[300] w-72 rounded-lg border border-red-500/30 bg-red-950/90 px-3 py-2 text-[11px] leading-relaxed text-red-200 shadow-xl backdrop-blur-md">
+          {error}
+        </div>
+      )}
     <button
       onClick={connect}
       disabled={busy}
@@ -69,5 +88,6 @@ export default function GoogleAccount() {
       <LogIn size={14} />
       <span className="hidden lg:inline">{busy ? "..." : "Connexion"}</span>
     </button>
+    </div>
   );
 }
