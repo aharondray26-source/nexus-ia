@@ -6,6 +6,7 @@ import Logo from "./Logo";
 import { searchShortcutLabel } from "../lib/platform";
 import DynamicIsland from "./DynamicIsland";
 import QuickCapture from "./QuickCapture";
+import GoogleAccount from "./GoogleAccount";
 
 // Barre superieure : identite a gauche (clic = retour a l'accueil), recherche
 // au centre, controle des fenetres et heure a droite. Le bouton "Tout fermer"
@@ -102,6 +103,7 @@ export default function TopBar() {
           <span className="hidden md:inline">Code ZIP</span>
         </a>
 
+        <GoogleAccount />
         <QuickCapture />
         <button
           onClick={togglePalette}
