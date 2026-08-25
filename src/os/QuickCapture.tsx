@@ -58,7 +58,7 @@ export default function QuickCapture() {
       </button>
 
       {open && (
-        <div className="nexus-fade-in absolute left-1/2 top-9 z-[200] w-72 -translate-x-1/2 rounded-xl border border-nexus-border bg-nexus-panel p-3 shadow-2xl backdrop-blur-[var(--glass-blur)]">
+        <div className="nexus-fade-in absolute left-1/2 top-9 z-[1000010] w-72 -translate-x-1/2 rounded-xl border border-nexus-border bg-nexus-panel p-3 shadow-2xl backdrop-blur-[var(--glass-blur)]">
           <div className="mb-2 flex gap-1.5">
             {(["note", "task"] as const).map((k) => (
               <button

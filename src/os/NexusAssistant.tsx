@@ -429,7 +429,7 @@ export default function NexusAssistant() {
             className={`fixed select-none font-sans z-[99990] ${
               isDocked
                 ? "top-11 bottom-0 right-0 left-0 sm:left-auto w-full sm:w-[420px] max-w-full"
-                : "bottom-14 sm:bottom-16 right-2 sm:right-6 left-2 sm:left-auto flex flex-col items-end pointer-events-auto"
+                : "bottom-24 sm:bottom-16 right-2 sm:right-6 left-2 sm:left-auto flex flex-col items-end pointer-events-auto"
             }`}
           >
             <motion.div
@@ -742,7 +742,7 @@ export default function NexusAssistant() {
         }}
         whileDrag={{ scale: 1.06, boxShadow: "0 20px 50px rgba(56,189,248,0.5)" }}
         whileHover={{ scale: 1.03 }}
-        className="fixed bottom-14 sm:bottom-16 right-3 sm:right-6 z-[999999] touch-none cursor-grab active:cursor-grabbing select-none"
+        className="fixed bottom-24 sm:bottom-16 right-3 sm:right-6 z-[999999] touch-none cursor-grab active:cursor-grabbing select-none"
       >
         <div className="flex items-center gap-1 p-1 rounded-full bg-slate-950/95 border border-cyan-400/50 backdrop-blur-3xl shadow-[0_10px_40px_rgba(56,189,248,0.35)] hover:border-cyan-300 transition-colors group">
           {/* Stage 0: Compact Orb mode */}

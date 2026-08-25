@@ -138,7 +138,7 @@ export default function AccountMenu() {
       </button>
 
       {open && (
-        <div className="nexus-fade-in absolute right-0 top-9 z-[300] w-80 rounded-xl border border-nexus-border bg-nexus-panel p-3.5 shadow-2xl backdrop-blur-[var(--glass-blur)]">
+        <div className="nexus-fade-in absolute right-0 top-9 z-[1000010] w-80 rounded-xl border border-nexus-border bg-nexus-panel p-3.5 shadow-2xl backdrop-blur-[var(--glass-blur)]">
           <div className="mb-2 text-[11px] uppercase tracking-wider text-nexus-muted">
             Compte Nexus
           </div>
