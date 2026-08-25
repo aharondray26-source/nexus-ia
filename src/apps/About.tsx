@@ -71,6 +71,22 @@ export default function About() {
 
       <div className="flex flex-col gap-2">
         <span className="text-[11px] uppercase tracking-wider text-nexus-muted">
+          Informations légales
+        </span>
+        <div className="flex flex-wrap gap-2">
+          <a href="/confidentialite.html" target="_blank" rel="noopener noreferrer"
+            className="rounded-lg border border-nexus-border px-3 py-1.5 text-xs text-nexus-text transition-colors hover:bg-white/[0.06]">
+            Confidentialité
+          </a>
+          <a href="/conditions.html" target="_blank" rel="noopener noreferrer"
+            className="rounded-lg border border-nexus-border px-3 py-1.5 text-xs text-nexus-text transition-colors hover:bg-white/[0.06]">
+            Conditions d'utilisation
+          </a>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <span className="text-[11px] uppercase tracking-wider text-nexus-muted">
           Partager Nexus
         </span>
         <div className="flex flex-wrap gap-2">
