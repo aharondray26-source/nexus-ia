@@ -1,5 +1,5 @@
-import { useEffect, useState, type FormEvent } from "react";
-import { User as UserIcon, LogOut, Check } from "lucide-react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { User as UserIcon, LogOut, Check, Eye, EyeOff } from "lucide-react";
 import { initAuth, googleSignIn } from "../lib/googleAuth";
 import {
   nexusSignIn,
@@ -9,6 +9,7 @@ import {
   pullFromCloud,
   pushToCloud,
   humanError,
+  resetPassword,
   type NexusUser,
   type SyncState,
 } from "../lib/nexusAccount";
@@ -23,11 +24,39 @@ export default function AccountMenu() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
 
   const [sync_, setSync_] = useState<SyncState>({ status: "off" });
   useEffect(() => watchNexusUser(setUser), []);
   useEffect(() => watchSync(setSync_), []);
+
+  // Le menu se ferme si on clique ailleurs, ou avec Echap.
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  async function onReset() {
+    if (!email.trim()) { setMsg({ text: "Entre d'abord ton adresse e-mail.", ok: false }); return; }
+    setBusy(true); setMsg(null);
+    try {
+      await resetPassword(email);
+      setMsg({ text: "E-mail envoye : ouvre-le pour choisir un nouveau mot de passe.", ok: true });
+    } catch (err) {
+      setMsg({ text: humanError(err), ok: false });
+    } finally { setBusy(false); }
+  }
   useEffect(() => {
     try {
       const un = initAuth(
@@ -94,7 +123,7 @@ export default function AccountMenu() {
   const label = user ? user.email.split("@")[0] : google ? google.name.split(" ")[0] : "Compte";
 
   return (
-    <div className="relative">
+    <div className="relative" ref={boxRef}>
       <button
         onClick={() => setOpen((o) => !o)}
         title="Compte Nexus et Google"
@@ -176,15 +205,25 @@ export default function AccountMenu() {
                 placeholder="ton@email.com"
                 className="rounded-lg border border-nexus-border bg-nexus-bg px-2.5 py-1.5 text-xs text-nexus-text outline-none focus:border-white/30"
               />
-              <input
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mot de passe (6 min.)"
-                className="rounded-lg border border-nexus-border bg-nexus-bg px-2.5 py-1.5 text-xs text-nexus-text outline-none focus:border-white/30"
-              />
+              <div className="relative">
+                <input
+                  type={showPwd ? "text" : "password"}
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Mot de passe (6 min.)"
+                  className="w-full rounded-lg border border-nexus-border bg-nexus-bg px-2.5 py-1.5 pr-8 text-xs text-nexus-text outline-none focus:border-white/30"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPwd((v) => !v)}
+                  title={showPwd ? "Masquer" : "Afficher le mot de passe"}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 text-nexus-muted transition-colors hover:text-nexus-text"
+                >
+                  {showPwd ? <EyeOff size={13} /> : <Eye size={13} />}
+                </button>
+              </div>
               <button
                 type="submit"
                 disabled={busy}
@@ -192,6 +231,13 @@ export default function AccountMenu() {
                 style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
               >
                 {busy ? "..." : "Entrer dans Nexus"}
+              </button>
+              <button
+                type="button"
+                onClick={onReset}
+                className="text-[10px] text-nexus-muted underline underline-offset-2 transition-colors hover:text-nexus-text"
+              >
+                Mot de passe oublie ?
               </button>
             </form>
           )}

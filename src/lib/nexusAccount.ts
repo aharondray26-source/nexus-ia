@@ -11,6 +11,7 @@ import { auth } from "./googleAuth";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
   type User,
@@ -27,11 +28,28 @@ import {
 
 export const db = getFirestore();
 
-const SYNCED_KEYS = [
-  "nexus.notes", "nexus.tasks", "nexus.sheet", "nexus.folders",
-  "nexus.accent", "nexus.userName", "nexus.wallpaper", "nexus.widgets",
-  "nexus.glass", "nexus.dockPos", "nexus.intention", "nexus.cloudFiles",
-];
+// TOUT ce qui commence par "nexus" ou "arcade" suit ton compte : reglages,
+// couleurs, theme clair/sombre, police, notes, taches, discussions IA, favoris,
+// meilleurs scores... Plus rien n'est attache au navigateur.
+// Seules exceptions : ce qui n'a de sens que sur CET appareil.
+const LOCAL_ONLY = new Set([
+  "nexus.session",     // fenetres ouvertes ici et maintenant
+  "nexus.welcomed",    // carte de bienvenue vue sur cet appareil
+  "nexus.firstVisit",
+  "nexus.visitDays",
+]);
+
+function syncedKeys(): string[] {
+  const out: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k || LOCAL_ONLY.has(k)) continue;
+    if (k.startsWith("nexus") || k.startsWith("arcade")) out.push(k);
+  }
+  return out;
+}
+const isSynced = (k: string) =>
+  !LOCAL_ONLY.has(k) && (k.startsWith("nexus") || k.startsWith("arcade"));
 
 export type NexusUser = { uid: string; email: string };
 export type SyncState = { status: "off" | "syncing" | "ok" | "error"; message?: string };
@@ -65,7 +83,8 @@ export function humanError(e: any): string {
   if (c === "auth/wrong-password" || c === "auth/invalid-credential")
     return "Mot de passe incorrect pour cette adresse.";
   if (c === "auth/invalid-email") return "Adresse e-mail invalide.";
-  if (c === "auth/email-already-in-use") return "Cette adresse a deja un compte : entre son mot de passe.";
+  if (c === "auth/email-already-in-use")
+    return "Ce compte existe deja, mais le mot de passe ne correspond pas. Verifie-le (clique sur l'oeil pour le lire) ou utilise « Mot de passe oublie ».";
   if (c === "auth/popup-blocked") return "Le navigateur a bloque la fenetre. Autorise les pop-ups.";
   if (c === "auth/popup-closed-by-user" || c === "auth/cancelled-popup-request") return "Connexion annulee.";
   if (c === "auth/network-request-failed") return "Pas de connexion internet.";
@@ -74,7 +93,7 @@ export function humanError(e: any): string {
 
 function snapshot(): Record<string, string> {
   const out: Record<string, string> = {};
-  for (const k of SYNCED_KEYS) {
+  for (const k of syncedKeys()) {
     const v = localStorage.getItem(k);
     if (v !== null) out[k] = v;
   }
@@ -108,7 +127,7 @@ function applyRemote(data: Record<string, string>): number {
   applying = true;
   let n = 0;
   for (const [k, v] of Object.entries(data)) {
-    if (SYNCED_KEYS.includes(k) && typeof v === "string") {
+    if (isSynced(k) && typeof v === "string") {
       if (localStorage.getItem(k) !== v) { localStorage.setItem(k, v); n++; }
     }
   }
@@ -132,13 +151,30 @@ export async function nexusSignIn(email: string, password: string): Promise<Nexu
     user = (await signInWithEmailAndPassword(auth, email, password)).user;
   } catch (e: any) {
     const c = e?.code || "";
-    if (c === "auth/user-not-found" || c === "auth/invalid-credential") {
-      user = (await createUserWithEmailAndPassword(auth, email, password)).user;
+    // Firebase renvoie la MEME erreur pour "compte inexistant" et "mauvais mot de
+    // passe". On tente donc la creation : si elle echoue en disant que l'adresse
+    // existe, c'est que le compte est la et que le mot de passe est faux.
+    if (c === "auth/user-not-found" || c === "auth/invalid-credential" || c === "auth/wrong-password") {
+      try {
+        user = (await createUserWithEmailAndPassword(auth, email, password)).user;
+      } catch (e2: any) {
+        if (e2?.code === "auth/email-already-in-use") {
+          const err: any = new Error("mot de passe incorrect");
+          err.code = "auth/email-already-in-use";
+          throw err;
+        }
+        throw e2;
+      }
     } else throw e;
   }
   const restored = await pullFromCloud();
   if (!restored) await pushToCloud();   // premier appareil : on depose l'etat local
   return { uid: user.uid, email: user.email || email };
+}
+
+/** Envoie un e-mail pour choisir un nouveau mot de passe. */
+export async function resetPassword(email: string): Promise<void> {
+  await sendPasswordResetEmail(auth, email.trim());
 }
 
 export async function nexusSignOut(): Promise<void> {
