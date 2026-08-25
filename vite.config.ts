@@ -15,6 +15,11 @@ export default defineConfig(() => {
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
           maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+          // Les pages autonomes (confidentialite, conditions, arcade) doivent
+          // s'ouvrir DIRECTEMENT. Sans cette ligne, le service worker renvoyait
+          // toute adresse vers l'accueil : /confidentialite.html affichait le site
+          // et l'adresse se "nettoyait" toute seule.
+          navigateFallbackDenylist: [/\.html$/],
         }
       })
     ],
