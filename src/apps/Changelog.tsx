@@ -8,6 +8,18 @@ interface Entry {
 
 const CHANGELOG: Entry[] = [
   {
+    date: "Aout 2026",
+    title: "Compte Nexus, chat et appels",
+    items: [
+      "Compte Nexus : tes notes, reglages, discussions et scores te suivent sur tous tes appareils.",
+      "Un seul compte, deux entrees : par Google ou par mot de passe, au choix.",
+      "Chat en direct et appels audio/video entre comptes Nexus, dans un salon partage.",
+      "Les jeux se jouent aussi a la souris ; Rejouer relance le bon jeu.",
+      "Cloud : les fichiers s'ouvrent et se telechargent vraiment.",
+      "Mobile : la barre d'applications n'est plus recouverte.",
+    ],
+  },
+  {
     date: "Prochainement",
     title: "La suite arrive",
     items: [
@@ -43,7 +55,7 @@ const CHANGELOG: Entry[] = [
     items: [
       "24 espaces : IA, notes, apprentissage, dictionnaire, traducteur, cartes, meteo, et plus.",
       "Ecran d'accueil, barre de recherche (Cmd/Ctrl+K), personnalisation.",
-      "Tout reste sur ton appareil, sans inscription.",
+      "Utilisable sans compte : tout reste alors sur ton appareil.",
     ],
   },
 ];

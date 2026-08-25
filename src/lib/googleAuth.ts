@@ -12,6 +12,19 @@ import firebaseConfig from "../../firebase-applet-config.json";
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 export const auth: Auth = getAuth(app);
 
+// DEUX fournisseurs distincts, et c'est essentiel :
+//
+// 1) basicProvider : juste "qui es-tu ?" (nom + e-mail). Google n'exige AUCUNE
+//    validation pour ca : N'IMPORTE QUI peut se connecter, tout de suite.
+//    C'est celui utilise pour entrer dans Nexus.
+//
+// 2) gmailProvider : demande en plus l'acces a Gmail et Drive. Ces acces sont
+//    "sensibles" : Google les reserve aux testeurs autorises tant que l'appli
+//    n'est pas validee. On ne le declenche donc QUE si l'utilisateur ouvre
+//    Mail ou Cloud, jamais pour une simple connexion.
+const basicProvider = new GoogleAuthProvider();
+basicProvider.setCustomParameters({ prompt: "select_account" });
+
 const provider = new GoogleAuthProvider();
 provider.addScope("https://www.googleapis.com/auth/gmail.readonly");
 provider.addScope("https://www.googleapis.com/auth/gmail.send");
@@ -70,6 +83,18 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
       throw new Error("La sécurité de l'aperçu bloque la popup IndexedDB. Ouvrez le site dans un nouvel onglet pour vous connecter à Google.");
     }
     throw error;
+  } finally {
+    isSigningIn = false;
+  }
+};
+
+/** Connexion Google SIMPLE (nom + e-mail) : ouverte a tout le monde,
+ *  sans validation Google. C'est l'entree normale dans Nexus. */
+export const googleSignInBasic = async (): Promise<User | null> => {
+  try {
+    isSigningIn = true;
+    const result = await signInWithPopup(auth, basicProvider);
+    return result.user;
   } finally {
     isSigningIn = false;
   }

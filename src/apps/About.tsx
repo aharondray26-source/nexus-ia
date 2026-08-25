@@ -6,7 +6,7 @@ import Logo from "../os/Logo";
 // Page "A propos" : rassure le visiteur (qui, pourquoi, contact) et permet de
 // partager le site. Le texte est volontairement simple ; a personnaliser ici.
 const SITE = "https://nexus-espace.netlify.app/";
-const SHARE_TEXT = "Nexus — un espace de travail tout-en-un, gratuit et sans inscription.";
+const SHARE_TEXT = "Nexus — un espace de travail tout-en-un, gratuit. Utilisable sans compte, synchronise si tu en crees un.";
 
 export default function About() {
   const openApp = useWindows((s) => s.openApp);
@@ -45,8 +45,9 @@ export default function About() {
         apprendre et vous concentrer : accès aux intelligences artificielles, notes,
         tâches, apprentissage, dictionnaire, traducteur, cartes, musique et plus encore.
         <br />
-        <span className="text-nexus-text">Gratuit, sans inscription</span>, et vos
-        données restent sur votre appareil : rien n'est envoyé ni collecté à votre insu.
+        <span className="text-nexus-text">Gratuit, utilisable sans compte</span> : tout
+        reste alors sur votre appareil. Si vous créez un compte Nexus, vos données vous
+        suivent sur tous vos appareils — elles restent privées et ne sont ni vendues ni partagées.
       </p>
 
       <div className="rounded-xl border border-nexus-border bg-nexus-bg p-3 text-xs leading-relaxed text-nexus-muted">

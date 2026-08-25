@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { User as UserIcon, LogOut, Check, Eye, EyeOff } from "lucide-react";
-import { initAuth, googleSignIn } from "../lib/googleAuth";
+import { initAuth, googleSignIn, googleSignInBasic } from "../lib/googleAuth";
 import {
   nexusSignIn,
   nexusSignOut,
@@ -10,6 +10,8 @@ import {
   pushToCloud,
   humanError,
   resetPassword,
+  addPasswordToAccount,
+  hasPassword,
   type NexusUser,
   type SyncState,
 } from "../lib/nexusAccount";
@@ -85,18 +87,42 @@ export default function AccountMenu() {
     }
   }
 
+  // Entree normale : ouverte a TOUT LE MONDE (aucune validation Google requise).
   async function connectGoogle() {
-    setBusy(true);
-    setMsg(null);
+    setBusy(true); setMsg(null);
     try {
-      const r = await googleSignIn();
-      if (r?.user)
-        setGoogle({ name: r.user.displayName || "Google", photo: r.user.photoURL || "" });
+      const u = await googleSignInBasic();
+      if (u) setGoogle({ name: u.displayName || "Google", photo: u.photoURL || "" });
     } catch (err) {
       setMsg({ text: humanError(err), ok: false });
-    } finally {
-      setBusy(false);
-    }
+    } finally { setBusy(false); }
+  }
+
+  // Acces a Gmail / Drive : demande en plus, seulement si l'utilisateur le veut.
+  async function connectGmailDrive() {
+    setBusy(true); setMsg(null);
+    try {
+      const r = await googleSignIn();
+      if (r?.user) {
+        setGoogle({ name: r.user.displayName || "Google", photo: r.user.photoURL || "" });
+        setMsg({ text: "Gmail et Drive actives.", ok: true });
+      }
+    } catch (err) {
+      setMsg({ text: humanError(err), ok: false });
+    } finally { setBusy(false); }
+  }
+
+  // Ajoute un mot de passe a un compte cree via Google (meme compte, 2 entrees).
+  async function onAddPassword() {
+    if (password.length < 6) { setMsg({ text: "Choisis un mot de passe de 6 caracteres minimum.", ok: false }); return; }
+    setBusy(true); setMsg(null);
+    try {
+      await addPasswordToAccount(password);
+      setPassword("");
+      setMsg({ text: "Mot de passe ajoute. Tu peux desormais entrer avec ton e-mail OU avec Google.", ok: true });
+    } catch (err) {
+      setMsg({ text: humanError(err), ok: false });
+    } finally { setBusy(false); }
   }
 
   async function sync(dir: "up" | "down") {
@@ -185,6 +211,38 @@ export default function AccountMenu() {
                   Restaurer
                 </button>
               </div>
+              {!hasPassword() && (
+                <div className="flex flex-col gap-1.5 rounded-lg border border-nexus-border p-2">
+                  <span className="text-[10px] leading-relaxed text-nexus-muted">
+                    Ce compte a ete cree via Google. Ajoute un mot de passe pour
+                    pouvoir aussi entrer sans Google, depuis n'importe ou.
+                  </span>
+                  <div className="flex gap-1.5">
+                    <input
+                      type={showPwd ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Nouveau mot de passe"
+                      className="min-w-0 flex-1 rounded-md border border-nexus-border bg-nexus-bg px-2 py-1 text-[11px] text-nexus-text outline-none focus:border-white/30"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPwd((v) => !v)}
+                      className="rounded-md border border-nexus-border px-1.5 text-nexus-muted hover:text-nexus-text"
+                    >
+                      {showPwd ? <EyeOff size={12} /> : <Eye size={12} />}
+                    </button>
+                    <button
+                      onClick={onAddPassword}
+                      disabled={busy}
+                      className="rounded-md border px-2 py-1 text-[11px] disabled:opacity-50"
+                      style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
+                    >
+                      Ajouter
+                    </button>
+                  </div>
+                </div>
+              )}
               <button
                 onClick={() => nexusSignOut()}
                 className="flex items-center justify-center gap-1.5 rounded-lg border border-nexus-border px-2 py-1.5 text-[11px] text-nexus-muted transition-colors hover:text-red-400"
@@ -245,21 +303,36 @@ export default function AccountMenu() {
           <div className="my-3 h-px bg-nexus-border" />
 
           <div className="mb-1.5 text-[11px] uppercase tracking-wider text-nexus-muted">
-            Services Google
+            Avec Google
           </div>
           {google ? (
-            <div className="flex items-center gap-2 text-xs text-nexus-text">
-              <Check size={13} className="text-emerald-400" />
-              <span className="truncate">{google.name} — Gmail et Drive actifs</span>
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-2 text-xs text-nexus-text">
+                <Check size={13} className="text-emerald-400" />
+                <span className="truncate">{google.name}</span>
+              </div>
+              <button
+                onClick={connectGmailDrive}
+                disabled={busy}
+                className="w-full rounded-lg border border-nexus-border px-3 py-1.5 text-[11px] text-nexus-muted transition-colors hover:bg-white/[0.06] hover:text-nexus-text disabled:opacity-50"
+              >
+                Autoriser aussi Gmail et Drive
+              </button>
             </div>
           ) : (
-            <button
-              onClick={connectGoogle}
-              disabled={busy}
-              className="w-full rounded-lg border border-nexus-border px-3 py-1.5 text-xs text-nexus-text transition-colors hover:bg-white/[0.06] disabled:opacity-50"
-            >
-              Connecter Gmail et Drive
-            </button>
+            <>
+              <button
+                onClick={connectGoogle}
+                disabled={busy}
+                className="w-full rounded-lg border border-nexus-border px-3 py-1.5 text-xs text-nexus-text transition-colors hover:bg-white/[0.06] disabled:opacity-50"
+              >
+                Continuer avec Google
+              </button>
+              <p className="mt-1 text-[10px] leading-relaxed text-nexus-muted/80">
+                Ouvert a tout le monde. C'est le meme compte Nexus : tes donnees
+                te suivent, que tu entres par Google ou par mot de passe.
+              </p>
+            </>
           )}
 
           {msg && (

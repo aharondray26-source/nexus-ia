@@ -12,6 +12,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
+  linkWithCredential,
+  EmailAuthProvider,
   signOut,
   onAuthStateChanged,
   type User,
@@ -84,7 +86,11 @@ export function humanError(e: any): string {
     return "Mot de passe incorrect pour cette adresse.";
   if (c === "auth/invalid-email") return "Adresse e-mail invalide.";
   if (c === "auth/email-already-in-use")
-    return "Ce compte existe deja, mais le mot de passe ne correspond pas. Verifie-le (clique sur l'oeil pour le lire) ou utilise « Mot de passe oublie ».";
+    return "Cette adresse a deja un compte Nexus cree via Google. Clique sur « Continuer avec Google » : c'est le MEME compte. Tu pourras ensuite y ajouter ce mot de passe.";
+  if (c === "auth/provider-already-linked" || c === "auth/credential-already-in-use")
+    return "Ce mot de passe est deja associe a ce compte.";
+  if (c === "auth/requires-recent-login")
+    return "Reconnecte-toi (Google) puis reessaie d'ajouter le mot de passe.";
   if (c === "auth/popup-blocked") return "Le navigateur a bloque la fenetre. Autorise les pop-ups.";
   if (c === "auth/popup-closed-by-user" || c === "auth/cancelled-popup-request") return "Connexion annulee.";
   if (c === "auth/network-request-failed") return "Pas de connexion internet.";
@@ -175,6 +181,21 @@ export async function nexusSignIn(email: string, password: string): Promise<Nexu
 /** Envoie un e-mail pour choisir un nouveau mot de passe. */
 export async function resetPassword(email: string): Promise<void> {
   await sendPasswordResetEmail(auth, email.trim());
+}
+
+/** Un seul compte, deux facons d'entrer.
+ *  Ajoute un mot de passe a un compte cree via Google : ensuite, la meme adresse
+ *  fonctionne AVEC Google ET avec le mot de passe, sur n'importe quel appareil. */
+export async function addPasswordToAccount(password: string): Promise<void> {
+  const u = auth.currentUser;
+  if (!u?.email) throw new Error("Connecte-toi d'abord (Google) pour ajouter un mot de passe.");
+  const cred = EmailAuthProvider.credential(u.email, password);
+  await linkWithCredential(u, cred);
+}
+
+/** Vrai si le compte a deja un mot de passe (en plus de Google). */
+export function hasPassword(): boolean {
+  return !!auth.currentUser?.providerData.some((p) => p.providerId === "password");
 }
 
 export async function nexusSignOut(): Promise<void> {
