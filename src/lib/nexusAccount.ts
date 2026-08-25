@@ -1,11 +1,11 @@
 // ============================ COMPTE NEXUS ============================
-// Un ecosysteme Nexus, independant de Google : tu te connectes avec une adresse
-// e-mail, et tu retrouves TES donnees Nexus (notes, taches, tableur, reglages)
-// sur n'importe quel appareil ou navigateur.
+// Ecosysteme Nexus, independant de Google : une adresse e-mail + un mot de passe,
+// et TES donnees (notes, taches, tableur, reglages) te suivent sur tous tes
+// appareils, en DIRECT. Aucune validation Google necessaire : ca marche pour
+// tout le monde, tout de suite.
 //
-// Techniquement : Firebase Auth (identite) + Firestore (tes donnees).
-// Rien n'est stocke sur l'ordinateur d'Aharon : tout vit chez Google Cloud,
-// dans un espace prive rattache a ton compte.
+// Firebase Auth = ton identite. Firestore = tes donnees (chez Google Cloud,
+// dans un espace prive : personne d'autre ne peut y acceder).
 
 import { auth } from "./googleAuth";
 import {
@@ -20,29 +20,59 @@ import {
   doc,
   getDoc,
   setDoc,
+  onSnapshot,
   serverTimestamp,
+  type Unsubscribe,
 } from "firebase/firestore";
 
-const db = getFirestore();
+export const db = getFirestore();
 
-// Les donnees Nexus qui suivent l'utilisateur d'un appareil a l'autre.
 const SYNCED_KEYS = [
-  "nexus.notes",
-  "nexus.tasks",
-  "nexus.sheet",
-  "nexus.folders",
-  "nexus.accent",
-  "nexus.userName",
-  "nexus.wallpaper",
-  "nexus.widgets",
-  "nexus.glass",
-  "nexus.dockPos",
-  "nexus.intention",
+  "nexus.notes", "nexus.tasks", "nexus.sheet", "nexus.folders",
+  "nexus.accent", "nexus.userName", "nexus.wallpaper", "nexus.widgets",
+  "nexus.glass", "nexus.dockPos", "nexus.intention", "nexus.cloudFiles",
 ];
 
 export type NexusUser = { uid: string; email: string };
+export type SyncState = { status: "off" | "syncing" | "ok" | "error"; message?: string };
 
-function currentSnapshot(): Record<string, string> {
+let syncState: SyncState = { status: "off" };
+const listeners = new Set<(s: SyncState) => void>();
+
+function setSync(s: SyncState) {
+  syncState = s;
+  listeners.forEach((l) => l(s));
+}
+export function watchSync(cb: (s: SyncState) => void): () => void {
+  listeners.add(cb);
+  cb(syncState);
+  return () => listeners.delete(cb);
+}
+export function getSyncState() { return syncState; }
+
+// Traduit les erreurs techniques en francais comprehensible.
+export function humanError(e: any): string {
+  const c = e?.code || "";
+  if (c === "permission-denied")
+    return "Firestore refuse l'ecriture. Verifie que les regles sont publiees (Firestore > Rules > Publish).";
+  if (c === "unavailable" || c === "failed-precondition")
+    return "La base Firestore n'existe pas encore. Cree-la dans Firebase > Firestore Database.";
+  if (c === "auth/unauthorized-domain")
+    return "Ce site n'est pas autorise dans Firebase (Authentication > Settings > Authorized domains).";
+  if (c === "auth/operation-not-allowed")
+    return "Active la connexion E-mail/Mot de passe dans Firebase (Authentication > Sign-in method).";
+  if (c === "auth/weak-password") return "Mot de passe trop court (6 caracteres minimum).";
+  if (c === "auth/wrong-password" || c === "auth/invalid-credential")
+    return "Mot de passe incorrect pour cette adresse.";
+  if (c === "auth/invalid-email") return "Adresse e-mail invalide.";
+  if (c === "auth/email-already-in-use") return "Cette adresse a deja un compte : entre son mot de passe.";
+  if (c === "auth/popup-blocked") return "Le navigateur a bloque la fenetre. Autorise les pop-ups.";
+  if (c === "auth/popup-closed-by-user" || c === "auth/cancelled-popup-request") return "Connexion annulee.";
+  if (c === "auth/network-request-failed") return "Pas de connexion internet.";
+  return e?.message || "Une erreur est survenue.";
+}
+
+function snapshot(): Record<string, string> {
   const out: Record<string, string> = {};
   for (const k of SYNCED_KEYS) {
     const v = localStorage.getItem(k);
@@ -51,81 +81,104 @@ function currentSnapshot(): Record<string, string> {
   return out;
 }
 
-/** Envoie les donnees locales vers le compte (le nuage). */
+// Empeche la boucle infinie : ce qu'on vient de recevoir, on ne le renvoie pas.
+let lastRemote = "";
+let applying = false;
+
+/** Envoie l'etat local vers le compte. Les erreurs sont VISIBLES. */
 export async function pushToCloud(): Promise<void> {
   const u = auth.currentUser;
   if (!u) return;
-  await setDoc(
-    doc(db, "nexusUsers", u.uid),
-    { data: currentSnapshot(), updatedAt: serverTimestamp() },
-    { merge: true }
-  );
+  const data = snapshot();
+  const serialized = JSON.stringify(data);
+  if (serialized === lastRemote) return; // rien de neuf
+  setSync({ status: "syncing" });
+  try {
+    await setDoc(doc(db, "nexusUsers", u.uid), { data, updatedAt: serverTimestamp() }, { merge: true });
+    lastRemote = serialized;
+    setSync({ status: "ok" });
+  } catch (e) {
+    setSync({ status: "error", message: humanError(e) });
+    throw e;
+  }
 }
 
-/** Recupere les donnees du compte et les installe sur cet appareil. */
-export async function pullFromCloud(): Promise<boolean> {
-  const u = auth.currentUser;
-  if (!u) return false;
-  const snap = await getDoc(doc(db, "nexusUsers", u.uid));
-  if (!snap.exists()) return false;
-  const data = (snap.data()?.data ?? {}) as Record<string, string>;
-  let restored = 0;
+/** Installe sur cet appareil les donnees recues du compte. */
+function applyRemote(data: Record<string, string>): number {
+  applying = true;
+  let n = 0;
   for (const [k, v] of Object.entries(data)) {
     if (SYNCED_KEYS.includes(k) && typeof v === "string") {
-      localStorage.setItem(k, v);
-      restored++;
+      if (localStorage.getItem(k) !== v) { localStorage.setItem(k, v); n++; }
     }
   }
-  if (restored) {
-    window.dispatchEvent(new CustomEvent("nexus:persist-update", { detail: {} }));
-  }
-  return restored > 0;
+  lastRemote = JSON.stringify(snapshot());
+  if (n) window.dispatchEvent(new CustomEvent("nexus:persist-update", { detail: {} }));
+  window.setTimeout(() => { applying = false; }, 300);
+  return n;
 }
 
-/** Cree un compte Nexus, ou se connecte si l'adresse existe deja. */
-export async function nexusSignIn(
-  email: string,
-  password: string
-): Promise<NexusUser> {
+export async function pullFromCloud(): Promise<number> {
+  const u = auth.currentUser;
+  if (!u) return 0;
+  const snap = await getDoc(doc(db, "nexusUsers", u.uid));
+  if (!snap.exists()) return 0;
+  return applyRemote((snap.data()?.data ?? {}) as Record<string, string>);
+}
+
+export async function nexusSignIn(email: string, password: string): Promise<NexusUser> {
   let user: User;
   try {
     user = (await signInWithEmailAndPassword(auth, email, password)).user;
   } catch (e: any) {
-    const code = e?.code || "";
-    if (code === "auth/user-not-found" || code === "auth/invalid-credential") {
-      // Premiere venue : on cree le compte automatiquement.
+    const c = e?.code || "";
+    if (c === "auth/user-not-found" || c === "auth/invalid-credential") {
       user = (await createUserWithEmailAndPassword(auth, email, password)).user;
-    } else {
-      throw e;
-    }
+    } else throw e;
   }
-  // On recupere d'abord ce qui existe deja dans le compte, sinon on y depose l'etat local.
-  const had = await pullFromCloud();
-  if (!had) await pushToCloud();
+  const restored = await pullFromCloud();
+  if (!restored) await pushToCloud();   // premier appareil : on depose l'etat local
   return { uid: user.uid, email: user.email || email };
 }
 
 export async function nexusSignOut(): Promise<void> {
   await signOut(auth);
+  lastRemote = "";
+  setSync({ status: "off" });
 }
 
-/** Observe l'etat de connexion (pour afficher le bon bouton). */
 export function watchNexusUser(cb: (u: NexusUser | null) => void) {
-  return onAuthStateChanged(auth, (u) =>
-    cb(u ? { uid: u.uid, email: u.email || "" } : null)
-  );
+  return onAuthStateChanged(auth, (u) => cb(u ? { uid: u.uid, email: u.email || "" } : null));
 }
 
-/** Sauvegarde automatique : des qu'une donnee change, on la remonte au compte. */
+/** Synchronisation EN DIRECT : ce que tu changes ici arrive la-bas, et l'inverse. */
 export function initNexusSync() {
+  let live: Unsubscribe | null = null;
   let timer: number | undefined;
-  const schedule = () => {
-    if (!auth.currentUser) return;
+
+  const schedulePush = () => {
+    if (!auth.currentUser || applying) return;
     window.clearTimeout(timer);
     timer = window.setTimeout(() => {
-      pushToCloud().catch(() => {});
-    }, 1500); // on attend 1,5 s de calme pour ne pas ecrire a chaque frappe
+      pushToCloud().catch(() => {/* deja affiche via setSync */});
+    }, 1200);
   };
-  window.addEventListener("nexus:persist-update", schedule);
-  window.addEventListener("storage", schedule);
+  window.addEventListener("nexus:persist-update", schedulePush);
+  window.addEventListener("storage", schedulePush);
+
+  onAuthStateChanged(auth, (u) => {
+    live?.();
+    live = null;
+    if (!u) { setSync({ status: "off" }); return; }
+    setSync({ status: "syncing" });
+    // Ecoute permanente : des qu'un autre appareil modifie, on recoit ici.
+    live = onSnapshot(
+      doc(db, "nexusUsers", u.uid),
+      (snap) => {
+        if (snap.exists()) applyRemote((snap.data()?.data ?? {}) as Record<string, string>);
+        setSync({ status: "ok" });
+      },
+      (err) => setSync({ status: "error", message: humanError(err) })
+    );
+  });
 }

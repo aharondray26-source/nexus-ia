@@ -40,38 +40,11 @@ interface CloudFile {
   type: "document" | "image" | "backup" | "archive";
   size: string;
   updatedAt: string;
+  driveId?: string;   // present = vrai fichier Google Drive, donc ouvrable
 }
 
-const DEFAULT_FILES: CloudFile[] = [
-  {
-    id: "file-1",
-    name: "Nexus_OS_System_Config.json",
-    type: "backup",
-    size: "128 KB",
-    updatedAt: "Aujourd'hui, 02:15",
-  },
-  {
-    id: "file-2",
-    name: "Dossier_Projet_IA_Pro.pdf",
-    type: "document",
-    size: "2.4 MB",
-    updatedAt: "Hier, 18:30",
-  },
-  {
-    id: "file-3",
-    name: "Capture_Ecran_Theme_Cyber.png",
-    type: "image",
-    size: "1.8 MB",
-    updatedAt: "09 Août 2026",
-  },
-  {
-    id: "file-4",
-    name: "Notes_Etudes_Scolaires.docx",
-    type: "document",
-    size: "850 KB",
-    updatedAt: "05 Août 2026",
-  },
-];
+// Aucun fichier de demonstration : on n'affiche que de VRAIS fichiers.
+const DEFAULT_FILES: CloudFile[] = [];
 
 export default function NexusCloud() {
   const [googleUser, setGoogleUser] = usePersistentState<GoogleUser | null>(
@@ -145,6 +118,7 @@ export default function NexusCloud() {
           type: rf.mimeType.includes("image") ? "image" : "document",
           size: rf.size,
           updatedAt: rf.modifiedTime,
+          driveId: rf.id,
         }));
 
         setFiles((prev) => {
@@ -479,7 +453,17 @@ export default function NexusCloud() {
             {filteredFiles.map((f) => (
               <div
                 key={f.id}
-                className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] p-3 hover:border-cyan-500/30 hover:bg-white/[0.05] transition-all group"
+                onClick={() => {
+                  // Clic sur le fichier = il s'OUVRE (avant : il ne se passait rien).
+                  if (f.driveId) {
+                    window.open(`https://drive.google.com/file/d/${f.driveId}/view`, "_blank", "noopener");
+                  } else {
+                    setSyncStatus(`"${f.name}" est un fichier local : ouvre-le depuis « Fichiers & Explorer ».`);
+                    setTimeout(() => setSyncStatus(null), 4000);
+                  }
+                }}
+                title="Ouvrir le fichier"
+                className="flex cursor-pointer items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] p-3 hover:border-cyan-500/30 hover:bg-white/[0.05] transition-all group"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
@@ -503,9 +487,18 @@ export default function NexusCloud() {
 
                 <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
                   <button
-                    onClick={() => {
-                      setSyncStatus(`Téléchargement de ${f.name} commencé...`);
-                      setTimeout(() => setSyncStatus(null), 2500);
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (f.driveId) {
+                        window.open(
+                          `https://drive.google.com/uc?export=download&id=${f.driveId}`,
+                          "_blank",
+                          "noopener"
+                        );
+                      } else {
+                        setSyncStatus(`"${f.name}" n'est pas encore sur Drive : connecte ton compte Google pour le telecharger.`);
+                        setTimeout(() => setSyncStatus(null), 4000);
+                      }
                     }}
                     className="p-1.5 text-slate-400 hover:text-cyan-300 transition-colors"
                     title="Télécharger"
@@ -513,7 +506,7 @@ export default function NexusCloud() {
                     <Download size={15} />
                   </button>
                   <button
-                    onClick={() => handleDeleteFile(f.id)}
+                    onClick={(e) => { e.stopPropagation(); handleDeleteFile(f.id); }}
                     className="p-1.5 text-slate-400 hover:text-red-400 transition-colors"
                     title="Supprimer"
                   >

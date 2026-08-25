@@ -5,9 +5,12 @@ import {
   nexusSignIn,
   nexusSignOut,
   watchNexusUser,
+  watchSync,
   pullFromCloud,
   pushToCloud,
+  humanError,
   type NexusUser,
+  type SyncState,
 } from "../lib/nexusAccount";
 
 // UN SEUL point de connexion pour tout le site (fini les boutons eparpilles) :
@@ -22,7 +25,9 @@ export default function AccountMenu() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
 
+  const [sync_, setSync_] = useState<SyncState>({ status: "off" });
   useEffect(() => watchNexusUser(setUser), []);
+  useEffect(() => watchSync(setSync_), []);
   useEffect(() => {
     try {
       const un = initAuth(
@@ -34,23 +39,6 @@ export default function AccountMenu() {
       return undefined;
     }
   }, []);
-
-  function humanError(e: any): string {
-    const c = e?.code || "";
-    if (c === "auth/unauthorized-domain")
-      return "Ce site n'est pas encore autorise dans Firebase (Authentication > Settings > Authorized domains).";
-    if (c === "auth/operation-not-allowed")
-      return "Active la connexion par e-mail dans Firebase (Authentication > Sign-in method).";
-    if (c === "auth/weak-password") return "Mot de passe trop court (6 caracteres minimum).";
-    if (c === "auth/wrong-password" || c === "auth/invalid-credential")
-      return "Mot de passe incorrect pour cette adresse.";
-    if (c === "auth/invalid-email") return "Adresse e-mail invalide.";
-    if (c === "auth/popup-blocked") return "Le navigateur a bloque la fenetre. Autorise les pop-ups.";
-    if (c === "auth/popup-closed-by-user") return "Connexion annulee.";
-    if (c === "permission-denied")
-      return "Firestore n'autorise pas encore l'ecriture (regles de securite a publier).";
-    return e?.message || "Une erreur est survenue.";
-  }
 
   async function submitNexus(e: FormEvent) {
     e.preventDefault();
@@ -90,10 +78,10 @@ export default function AccountMenu() {
         await pushToCloud();
         setMsg({ text: "Sauvegarde envoyee sur ton compte.", ok: true });
       } else {
-        const ok = await pullFromCloud();
+        const n = await pullFromCloud();
         setMsg({
-          text: ok ? "Donnees restaurees. Recharge la page pour tout voir." : "Rien a restaurer.",
-          ok,
+          text: n > 0 ? `${n} element(s) restaure(s) depuis ton compte.` : "Rien de nouveau a restaurer.",
+          ok: n > 0,
         });
       }
     } catch (err) {
@@ -132,9 +120,26 @@ export default function AccountMenu() {
                 <Check size={13} className="text-emerald-400" />
                 <span className="truncate">{user.email}</span>
               </div>
-              <p className="text-[11px] leading-relaxed text-nexus-muted">
-                Tes notes, taches et reglages te suivent sur tous tes appareils.
+              <p className="flex items-center gap-1.5 text-[11px] leading-relaxed text-nexus-muted">
+                <span
+                  className="h-1.5 w-1.5 shrink-0 rounded-full"
+                  style={{
+                    backgroundColor:
+                      sync_.status === "ok" ? "#34d399"
+                      : sync_.status === "syncing" ? "#fbbf24"
+                      : sync_.status === "error" ? "#f87171" : "#71717a",
+                  }}
+                />
+                {sync_.status === "ok" ? "Synchronise en direct sur tous tes appareils."
+                  : sync_.status === "syncing" ? "Synchronisation en cours..."
+                  : sync_.status === "error" ? "Synchro bloquee (voir ci-dessous)."
+                  : "En attente."}
               </p>
+              {sync_.status === "error" && sync_.message && (
+                <p className="rounded-lg bg-red-500/10 px-2.5 py-1.5 text-[11px] leading-relaxed text-red-300">
+                  {sync_.message}
+                </p>
+              )}
               <div className="flex gap-2">
                 <button
                   onClick={() => sync("up")}
