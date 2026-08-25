@@ -244,3 +244,74 @@ Vous voulez activer toute la puissance de l'IA **Gemini 3.5 / 3.6 Flash** sur **
 ---
 💡 **Commande rapide :** Tapez \`!apikey\` dans ce chat à tout moment pour revoir ce tutoriel !`;
 }
+
+// ============================================================================
+// PONT COMMUN vers l'IA, avec repli automatique.
+//
+// Probleme corrige : plusieurs applications (Bons Plans, Recettes, Documents)
+// appelaient directement un serveur "/api/gemini/..." qui n'existe PAS sur un
+// hebergement statique comme Netlify. Leurs fonctions etaient donc mortes en
+// ligne, sans le moindre message. Desormais elles passent toutes par ici :
+//   1) le serveur s'il existe,  2) la cle Gemini de l'utilisateur,  3) message clair.
+// ============================================================================
+
+export interface AskResult<T> { data: T | null; error: string | null }
+
+export async function askGeminiJson<T>(
+  endpoint: string,
+  payload: Record<string, unknown>,
+  prompt: string
+): Promise<AskResult<T>> {
+  // 1) Serveur (present uniquement en mode "application", pas sur le site statique)
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && !data.error) return { data: data as T, error: null };
+    }
+  } catch {
+    // serveur absent : on continue avec la cle de l'utilisateur
+  }
+
+  // 2) Cle Gemini fournie par l'utilisateur (bouton « Cle API »)
+  const key =
+    localStorage.getItem("nexus_gemini_api_key") ||
+    (import.meta as any).env?.VITE_GEMINI_API_KEY;
+  if (!key) {
+    return {
+      data: null,
+      error:
+        "Cette fonction a besoin d'une cle Gemini. Clique sur « Cle API » en bas a droite (gratuit, 2 minutes).",
+    };
+  }
+
+  const models = ["gemini-flash-latest", "gemini-2.0-flash", "gemini-1.5-flash"];
+  for (const model of models) {
+    try {
+      const r = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: "application/json" },
+          }),
+        }
+      );
+      if (!r.ok) continue;
+      const j = await r.json();
+      const txt = j.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!txt) continue;
+      const cleaned = txt.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+      return { data: JSON.parse(cleaned) as T, error: null };
+    } catch {
+      // on essaie le modele suivant
+    }
+  }
+  return { data: null, error: "L'IA n'a pas repondu. Verifie ta cle Gemini et reessaie." };
+}

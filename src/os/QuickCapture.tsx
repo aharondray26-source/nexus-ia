@@ -1,4 +1,5 @@
-import { useState, type KeyboardEvent } from "react";
+import { useRef, useState, type KeyboardEvent } from "react";
+import { useDismiss } from "../lib/useDismiss";
 import Icon from "./Icons";
 
 // Capture rapide : un « + » dans la barre du haut pour noter une idee ou une
@@ -8,6 +9,9 @@ export default function QuickCapture() {
   const [text, setText] = useState("");
   const [kind, setKind] = useState<"note" | "task">("note");
   const [saved, setSaved] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+  // Meme comportement que le menu Compte : clic a cote = fermeture.
+  useDismiss(boxRef, open, () => setOpen(false));
 
   function save() {
     const t = text.trim();
@@ -47,7 +51,7 @@ export default function QuickCapture() {
   }
 
   return (
-    <div className="relative">
+    <div className="relative" ref={boxRef}>
       <button
         onClick={() => setOpen((o) => !o)}
         title="Capture rapide (note ou tache)"

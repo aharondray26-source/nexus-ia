@@ -94,13 +94,14 @@ export default function TopBar() {
         </button>
 
         <a
-          href="/api/export-zip"
-          download="nexus-os-source-code.zip"
+          href="https://github.com/aharondray26-source/nexus-ia"
+          target="_blank"
+          rel="noopener noreferrer"
           className="flex items-center gap-1.5 rounded-lg border border-nexus-border bg-transparent px-2 py-1 text-[11px] text-nexus-muted transition-colors hover:border-white/20 hover:text-nexus-text"
-          title="Télécharger tout le projet en ZIP"
+          title="Voir le code source du projet (open source)"
         >
           <Package size={14} className="text-cyan-400" />
-          <span className="hidden md:inline">Code ZIP</span>
+          <span className="hidden md:inline">Code source</span>
         </a>
 
         <AccountMenu />

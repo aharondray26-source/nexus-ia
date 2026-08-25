@@ -428,8 +428,8 @@ export default function Settings() {
               </p>
             </div>
             <a
-              href="/api/export-zip"
-              download="nexus-os-source-code.zip"
+              href="https://github.com/aharondray26-source/nexus-ia" target="_blank" rel="noopener noreferrer"
+              
               className="shrink-0 flex items-center gap-2 rounded-lg nx-grad px-4 py-2 text-xs font-bold text-slate-950 hover:brightness-110 transition-all shadow-md shadow-cyan-500/20"
             >
               <span>⬇️ Télécharger .ZIP</span>
@@ -444,7 +444,7 @@ export default function Settings() {
               </p>
             </div>
             <a
-              href="/api/download-rapport"
+              href="https://github.com/aharondray26-source/nexus-ia" target="_blank" rel="noopener noreferrer"
               download="RAPPORT_TECHNIQUE_NEXUS_OS.md"
               className="shrink-0 flex items-center gap-2 rounded-lg border border-purple-400/50 bg-purple-500/20 px-4 py-2 text-xs font-bold text-purple-200 hover:bg-purple-500/30 transition-all shadow-md"
             >

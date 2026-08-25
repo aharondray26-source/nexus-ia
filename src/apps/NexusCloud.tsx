@@ -526,7 +526,8 @@ export default function NexusCloud() {
 
       {/* Google Login Dialog Modal */}
       {showLoginModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowLoginModal(false); }}>
           <div className="w-full max-w-sm rounded-2xl border border-white/20 bg-slate-900 p-5 shadow-2xl">
             <div className="flex flex-col items-center text-center gap-2 mb-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-black shadow-lg">

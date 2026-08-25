@@ -54,98 +54,34 @@ export interface EmailItem {
   attachments?: EmailAttachment[];
 }
 
-const DEFAULT_EMAILS: EmailItem[] = [
-  {
-    id: "mail-1",
-    senderName: "Aharon Dray",
-    senderEmail: "aharondray26@gmail.com",
-    senderAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-    recipientEmail: "draymy26@gmail.com",
-    subject: "Bienvenue sur votre Boîte Mail Nexus OS !",
-    body: `Bonjour Aharon,\n\nBienvenue dans le nouveau système de messagerie et e-mail intégré à Nexus OS.\n\nVous pouvez désormais :\n- Recevoir et composer vos e-mails professionnels et personnels.\n- Joindre directement vos fichiers depuis le Cloud et votre Gestionnaire de Fichiers.\n- Basculer en un clic vers la Messagerie Instantanée pour discuter en direct avec l'expéditeur.\n\nBonne utilisation de Nexus OS Pro !`,
-    date: "10:30",
-    folder: "inbox",
-    read: false,
-    starred: true,
-    attachments: [
-      { name: "Nexus_OS_Guide.pdf", size: "1.4 MB", type: "pdf" }
-    ]
-  },
-  {
-    id: "mail-2",
-    senderName: "Équipe Google Cloud Drive",
-    senderEmail: "no-reply@google.com",
-    senderAvatar: "https://api.dicebear.com/7.x/identicon/svg?seed=GoogleCloud",
-    recipientEmail: "draymy26@gmail.com",
-    subject: "Confirmation de synchronisation du Compte Google (15 GB)",
-    body: `Bonjour,\n\nVotre compte Google draymy26@gmail.com est parfaitement synchronisé avec votre espace Nexus Cloud.\n\nVotre quota de 15 GB d'espace gratuit Google Drive est actif. Vos sauvegardes système et vos documents sont sécurisés.`,
-    date: "09:15",
-    folder: "inbox",
-    read: true,
-    starred: false
-  },
-  {
-    id: "mail-3",
-    senderName: "Support Technique Nexus",
-    senderEmail: "support@nexus-os.io",
-    senderAvatar: "https://api.dicebear.com/7.x/shapes/svg?seed=NexusSupport",
-    recipientEmail: "draymy26@gmail.com",
-    subject: "Mise à jour système : Polices Tech & Effets Visuels",
-    body: `Bonjour Aharon,\n\nLa dernière mise à jour de Nexus OS a activé le choix des polices tech (Orbitron, JetBrains Code, Plus Jakarta) dans les Paramètres.\n\nN'hésitez pas à nous faire vos retours si vous avez des suggestions.`,
-    date: "Hier, 18:45",
-    folder: "inbox",
-    read: true,
-    starred: false
-  }
-];
+// Plus aucun faux e-mail : on n'invente pas de messages.
+const DEFAULT_EMAILS: EmailItem[] = [];
 
 export function generateInitialEmails(userEmail: string, userName: string): EmailItem[] {
   const email = userEmail || "mon.adresse@gmail.com";
   const name = userName || email.split("@")[0];
 
+  // UN seul message, clairement envoye par Nexus lui-meme.
+  // On n'invente plus de courriers en se faisant passer pour Google.
   return [
     {
       id: "mail-welcome",
-      senderName: "Équipe Nexus OS & Google Workspace",
-      senderEmail: "no-reply@workspace.google.com",
-      senderAvatar: "https://api.dicebear.com/7.x/identicon/svg?seed=GoogleWorkspace",
+      senderName: "Nexus",
+      senderEmail: "nexus@nexus-espace.app",
       recipientEmail: email,
-      subject: `Bienvenue dans votre Boîte Mail & Espace Google Workspace (${email})`,
-      body: `Bonjour ${name},\n\nVotre adresse e-mail ${email} est désormais connectée à Nexus OS.\n\nFonctionnalités synchronisées :\n- Boîte Réception, Envois & Favoris sécurisés dans votre navigateur.\n- Intégration directe avec Google Drive (Fichiers) & Google Keep (Notes).\n- Messagerie Instantanée pour échanger directement avec tous vos contacts.\n\nTous vos messages passés et futurs restent strictement privés dans votre espace local.`,
-      date: "10:30",
+      subject: "Bienvenue dans ta boite mail Nexus",
+      body:
+        `Bonjour ${name},\n\n` +
+        `Cette boite est vide pour l'instant : c'est normal, aucun message n'est invente ici.\n\n` +
+        `Pour voir tes VRAIS e-mails Gmail :\n` +
+        `1. Ouvre « Compte » en haut a droite.\n` +
+        `2. Clique sur « Autoriser aussi Gmail et Drive ».\n\n` +
+        `Tes messages resteront prives : ils ne sont ni copies ni conserves par Nexus.`,
+      date: "Maintenant",
       folder: "inbox",
       read: false,
-      starred: true,
-      attachments: [
-        { name: "Guide_Nexus_OS_Workspace.pdf", size: "1.2 MB", type: "pdf" }
-      ]
+      starred: false,
     },
-    {
-      id: "mail-drive-sync",
-      senderName: "Google Drive Storage",
-      senderEmail: "drive-shares-noreply@google.com",
-      senderAvatar: "https://api.dicebear.com/7.x/shapes/svg?seed=GoogleDrive",
-      recipientEmail: email,
-      subject: "Espace Google Drive 15 GB synchronisé avec succès",
-      body: `Bonjour ${name},\n\nVotre compte ${email} dispose de 15 GB de stockage Google Cloud actif.\nVos sauvegardes Nexus OS et vos fichiers partagés sont accessibles dans l'application Nexus Cloud.`,
-      date: "Hier, 14:20",
-      folder: "inbox",
-      read: true,
-      starred: false
-    },
-    {
-      id: "mail-archive-2025",
-      senderName: "Archives Google Workspace 2025",
-      senderEmail: "archives@google.com",
-      senderAvatar: "https://api.dicebear.com/7.x/bottts/svg?seed=GoogleArchives",
-      recipientEmail: email,
-      subject: "Rapport annuel d'activité et sauvegarde de compte (Archive 2025)",
-      body: `Cher(e) ${name},\n\nVoici le résumé archivé de vos échanges et sauvegardes synchronisées pour l'année 2025 sur votre compte ${email}.\n\nTous les fichiers sont conservés en sécurité.`,
-      date: "15 Jan 2025",
-      folder: "inbox",
-      read: true,
-      starred: false
-    }
   ];
 }
 
@@ -721,7 +657,8 @@ export default function Mail() {
 
       {/* Compose Email Modal */}
       {showCompose && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowCompose(false); }}>
           <div className="w-full max-w-xl rounded-2xl border border-white/20 bg-slate-900 p-5 shadow-2xl flex flex-col gap-4">
             <div className="flex items-center justify-between pb-2 border-b border-white/10">
               <div className="flex items-center gap-2">
@@ -838,7 +775,8 @@ export default function Mail() {
 
       {/* Account Switcher Modal */}
       {showAccountModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowAccountModal(false); }}>
           <div className="w-full max-w-sm rounded-2xl border border-white/20 bg-slate-900 p-5 shadow-2xl flex flex-col gap-4">
             <div className="flex items-center justify-between pb-2 border-b border-white/10">
               <div className="flex items-center gap-2">

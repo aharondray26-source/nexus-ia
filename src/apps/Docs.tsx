@@ -758,7 +758,8 @@ export default function Docs() {
 
       {/* AI Assistant Generator Modal */}
       {showAiModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowAiModal(false); }}>
           <form
             onSubmit={(e) => {
               e.preventDefault();

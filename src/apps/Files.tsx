@@ -661,7 +661,8 @@ export default function Files() {
 
       {/* New Folder Modal */}
       {showFolderModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowFolderModal(false); }}>
           <form
             onSubmit={handleCreateFolder}
             className="w-80 bg-slate-900 border border-white/20 rounded-2xl p-5 shadow-2xl space-y-4 animate-scale-up"

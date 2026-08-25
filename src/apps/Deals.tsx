@@ -1,3 +1,4 @@
+import { askGeminiJson } from "../lib/nexusBrain";
 import React, { useState } from "react";
 
 interface Deal {
@@ -12,55 +13,12 @@ interface Deal {
   specs: string;
 }
 
-const DEFAULT_DEALS: Deal[] = [
-  {
-    title: "Casque Bluetooth Sans Fil Hi-Fi Noise Cancelling",
-    price: "129.99 €",
-    originalPrice: "189.99 €",
-    discount: "-31%",
-    store: "Fnac / Darty",
-    rating: 4.8,
-    badge: "🔥 Offre Vedette",
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
-    specs: "Réduction active du bruit, Autonomie 30h, Audio spatial 3D"
-  },
-  {
-    title: "Montre Connectée Sport Oled & Cardio GPS",
-    price: "199.00 €",
-    originalPrice: "249.00 €",
-    discount: "-20%",
-    store: "Amazon Prime",
-    rating: 4.7,
-    badge: "⚡ Vente Flash",
-    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80",
-    specs: "Écran Retina Always-On, Étanche 50m, Suivi sommeil avancé"
-  },
-  {
-    title: "Clavier Mécanique RGB Sans Fil Ultra-Compact",
-    price: "79.90 €",
-    originalPrice: "119.90 €",
-    discount: "-33%",
-    store: "Boulanger",
-    rating: 4.9,
-    badge: "🏆 Choix Rédaction",
-    image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80",
-    specs: "Switches tactiles lubrifiés, Keycaps PBT double-shot"
-  },
-  {
-    title: "Enceinte Portable Étanche Basse Puissante",
-    price: "49.99 €",
-    originalPrice: "79.99 €",
-    discount: "-37%",
-    store: "Cdiscount",
-    rating: 4.6,
-    badge: "💰 Top Qualité/Prix",
-    image: "https://images.unsplash.com/photo-1545454675-3531b543be5d?w=600&auto=format&fit=crop&q=80",
-    specs: "Batterie 20h, Norme IPX7, Mode appairage stéréo"
-  }
-];
+// Aucune offre inventee : on n'attribue pas de faux prix a de vraies enseignes.
+const DEFAULT_DEALS: Deal[] = [];
 
 export default function Deals() {
   const [deals, setDeals] = useState<Deal[]>(DEFAULT_DEALS);
+  const [dealsError, setDealsError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -69,21 +27,16 @@ export default function Deals() {
     if (!query.trim()) return;
 
     setLoading(true);
-    try {
-      const res = await fetch("/api/gemini/deals", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productQuery: query }),
-      });
-      const data = await res.json();
-      if (data.deals && data.deals.length > 0) {
-        setDeals(data.deals);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    setDealsError(null);
+    const { data, error } = await askGeminiJson<{ deals: Deal[] }>(
+      "/api/gemini/deals",
+      { productQuery: query },
+      `Donne 4 offres reelles et plausibles pour "${query}" en France. Reponds en JSON strict : ` +
+        `{"deals":[{"title":"","store":"","price":"","oldPrice":"","discount":"","url":"","description":""}]}`
+    );
+    if (data?.deals?.length) setDeals(data.deals);
+    else setDealsError(error || `Aucune offre trouvee pour "${query}".`);
+    setLoading(false);
   }
 
   return (
@@ -113,6 +66,18 @@ export default function Deals() {
 
       {/* Grid of Deals */}
       <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        {dealsError && (
+          <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-[11px] leading-relaxed text-amber-300">
+            {dealsError}
+          </p>
+        )}
+        {!dealsError && deals.length === 0 && !loading && (
+          <p className="py-8 text-center text-[11px] leading-relaxed text-nexus-muted/70">
+            Cherche un produit ci-dessus pour comparer les offres.
+            <br />
+            Aucune offre n'est affichee tant que tu n'as pas cherche : rien n'est invente ici.
+          </p>
+        )}
         {deals.map((deal, idx) => (
           <div
             key={idx}
