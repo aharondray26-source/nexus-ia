@@ -1,3 +1,4 @@
+import { askGeminiJson } from "../lib/nexusBrain";
 import React, { useState } from "react";
 
 interface Recipe {
@@ -65,6 +66,7 @@ export default function Recipes() {
   const [query, setQuery] = useState("");
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(DEFAULT_RECIPES[0]);
   const [loading, setLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState<number | null>(null);
 
   async function handleSearch(e?: React.FormEvent) {
@@ -72,22 +74,22 @@ export default function Recipes() {
     if (!query.trim()) return;
 
     setLoading(true);
-    try {
-      const res = await fetch("/api/gemini/recipes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
-      });
-      const data = await res.json();
-      if (data.recipes && data.recipes.length > 0) {
-        setRecipes(data.recipes);
-        setSelectedRecipe(data.recipes[0]);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+    setSearchError(null);
+    // Passe par le pont commun : serveur -> cle Gemini -> message clair.
+    // Avant, l'appel echouait en silence sur le site en ligne.
+    const { data, error } = await askGeminiJson<{ recipes: any[] }>(
+      "/api/gemini/recipes",
+      { query },
+      `Propose 3 recettes pour "${query}". Reponds en JSON strict : ` +
+        `{"recipes":[{"title":"","time":"","difficulty":"","servings":"","ingredients":[""],"steps":[""],"tip":""}]}`
+    );
+    if (data?.recipes?.length) {
+      setRecipes(data.recipes);
+      setSelectedRecipe(data.recipes[0]);
+    } else {
+      setSearchError(error || `Aucune recette trouvee pour "${query}".`);
     }
+    setLoading(false);
   }
 
   return (
@@ -116,6 +118,11 @@ export default function Recipes() {
         {/* List side */}
         <div className="w-1/3 border-r border-nexus-border overflow-y-auto p-3 space-y-3 bg-black/20">
           <h3 className="text-[11px] font-semibold text-nexus-muted uppercase tracking-wider px-1">Recettes au menu</h3>
+          {searchError && (
+            <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-[11px] leading-relaxed text-amber-300">
+              {searchError}
+            </p>
+          )}
           {recipes.map((r) => (
             <div
               key={r.id}
