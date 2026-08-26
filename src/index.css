@@ -257,3 +257,94 @@ button:active { transform: scale(.985); }   /* appui subtil, plus "cher" */
 
 /* Comportement verre au survol, partout ou il y a deja une surface vitree */
 [class~="backdrop-blur-[var(--glass-blur)]"] { transition: backdrop-filter .3s cubic-bezier(.32,.72,0,1), background-color .3s; }
+
+/* ================== SYSTEME DE BOUTONS UNIFIE ==================
+   Probleme corrige : plusieurs IA ont travaille sur ce site, chacune avec sa
+   vision. Certains boutons etaient pleins et profonds (beaux, professionnels),
+   d'autres de simples contours transparents (timides, "beta").
+   Ces classes mettent TOUT sur la meme longueur d'onde.
+   ================================================================ */
+
+.nx-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border-radius: 12px;                 /* coins doux, pas secs */
+  font-size: 12px; font-weight: 700;
+  padding: 7px 14px;
+  border: 1px solid transparent;
+  cursor: pointer; white-space: nowrap;
+  transition: background-color .2s cubic-bezier(.32,.72,0,1),
+              box-shadow .2s cubic-bezier(.32,.72,0,1),
+              transform .14s cubic-bezier(.32,.72,0,1),
+              opacity .2s;
+}
+.nx-btn:disabled { opacity: .4; cursor: not-allowed; }
+.nx-btn:not(:disabled):active { transform: scale(.955); }
+
+/* Action principale : pleine, coloree, avec un halo qui donne du relief */
+.nx-btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--accent) 70%, transparent),
+              inset 0 1px 0 rgba(255,255,255,.22);
+}
+.nx-btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--accent) 88%, white);
+  box-shadow: 0 6px 20px -4px color-mix(in srgb, var(--accent) 80%, transparent),
+              inset 0 1px 0 rgba(255,255,255,.28);
+}
+
+/* Action secondaire : discrete mais avec de la matiere (pas un simple contour) */
+.nx-btn-secondary {
+  background: rgba(255,255,255,.06);
+  color: var(--nexus-text);
+  border-color: var(--nexus-border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+.nx-btn-secondary:not(:disabled):hover {
+  background: rgba(255,255,255,.11);
+  border-color: rgba(255,255,255,.22);
+}
+
+/* Bouton d'icone : carre, meme matiere que le secondaire */
+.nx-btn-icon {
+  padding: 7px; border-radius: 11px;
+  background: rgba(255,255,255,.06);
+  color: var(--nexus-muted);
+  border-color: var(--nexus-border);
+}
+.nx-btn-icon:not(:disabled):hover { background: rgba(255,255,255,.12); color: var(--nexus-text); }
+
+/* Action destructrice */
+.nx-btn-danger {
+  background: rgba(239,68,68,.14);
+  color: #fca5a5;
+  border-color: rgba(239,68,68,.34);
+}
+.nx-btn-danger:not(:disabled):hover { background: rgba(239,68,68,.24); color: #fecaca; }
+
+/* Element selectionne dans une liste (contact, onglet...) */
+.nx-item {
+  border-radius: 11px; border: 1px solid var(--nexus-border);
+  background: rgba(255,255,255,.03);
+  transition: background-color .2s cubic-bezier(.32,.72,0,1), border-color .2s;
+}
+.nx-item:hover { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.16); }
+.nx-item-active {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+/* Champs de saisie : meme matiere que les boutons secondaires */
+.nx-input {
+  border-radius: 11px;
+  border: 1px solid var(--nexus-input-border);
+  background: var(--nexus-input-bg);
+  color: var(--nexus-text);
+  padding: 8px 12px; font-size: 12px; outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.nx-input:focus {
+  border-color: color-mix(in srgb, var(--accent) 65%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+}

@@ -100,11 +100,10 @@ export default function NexusMessages() {
             value={newContact}
             onChange={(e) => setNewContact(e.target.value)}
             placeholder="email@ami.com"
-            className="min-w-0 flex-1 rounded-lg border border-nexus-border bg-nexus-bg px-2 py-1.5 text-[11px] text-nexus-text outline-none focus:border-white/30"
+            className="nx-input min-w-0 flex-1 text-[11px]"
           />
           <button type="submit" title="Ajouter cette personne"
-            className="shrink-0 rounded-lg border px-2 py-1.5"
-            style={{ borderColor: "var(--accent)", color: "var(--accent)" }}>
+            className="nx-btn nx-btn-primary shrink-0">
             <UserPlus size={13} />
           </button>
         </form>
@@ -114,10 +113,7 @@ export default function NexusMessages() {
             <button
               key={c.email}
               onClick={() => setActive(c.email)}
-              className="truncate rounded-lg border px-2.5 py-2 text-left text-[11px] transition-colors"
-              style={active === c.email
-                ? { borderColor: "var(--accent)", color: "var(--accent)", backgroundColor: "rgba(255,255,255,0.04)" }
-                : { borderColor: "#27272a", color: "#a1a1aa" }}
+              className={`nx-item truncate px-2.5 py-2 text-left text-[11px] ${active === c.email ? "nx-item-active text-nexus-text" : "text-nexus-muted"}`}
             >
               {c.email.split("@")[0]}
               <span className="block truncate text-[9px] opacity-60">{c.email}</span>
@@ -144,10 +140,9 @@ export default function NexusMessages() {
             <span className="min-w-0 flex-1 truncate text-[11px] text-nexus-text">
               {incoming.from} t'appelle{incoming.video ? " (video)" : ""}
             </span>
-            <button onClick={onAnswer} className="rounded-md border px-2.5 py-1 text-[11px]"
-              style={{ borderColor: "var(--accent)", color: "var(--accent)" }}>Repondre</button>
+            <button onClick={onAnswer} className="nx-btn nx-btn-primary">Repondre</button>
             <button onClick={() => { declineCall(incoming.id); setIncoming(null); }}
-              className="rounded-md border border-red-500/40 px-2 py-1 text-[11px] text-red-400">Refuser</button>
+              className="nx-btn nx-btn-danger">Refuser</button>
           </div>
         )}
 
@@ -164,18 +159,18 @@ export default function NexusMessages() {
                     {callState === "connected" ? "En ligne" : "Appel..."}
                   </span>
                   <button onClick={onHangUp} title="Raccrocher"
-                    className="rounded-md border border-red-500/40 p-1 text-red-400 hover:bg-red-500/10">
+                    className="nx-btn nx-btn-danger nx-btn-icon">
                     <PhoneOff size={13} />
                   </button>
                 </span>
               ) : (
                 <>
                   <button onClick={() => onCall(false)} title={`Appeler ${active}`}
-                    className="rounded-md border border-nexus-border p-1.5 text-nexus-muted hover:text-nexus-text">
+                    className="nx-btn nx-btn-icon">
                     <Phone size={13} />
                   </button>
                   <button onClick={() => onCall(true)} title={`Appel video avec ${active}`}
-                    className="rounded-md border border-nexus-border p-1.5 text-nexus-muted hover:text-nexus-text">
+                    className="nx-btn nx-btn-icon">
                     <Video size={13} />
                   </button>
                 </>
@@ -218,11 +213,10 @@ export default function NexusMessages() {
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder={`Message a ${active.split("@")[0]}...`}
-                className="min-w-0 flex-1 rounded-lg border border-nexus-border bg-nexus-bg px-3 py-2 text-xs text-nexus-text outline-none focus:border-white/30"
+                className="nx-input min-w-0 flex-1"
               />
               <button type="submit" disabled={!text.trim()}
-                className="rounded-lg border px-3 py-2 disabled:opacity-40"
-                style={{ borderColor: "var(--accent)", color: "var(--accent)" }}>
+                className="nx-btn nx-btn-primary">
                 <Send size={14} />
               </button>
             </form>
