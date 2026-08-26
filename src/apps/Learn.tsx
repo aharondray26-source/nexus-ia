@@ -224,12 +224,7 @@ export default function Learn() {
           <button
             key={s}
             onClick={() => setSubject(s)}
-            className="rounded-full border px-3 py-1.5 text-xs transition-colors"
-            style={
-              subject === s
-                ? { borderColor: "var(--accent)", color: "var(--accent)" }
-                : { borderColor: "#27272a", color: "#a1a1aa" }
-            }
+            className={`nx-chip ${subject === s ? "nx-chip-active" : ""}`}
           >
             {s}
           </button>

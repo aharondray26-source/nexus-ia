@@ -89,7 +89,7 @@ export default function WebSearch() {
                   eng.url(encodeURIComponent(query.trim()))
                 )
               }
-              className="rounded-full border border-nexus-border px-2.5 py-1 text-[11px] text-nexus-muted transition-colors hover:text-nexus-text"
+              className="nx-chip"
             >
               {eng.name}
             </button>

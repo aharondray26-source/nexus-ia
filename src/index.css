@@ -348,3 +348,24 @@ button:active { transform: scale(.985); }   /* appui subtil, plus "cher" */
   border-color: color-mix(in srgb, var(--accent) 65%, transparent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
 }
+
+/* Puces / etiquettes (filtres, matieres, categories) : meme langage que les
+   boutons, mais en capsule ronde. Avant, c'etaient de simples contours vides. */
+.nx-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  border-radius: 999px; padding: 5px 12px;
+  font-size: 11px; font-weight: 600;
+  background: rgba(255,255,255,.05);
+  color: var(--nexus-muted);
+  border: 1px solid var(--nexus-border);
+  cursor: pointer;
+  transition: background-color .2s cubic-bezier(.32,.72,0,1), color .2s, border-color .2s, box-shadow .2s;
+}
+.nx-chip:hover { background: rgba(255,255,255,.1); color: var(--nexus-text); }
+.nx-chip-active {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  color: color-mix(in srgb, var(--accent) 35%, white);
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.1),
+              0 2px 8px -3px color-mix(in srgb, var(--accent) 60%, transparent);
+}

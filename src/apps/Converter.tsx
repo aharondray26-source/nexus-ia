@@ -148,12 +148,7 @@ function Units() {
           <button
             key={g}
             onClick={() => pickGroup(g)}
-            className="rounded-full border px-2.5 py-1 text-[11px] transition-colors"
-            style={
-              group === g
-                ? { borderColor: "var(--accent)", color: "var(--accent)" }
-                : { borderColor: "#27272a", color: "#a1a1aa" }
-            }
+            className={`nx-chip ${group === g ? "nx-chip-active" : ""}`}
           >
             {g}
           </button>
