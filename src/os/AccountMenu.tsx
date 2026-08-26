@@ -153,7 +153,7 @@ export default function AccountMenu() {
       <button
         onClick={() => setOpen((o) => !o)}
         title="Compte Nexus et Google"
-        className="flex items-center gap-1.5 rounded-lg border border-nexus-border bg-transparent px-2 py-1 text-[11px] text-nexus-muted transition-colors hover:border-white/20 hover:text-nexus-text"
+        className="nx-btn nx-btn-secondary flex items-center gap-1.5 text-[11px]"
       >
         {google?.photo ? (
           <img src={google.photo} alt="" className="h-4 w-4 rounded-full" />
@@ -199,20 +199,20 @@ export default function AccountMenu() {
                 <button
                   onClick={() => sync("up")}
                   disabled={busy}
-                  className="flex-1 rounded-lg border border-nexus-border px-2 py-1.5 text-[11px] text-nexus-text transition-colors hover:bg-white/[0.06] disabled:opacity-50"
+                  className="nx-btn nx-btn-secondary flex-1 text-[11px]"
                 >
                   Sauvegarder
                 </button>
                 <button
                   onClick={() => sync("down")}
                   disabled={busy}
-                  className="flex-1 rounded-lg border border-nexus-border px-2 py-1.5 text-[11px] text-nexus-text transition-colors hover:bg-white/[0.06] disabled:opacity-50"
+                  className="nx-btn nx-btn-secondary flex-1 text-[11px]"
                 >
                   Restaurer
                 </button>
               </div>
               {!hasPassword() && (
-                <div className="flex flex-col gap-1.5 rounded-lg border border-nexus-border p-2">
+                <div className="nx-btn nx-btn-icon flex flex-col gap-1.5">
                   <span className="text-[10px] leading-relaxed text-nexus-muted">
                     Ce compte a ete cree via Google. Ajoute un mot de passe pour
                     pouvoir aussi entrer sans Google, depuis n'importe ou.
@@ -223,20 +223,19 @@ export default function AccountMenu() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Nouveau mot de passe"
-                      className="min-w-0 flex-1 rounded-md border border-nexus-border bg-nexus-bg px-2 py-1 text-[11px] text-nexus-text outline-none focus:border-white/30"
+                      className="nx-btn nx-btn-secondary min-w-0 flex-1 text-[11px]"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPwd((v) => !v)}
-                      className="rounded-md border border-nexus-border px-1.5 text-nexus-muted hover:text-nexus-text"
+                      className="nx-btn nx-btn-secondary"
                     >
                       {showPwd ? <EyeOff size={12} /> : <Eye size={12} />}
                     </button>
                     <button
                       onClick={onAddPassword}
                       disabled={busy}
-                      className="rounded-md border px-2 py-1 text-[11px] disabled:opacity-50"
-                      style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
+                      className="nx-btn nx-btn-primary text-[11px]"
                     >
                       Ajouter
                     </button>
@@ -245,7 +244,7 @@ export default function AccountMenu() {
               )}
               <button
                 onClick={() => nexusSignOut()}
-                className="flex items-center justify-center gap-1.5 rounded-lg border border-nexus-border px-2 py-1.5 text-[11px] text-nexus-muted transition-colors hover:text-red-400"
+                className="nx-btn nx-btn-danger flex items-center justify-center gap-1.5 text-[11px]"
               >
                 <LogOut size={12} /> Se deconnecter
               </button>
@@ -261,7 +260,7 @@ export default function AccountMenu() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ton@email.com"
-                className="rounded-lg border border-nexus-border bg-nexus-bg px-2.5 py-1.5 text-xs text-nexus-text outline-none focus:border-white/30"
+                className="nx-btn nx-btn-secondary text-xs"
               />
               <div className="relative">
                 <input
@@ -271,7 +270,7 @@ export default function AccountMenu() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Mot de passe (6 min.)"
-                  className="w-full rounded-lg border border-nexus-border bg-nexus-bg px-2.5 py-1.5 pr-8 text-xs text-nexus-text outline-none focus:border-white/30"
+                  className="nx-btn nx-btn-secondary w-full text-xs"
                 />
                 <button
                   type="button"
@@ -285,8 +284,7 @@ export default function AccountMenu() {
               <button
                 type="submit"
                 disabled={busy}
-                className="rounded-lg border px-3 py-1.5 text-xs font-medium disabled:opacity-50"
-                style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
+                className="nx-btn nx-btn-primary text-xs"
               >
                 {busy ? "..." : "Entrer dans Nexus"}
               </button>
@@ -314,7 +312,7 @@ export default function AccountMenu() {
               <button
                 onClick={connectGmailDrive}
                 disabled={busy}
-                className="w-full rounded-lg border border-nexus-border px-3 py-1.5 text-[11px] text-nexus-muted transition-colors hover:bg-white/[0.06] hover:text-nexus-text disabled:opacity-50"
+                className="nx-btn nx-btn-secondary w-full text-[11px]"
               >
                 Autoriser aussi Gmail et Drive
               </button>
@@ -324,7 +322,7 @@ export default function AccountMenu() {
               <button
                 onClick={connectGoogle}
                 disabled={busy}
-                className="w-full rounded-lg border border-nexus-border px-3 py-1.5 text-xs text-nexus-text transition-colors hover:bg-white/[0.06] disabled:opacity-50"
+                className="nx-btn nx-btn-secondary w-full text-xs"
               >
                 Continuer avec Google
               </button>

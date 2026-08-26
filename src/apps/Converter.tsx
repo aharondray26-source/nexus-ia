@@ -20,7 +20,7 @@ export default function Converter() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className="flex-1 rounded-lg border px-3 py-1.5 text-xs capitalize transition-colors"
+            className="nx-btn nx-btn-secondary flex-1 text-xs"
             style={
               tab === t
                 ? { borderColor: "var(--accent)", color: "var(--accent)" }
@@ -68,7 +68,7 @@ function Currency() {
         type="number"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
-        className="rounded-lg border border-nexus-border bg-nexus-bg px-3 py-2 text-sm text-nexus-text outline-none focus:border-white/30"
+        className="nx-input text-sm"
       />
       <div className="flex items-center gap-2">
         <select
@@ -163,7 +163,7 @@ function Units() {
         type="number"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
-        className="rounded-lg border border-nexus-border bg-nexus-bg px-3 py-2 text-sm text-nexus-text outline-none focus:border-white/30"
+        className="nx-input text-sm"
       />
       <div className="flex items-center gap-2">
         <select

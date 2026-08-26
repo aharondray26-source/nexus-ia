@@ -260,7 +260,7 @@ export default function NexusCloud() {
               {!hasGoogleAuth ? (
                 <button
                   onClick={handleGoogleSignInDrive}
-                  className="flex items-center justify-center gap-1.5 rounded-xl border border-red-500/40 bg-red-500/10 px-3.5 py-2 text-xs font-semibold text-red-300 hover:bg-red-500/20 transition-all shadow-md"
+                  className="nx-btn nx-btn-danger flex items-center justify-center gap-1.5 text-xs"
                   title="Connecter votre compte Google Drive réel"
                 >
                   <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
@@ -275,7 +275,7 @@ export default function NexusCloud() {
                 <button
                   onClick={handleSyncDrive}
                   disabled={isSyncingDrive}
-                  className="flex items-center justify-center gap-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-3.5 py-2 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/20 transition-all shadow-md disabled:opacity-50"
+                  className="nx-btn nx-btn-secondary flex items-center justify-center gap-1.5 text-xs"
                   title="Synchroniser vos fichiers Google Drive réels"
                 >
                   <RefreshCw size={14} className={isSyncingDrive ? "animate-spin text-emerald-400" : "text-emerald-400"} />
@@ -285,7 +285,7 @@ export default function NexusCloud() {
 
               <button
                 onClick={handleLogout}
-                className="flex items-center justify-center gap-1 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-medium text-red-300 hover:bg-red-500/20 transition-colors"
+                className="nx-btn nx-btn-danger flex items-center justify-center gap-1 text-xs"
                 title="Déconnexion du compte Google"
               >
                 <LogOut size={14} />
@@ -583,7 +583,7 @@ export default function NexusCloud() {
                 <button
                   type="button"
                   onClick={() => setShowLoginModal(false)}
-                  className="flex-1 rounded-xl border border-white/10 py-2 text-xs text-slate-300 hover:bg-white/5"
+                  className="nx-btn nx-btn-secondary flex-1 text-xs"
                 >
                   Annuler
                 </button>

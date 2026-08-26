@@ -61,7 +61,7 @@ export default function Calculator() {
         </div>
         <button
           onClick={() => setExpr("")}
-          className="rounded-lg border border-nexus-border px-3 py-3 text-xs text-nexus-muted transition-colors hover:text-nexus-text"
+          className="nx-btn nx-btn-secondary text-xs"
         >
           C
         </button>

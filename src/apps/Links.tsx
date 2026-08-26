@@ -231,7 +231,7 @@ export default function Links() {
             <button
               type="button"
               onClick={() => setShowAddForm(false)}
-              className="px-3 py-1.5 bg-slate-950 border border-slate-800 text-slate-400 hover:text-white rounded-xl text-xs font-semibold"
+              className="nx-btn nx-btn-secondary text-xs"
             >
               Annuler
             </button>

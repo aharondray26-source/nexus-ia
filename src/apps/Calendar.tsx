@@ -46,7 +46,7 @@ export default function Calendar() {
       <div className="flex items-center justify-between">
         <button
           onClick={() => move(-1)}
-          className="rounded-lg border border-nexus-border px-3 py-1.5 text-sm text-nexus-muted transition-colors hover:text-nexus-text"
+          className="nx-btn nx-btn-secondary text-sm"
         >
           ‹
         </button>
@@ -55,7 +55,7 @@ export default function Calendar() {
         </span>
         <button
           onClick={() => move(1)}
-          className="rounded-lg border border-nexus-border px-3 py-1.5 text-sm text-nexus-muted transition-colors hover:text-nexus-text"
+          className="nx-btn nx-btn-secondary text-sm"
         >
           ›
         </button>
@@ -90,7 +90,7 @@ export default function Calendar() {
 
       <button
         onClick={() => setView(new Date(today.getFullYear(), today.getMonth(), 1))}
-        className="mt-auto rounded-lg border border-nexus-border px-4 py-2 text-xs text-nexus-muted transition-colors hover:text-nexus-text"
+        className="nx-btn nx-btn-secondary mt-auto text-xs"
       >
         Revenir a aujourd'hui
       </button>

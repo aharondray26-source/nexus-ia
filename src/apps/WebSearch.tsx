@@ -65,12 +65,12 @@ export default function WebSearch() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Rechercher (ex : Ninjago)..."
-          className="flex-1 rounded-lg border border-nexus-border bg-nexus-bg px-3 py-2 text-sm text-nexus-text outline-none focus:border-white/30"
+          className="nx-input flex-1 text-sm"
         />
         <button
           type="submit"
           disabled={loading}
-          className="rounded-lg border border-nexus-border bg-white/[0.04] px-4 py-2 text-sm text-nexus-text transition-colors hover:bg-white/[0.08] disabled:opacity-50"
+          className="nx-btn nx-btn-secondary text-sm"
         >
           {loading ? "..." : "Chercher"}
         </button>
@@ -110,7 +110,7 @@ export default function WebSearch() {
                   )}`
                 )
               }
-              className="flex w-full flex-col gap-1 rounded-lg border border-nexus-border bg-nexus-bg px-3 py-2.5 text-left transition-colors hover:border-white/20"
+              className="nx-btn nx-btn-secondary flex w-full flex-col gap-1 text-left"
             >
               <span className="text-sm font-medium text-nexus-text">
                 {r.title}

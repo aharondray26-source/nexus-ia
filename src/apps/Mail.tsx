@@ -326,7 +326,7 @@ export default function Mail() {
             setEditName(currentUserName);
             setShowAccountModal(true);
           }}
-          className="rounded-xl border border-cyan-500/30 bg-cyan-500/10 p-2.5 flex items-center gap-2.5 hover:bg-cyan-500/20 transition-all text-left group"
+          className="nx-btn nx-btn-icon flex items-center gap-2.5 text-left"
           title="Cliquez pour changer votre adresse email"
         >
           <img
@@ -355,7 +355,7 @@ export default function Mail() {
           {!hasGoogleAuth ? (
             <button
               onClick={handleGoogleLoginClick}
-              className="flex items-center justify-center gap-2 rounded-xl border border-red-500/40 bg-red-500/10 py-2 px-2 text-xs font-semibold text-red-300 hover:bg-red-500/20 transition-all"
+              className="nx-btn nx-btn-danger flex items-center justify-center gap-2 text-xs"
               title="Connecter votre compte Gmail réel"
             >
               <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
@@ -370,7 +370,7 @@ export default function Mail() {
             <button
               onClick={handleSyncGmail}
               disabled={isSyncingGmail}
-              className="flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 py-2 px-2 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/20 transition-all disabled:opacity-50"
+              className="nx-btn nx-btn-secondary flex items-center justify-center gap-2 text-xs"
               title="Synchroniser avec votre boîte Gmail réelle"
             >
               <RefreshCw size={13} className={isSyncingGmail ? "animate-spin text-emerald-400" : "text-emerald-400"} />
@@ -447,14 +447,14 @@ export default function Mail() {
         <div className="pt-2 border-t border-white/10 flex flex-col gap-1.5">
           <button
             onClick={() => openApp("messages", { width: 820, height: 580 })}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-white/10 bg-white/5 text-[11px] text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+            className="nx-btn nx-btn-secondary flex items-center gap-2 text-[11px]"
           >
             <MessageSquare size={13} className="text-cyan-400" />
             <span>Messagerie Instantanée</span>
           </button>
           <button
             onClick={() => openApp("cloud", { width: 780, height: 580 })}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-white/10 bg-white/5 text-[11px] text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+            className="nx-btn nx-btn-secondary flex items-center gap-2 text-[11px]"
           >
             <Cloud size={13} className="text-blue-400" />
             <span>Stockage Nexus Cloud</span>
@@ -555,7 +555,7 @@ export default function Mail() {
                         setRecipient(activeMail.senderEmail);
                         setSubject(`Re: ${activeMail.subject}`);
                       }}
-                      className="flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-white hover:bg-white/10 transition-colors font-medium"
+                      className="nx-btn nx-btn-secondary flex items-center gap-1.5 text-xs"
                     >
                       <Reply size={14} className="text-cyan-400" />
                       <span>Répondre</span>
@@ -565,7 +565,7 @@ export default function Mail() {
                       onClick={() => {
                         openApp("messages", { width: 820, height: 580 });
                       }}
-                      className="flex items-center gap-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5 text-xs text-cyan-300 hover:bg-cyan-500/20 transition-colors font-semibold"
+                      className="nx-btn nx-btn-secondary flex items-center gap-1.5 text-xs"
                       title="Discuter directement avec l'expéditeur"
                     >
                       <MessageSquare size={14} className="text-cyan-400" />
@@ -720,7 +720,7 @@ export default function Mail() {
                         key={idx}
                         type="button"
                         onClick={() => handleAttachCloudFile(cf.name, cf.size)}
-                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-white/10 bg-white/5 text-[10px] text-cyan-300 hover:bg-white/10"
+                        className="nx-btn nx-btn-secondary flex items-center gap-1 text-[10px]"
                       >
                         <Paperclip size={10} />
                         <span>{cf.name}</span>
@@ -754,7 +754,7 @@ export default function Mail() {
                   <button
                     type="button"
                     onClick={() => setShowCompose(false)}
-                    className="rounded-xl border border-white/10 px-4 py-2 text-xs text-slate-300 hover:bg-white/5"
+                    className="nx-btn nx-btn-secondary text-xs"
                   >
                     Annuler
                   </button>
@@ -824,7 +824,7 @@ export default function Mail() {
                 <button
                   type="button"
                   onClick={() => setShowAccountModal(false)}
-                  className="rounded-xl border border-white/10 px-4 py-2 text-xs text-slate-300 hover:bg-white/5"
+                  className="nx-btn nx-btn-secondary text-xs"
                 >
                   Annuler
                 </button>

@@ -185,7 +185,7 @@ export default function FileViewer() {
           {url && (
             <button
               onClick={() => window.open(url, "_blank", "noopener")}
-              className="flex items-center gap-1 rounded-lg border border-white/15 bg-white/5 px-2.5 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-white/15 transition-all"
+              className="nx-btn nx-btn-secondary flex items-center gap-1 text-xs"
               title="Agrandir / Ouvrir dans un nouvel onglet"
             >
               <ExternalLink className="w-3.5 h-3.5" />
@@ -196,7 +196,7 @@ export default function FileViewer() {
           {(isWord || text !== null) && (
             <button
               onClick={() => openApp("docs")}
-              className="flex items-center gap-1 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1.5 text-xs font-semibold text-cyan-300 hover:bg-cyan-500/20 transition-all"
+              className="nx-btn nx-btn-secondary flex items-center gap-1 text-xs"
               title="Editer dans le Créateur de Documents"
             >
               <FileText className="w-3.5 h-3.5" />

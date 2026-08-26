@@ -514,7 +514,7 @@ export default function PdfStudio() {
         {files.length > 0 && (
           <button
             onClick={clearFiles}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-300 text-xs font-semibold border border-red-500/30 transition-all active:scale-95"
+            className="nx-btn nx-btn-danger flex items-center gap-1.5 text-xs"
           >
             <Trash2 className="w-3.5 h-3.5" />
             <span>Réinitialiser ({files.length})</span>

@@ -68,8 +68,7 @@ export default function Notes() {
       <div className="flex w-44 shrink-0 flex-col gap-3">
         <button
           onClick={createNote}
-          className="flex items-center justify-center gap-1.5 rounded-lg border py-2 text-xs font-medium transition-colors"
-          style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
+          className="nx-btn nx-btn-primary flex items-center justify-center gap-1.5 text-xs"
         >
           + Nouvelle note
         </button>
@@ -78,7 +77,7 @@ export default function Notes() {
             <li key={n.id}>
               <button
                 onClick={() => setActiveId(n.id)}
-                className="flex w-full flex-col gap-0.5 rounded-lg border px-3 py-2 text-left transition-colors"
+                className="nx-btn nx-btn-secondary flex w-full flex-col gap-0.5 text-left"
                 style={{
                   borderColor:
                     n.id === activeId ? "var(--accent)" : "transparent",

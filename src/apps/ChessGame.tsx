@@ -157,7 +157,7 @@ export default function ChessGame() {
 
         <button
           onClick={resetGame}
-          className="rounded-xl border border-nexus-border px-3 py-1.5 text-xs text-nexus-muted hover:text-white hover:border-white/30"
+          className="nx-btn nx-btn-secondary text-xs"
         >
           🔄 Recommencer
         </button>

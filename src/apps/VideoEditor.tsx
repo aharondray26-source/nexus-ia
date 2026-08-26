@@ -385,7 +385,7 @@ export default function VideoEditor() {
 
           <button
             onClick={loadDemoProject}
-            className="flex items-center gap-1.5 rounded-lg border border-purple-500/40 bg-purple-500/10 px-3 py-1.5 font-semibold text-purple-300 hover:bg-purple-500/20 transition-all"
+            className="nx-btn nx-btn-secondary flex items-center gap-1.5"
             title="Charger un projet complet de démonstration"
           >
             <Sparkles className="w-4 h-4 text-purple-400" />
@@ -413,7 +413,7 @@ export default function VideoEditor() {
           {busy ? (
             <button
               onClick={stop}
-              className="flex items-center gap-1 rounded-lg border border-red-500/50 bg-red-500/20 px-3 py-1.5 font-bold text-red-300 hover:bg-red-500/30"
+              className="nx-btn nx-btn-danger flex items-center gap-1"
             >
               <Square className="w-3.5 h-3.5 fill-current" />
               <span>Stopper</span>
@@ -423,7 +423,7 @@ export default function VideoEditor() {
               <button
                 onClick={preview}
                 disabled={clips.length === 0}
-                className="flex items-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-1.5 font-bold text-emerald-300 hover:bg-emerald-500/20 disabled:opacity-40"
+                className="nx-btn nx-btn-secondary flex items-center gap-1.5"
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
                 <span>Aperçu</span>
@@ -431,7 +431,7 @@ export default function VideoEditor() {
               <button
                 onClick={exportVideo}
                 disabled={clips.length === 0}
-                className="flex items-center gap-1.5 rounded-lg border border-cyan-400 bg-cyan-500 text-slate-950 font-extrabold px-3 py-1.5 hover:bg-cyan-400 disabled:opacity-40"
+                className="nx-btn nx-btn-secondary flex items-center gap-1.5"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Exporter</span>

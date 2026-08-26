@@ -41,7 +41,7 @@ export default function Today() {
           value={intention}
           onChange={(e) => setIntention(e.target.value)}
           placeholder="Sur quoi veux-tu avancer aujourd'hui ?"
-          className="rounded-lg border border-nexus-border bg-nexus-bg px-3 py-2.5 text-sm text-nexus-text outline-none focus:border-white/30"
+          className="nx-input text-sm"
         />
       </div>
 

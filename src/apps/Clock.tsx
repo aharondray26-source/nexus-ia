@@ -34,7 +34,7 @@ export default function Clock() {
           <button
             key={m}
             onClick={() => setMode(m)}
-            className="flex-1 rounded-lg border px-3 py-1.5 text-xs capitalize transition-colors"
+            className="nx-btn nx-btn-secondary flex-1 text-xs"
             style={
               mode === m
                 ? { borderColor: "var(--accent)", color: "var(--accent)" }
@@ -110,7 +110,7 @@ function Timer() {
         sec
         <button
           onClick={applyCustom}
-          className="rounded-md border border-nexus-border px-2 py-1 text-nexus-muted transition-colors hover:text-nexus-text"
+          className="nx-btn nx-btn-secondary"
         >
           Regler
         </button>
@@ -119,13 +119,13 @@ function Timer() {
       <div className="flex gap-2">
         <button
           onClick={() => setRunning((r) => !r)}
-          className="rounded-lg border border-nexus-border bg-white/[0.05] px-5 py-2 text-sm text-nexus-text transition-colors hover:bg-white/[0.09]"
+          className="nx-btn nx-btn-secondary text-sm"
         >
           {running ? "Pause" : "Demarrer"}
         </button>
         <button
           onClick={applyCustom}
-          className="rounded-lg border border-nexus-border px-4 py-2 text-sm text-nexus-muted transition-colors hover:text-nexus-text"
+          className="nx-btn nx-btn-secondary text-sm"
         >
           Reinitialiser
         </button>
@@ -164,7 +164,7 @@ function Stopwatch() {
       <div className="flex gap-2">
         <button
           onClick={() => setRunning((r) => !r)}
-          className="rounded-lg border border-nexus-border bg-white/[0.05] px-5 py-2 text-sm text-nexus-text transition-colors hover:bg-white/[0.09]"
+          className="nx-btn nx-btn-secondary text-sm"
         >
           {running ? "Pause" : "Demarrer"}
         </button>
@@ -173,7 +173,7 @@ function Stopwatch() {
             setRunning(false);
             setElapsed(0);
           }}
-          className="rounded-lg border border-nexus-border px-4 py-2 text-sm text-nexus-muted transition-colors hover:text-nexus-text"
+          className="nx-btn nx-btn-secondary text-sm"
         >
           Reinitialiser
         </button>

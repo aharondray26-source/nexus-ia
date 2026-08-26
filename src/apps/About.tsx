@@ -62,8 +62,7 @@ export default function About() {
         </span>
         <button
           onClick={() => openApp("mail", { width: 440, height: 440 })}
-          className="w-fit rounded-lg border px-4 py-2 text-sm font-medium transition-opacity hover:opacity-80"
-          style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
+          className="nx-btn nx-btn-primary w-fit text-sm"
         >
           Nous écrire
         </button>
@@ -75,11 +74,11 @@ export default function About() {
         </span>
         <div className="flex flex-wrap gap-2">
           <a href="/confidentialite.html" target="_blank" rel="noopener noreferrer"
-            className="rounded-lg border border-nexus-border px-3 py-1.5 text-xs text-nexus-text transition-colors hover:bg-white/[0.06]">
+            className="nx-btn nx-btn-secondary text-xs">
             Confidentialité
           </a>
           <a href="/conditions.html" target="_blank" rel="noopener noreferrer"
-            className="rounded-lg border border-nexus-border px-3 py-1.5 text-xs text-nexus-text transition-colors hover:bg-white/[0.06]">
+            className="nx-btn nx-btn-secondary text-xs">
             Conditions d'utilisation
           </a>
         </div>
@@ -92,7 +91,7 @@ export default function About() {
         <div className="flex flex-wrap gap-2">
           <button
             onClick={copyLink}
-            className="rounded-lg border border-nexus-border px-3 py-1.5 text-xs text-nexus-text transition-colors hover:bg-white/[0.06]"
+            className="nx-btn nx-btn-secondary text-xs"
           >
             {copied ? "Lien copié !" : "Copier le lien"}
           </button>
@@ -103,7 +102,7 @@ export default function About() {
                 `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_TEXT)}&url=${encodeURIComponent(SITE)}`
               )
             }
-            className="rounded-lg border border-nexus-border px-3 py-1.5 text-xs text-nexus-text transition-colors hover:bg-white/[0.06]"
+            className="nx-btn nx-btn-secondary text-xs"
           >
             X
           </button>
@@ -114,13 +113,13 @@ export default function About() {
                 `https://wa.me/?text=${encodeURIComponent(SHARE_TEXT + " " + SITE)}`
               )
             }
-            className="rounded-lg border border-nexus-border px-3 py-1.5 text-xs text-nexus-text transition-colors hover:bg-white/[0.06]"
+            className="nx-btn nx-btn-secondary text-xs"
           >
             WhatsApp
           </button>
           <button
             onClick={nativeShare}
-            className="rounded-lg border border-nexus-border px-3 py-1.5 text-xs text-nexus-text transition-colors hover:bg-white/[0.06]"
+            className="nx-btn nx-btn-secondary text-xs"
           >
             Partager…
           </button>

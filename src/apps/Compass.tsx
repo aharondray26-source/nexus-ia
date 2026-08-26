@@ -65,7 +65,7 @@ export default function Compass() {
         <button
           onClick={calibrate}
           disabled={isCalibrating}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 border border-slate-700/80 hover:border-cyan-500/50 hover:text-cyan-300 transition-all active:scale-95"
+          className="nx-btn nx-btn-secondary flex items-center gap-1.5 text-xs"
         >
           <RotateCw className={`w-3.5 h-3.5 ${isCalibrating ? "animate-spin text-cyan-400" : ""}`} />
           {isCalibrating ? "Calibrage..." : "Calibrer"}

@@ -527,7 +527,7 @@ export default function NexusAssistant() {
                             {m.attachments.map((att, i) => (
                               <span
                                 key={i}
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-black/40 border border-white/20 text-[10px] font-mono text-cyan-200"
+                                className="nx-btn nx-btn-secondary inline-flex items-center gap-1 text-[10px] font-mono"
                               >
                                 <FileText className="w-3 h-3 text-cyan-300" />
                                 <span className="truncate max-w-[120px]">{att.name}</span>
@@ -612,12 +612,12 @@ export default function NexusAssistant() {
 
             {/* Attached File Chips Bar */}
             {attachedFiles.length > 0 && (
-              <div className="flex items-center gap-2 overflow-x-auto py-1.5 px-2 bg-slate-900/80 rounded-xl border border-white/10 mb-2">
+              <div className="nx-btn nx-btn-secondary flex items-center gap-2 overflow-x-auto mb-2">
                 <span className="text-[10px] text-slate-400 font-semibold uppercase">Joints:</span>
                 {attachedFiles.map((f) => (
                   <div
                     key={f.id}
-                    className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-cyan-950/80 border border-cyan-500/30 text-[10px] text-cyan-200 shrink-0"
+                    className="nx-btn nx-btn-secondary flex items-center gap-1.5 text-[10px] shrink-0"
                   >
                     <FileText className="w-3 h-3 text-cyan-400" />
                     <span className="max-w-[100px] truncate font-mono">{f.name}</span>
@@ -636,35 +636,35 @@ export default function NexusAssistant() {
             <div className="flex gap-1.5 overflow-x-auto py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <button
                 onClick={() => handleSend(undefined, "!apikey")}
-                className="whitespace-nowrap rounded-xl bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 text-[10px] text-amber-200 hover:bg-amber-500/25 transition-all font-semibold flex items-center gap-1 shrink-0"
+                className="nx-btn nx-btn-secondary whitespace-nowrap text-[10px] flex items-center gap-1 shrink-0"
               >
                 <Key className="w-3 h-3 text-amber-300" />
                 <span>🔑 Guide Clé API (Gratuit)</span>
               </button>
               <button
                 onClick={() => handleSend(undefined, "Qui t'a créé ?")}
-                className="whitespace-nowrap rounded-xl bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-1 text-[10px] text-cyan-200 hover:bg-cyan-500/20 transition-all font-semibold flex items-center gap-1 shrink-0"
+                className="nx-btn nx-btn-secondary whitespace-nowrap text-[10px] flex items-center gap-1 shrink-0"
               >
                 <Wand2 className="w-3 h-3 text-cyan-300" />
                 <span>Créateur & Idée</span>
               </button>
               <button
                 onClick={() => handleSend(undefined, "Aide-moi pour un devoir de maths / résolution d'équation.")}
-                className="whitespace-nowrap rounded-xl bg-purple-500/10 border border-purple-500/20 px-2.5 py-1 text-[10px] text-purple-200 hover:bg-purple-500/20 transition-all font-semibold flex items-center gap-1 shrink-0"
+                className="nx-btn nx-btn-secondary whitespace-nowrap text-[10px] flex items-center gap-1 shrink-0"
               >
                 <Calculator className="w-3 h-3 text-purple-300" />
                 <span>Maths & Devoirs</span>
               </button>
               <button
                 onClick={() => handleSend(undefined, "Explique-moi les failles de sécurité Web courantes.")}
-                className="whitespace-nowrap rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 text-[10px] text-emerald-200 hover:bg-emerald-500/20 transition-all font-semibold flex items-center gap-1 shrink-0"
+                className="nx-btn nx-btn-secondary whitespace-nowrap text-[10px] flex items-center gap-1 shrink-0"
               >
                 <ShieldCheck className="w-3 h-3 text-emerald-300" />
                 <span>Cyber-Sécurité</span>
               </button>
               <button
                 onClick={() => handleSend(undefined, "Donne-moi un plan de dissertation de Français.")}
-                className="whitespace-nowrap rounded-xl bg-white/5 border border-white/10 px-2.5 py-1 text-[10px] text-slate-300 hover:bg-white/15 transition-all flex items-center gap-1 shrink-0"
+                className="nx-btn nx-btn-secondary whitespace-nowrap text-[10px] flex items-center gap-1 shrink-0"
               >
                 <BookOpen className="w-3 h-3 text-amber-300" />
                 <span>Français & Plan</span>
@@ -783,13 +783,13 @@ export default function NexusAssistant() {
               <div className="h-4 w-px bg-white/20" />
               <motion.div
                 onTap={() => fileInputRef.current?.click()}
-                className="px-2 py-0.5 rounded-lg text-[10px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/30 font-semibold cursor-pointer"
+                className="nx-btn nx-btn-secondary text-[10px]"
               >
                 + Fichier
               </motion.div>
               <motion.div
                 onTap={() => handleSend(undefined, "!apikey")}
-                className="px-2 py-0.5 rounded-lg text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 font-semibold cursor-pointer"
+                className="nx-btn nx-btn-secondary text-[10px]"
               >
                 🔑 Clé API
               </motion.div>

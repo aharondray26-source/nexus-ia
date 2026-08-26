@@ -314,7 +314,7 @@ export default function Annales() {
             <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => saveToNexusFiles(selectedDoc)}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-cyan-600/20 text-cyan-300 border border-cyan-500/30 text-xs font-semibold hover:bg-cyan-600/30"
+                className="nx-btn nx-btn-secondary flex items-center gap-1 text-xs"
                 title="Enregistrer dans Fichiers"
               >
                 <FolderDown className="w-3.5 h-3.5" />

@@ -22,7 +22,7 @@ function Card({
   return (
     <button
       onClick={onClick}
-      className="flex min-w-[130px] flex-col gap-1 rounded-xl border border-nexus-border bg-nexus-panel/50 px-4 py-3 text-left backdrop-blur-[var(--glass-blur)] transition-colors hover:border-white/20"
+      className="nx-btn nx-btn-secondary flex min-w-[130px] flex-col gap-1 text-left"
     >
       {children}
     </button>

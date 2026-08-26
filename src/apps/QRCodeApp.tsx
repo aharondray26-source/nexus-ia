@@ -576,7 +576,7 @@ export default function QRCodeApp() {
                 <button
                   onClick={handleCopyLink}
                   disabled={!qrDataUrl}
-                  className="flex items-center justify-center gap-2 py-2.5 px-3 bg-slate-950 border border-slate-800 hover:border-cyan-500/40 text-slate-200 hover:text-white rounded-xl font-semibold text-xs transition-all disabled:opacity-40"
+                  className="nx-btn nx-btn-secondary flex items-center justify-center gap-2 text-xs"
                 >
                   {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                   <span>{copied ? "Copié !" : "Copier"}</span>
@@ -610,7 +610,7 @@ export default function QRCodeApp() {
                 ) : (
                   <button
                     onClick={stopCamera}
-                    className="w-full py-2.5 px-4 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 rounded-xl font-bold text-xs transition-all"
+                    className="nx-btn nx-btn-danger w-full text-xs"
                   >
                     Arrêter la Caméra
                   </button>
@@ -686,7 +686,7 @@ export default function QRCodeApp() {
                       setCopied(true);
                       setTimeout(() => setCopied(false), 2000);
                     }}
-                    className="flex-1 flex items-center justify-center gap-2 py-2 px-3 bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-200 font-bold text-xs rounded-xl transition-all"
+                    className="nx-btn nx-btn-secondary flex-1 flex items-center justify-center gap-2 text-xs"
                   >
                     {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                     <span>{copied ? "Copié !" : "Copier le Contenu"}</span>
@@ -752,7 +752,7 @@ export default function QRCodeApp() {
                           setCopied(true);
                           setTimeout(() => setCopied(false), 2000);
                         }}
-                        className="p-2 rounded-lg bg-slate-950 border border-slate-800 hover:border-cyan-500/30 text-slate-300 hover:text-white transition-all text-xs"
+                        className="nx-btn nx-btn-icon text-xs"
                         title="Copier"
                       >
                         <Copy className="w-3.5 h-3.5" />

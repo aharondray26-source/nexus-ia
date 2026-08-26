@@ -372,7 +372,7 @@ export default function Maps() {
                     setCurrentLon(p.lon);
                     setCurrentName(p.name);
                   }}
-                  className="w-full text-left p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 hover:border-cyan-500/40 hover:bg-slate-900 transition-all group flex items-center justify-between"
+                  className="nx-btn nx-btn-icon w-full text-left flex items-center justify-between"
                 >
                   <div>
                     <p className="text-xs font-bold text-slate-200 group-hover:text-cyan-300">{p.name}</p>

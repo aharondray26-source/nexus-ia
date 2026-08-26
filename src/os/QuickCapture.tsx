@@ -55,7 +55,7 @@ export default function QuickCapture() {
       <button
         onClick={() => setOpen((o) => !o)}
         title="Capture rapide (note ou tache)"
-        className="flex h-7 w-7 items-center justify-center rounded-lg border border-nexus-border text-nexus-muted transition-colors hover:text-nexus-text"
+        className="nx-btn nx-btn-secondary flex h-7 w-7 items-center justify-center"
         aria-label="Capture rapide"
       >
         <span className="text-base leading-none">+</span>
@@ -68,7 +68,7 @@ export default function QuickCapture() {
               <button
                 key={k}
                 onClick={() => setKind(k)}
-                className="flex-1 rounded-md border px-2 py-1 text-[11px] transition-colors"
+                className="nx-btn nx-btn-secondary flex-1 text-[11px]"
                 style={
                   kind === k
                     ? { borderColor: "var(--accent)", color: "var(--accent)" }
@@ -86,12 +86,11 @@ export default function QuickCapture() {
               onChange={(e) => setText(e.target.value)}
               onKeyDown={onKey}
               placeholder={kind === "note" ? "Une idee..." : "A faire..."}
-              className="flex-1 rounded-lg border border-nexus-border bg-nexus-bg px-2.5 py-1.5 text-xs text-nexus-text outline-none focus:border-white/30"
+              className="nx-btn nx-btn-secondary flex-1 text-xs"
             />
             <button
               onClick={save}
-              className="flex items-center justify-center rounded-lg border px-2.5 py-1.5"
-              style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
+              className="nx-btn nx-btn-primary flex items-center justify-center"
             >
               <Icon name="tasks" size={14} />
             </button>

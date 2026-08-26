@@ -275,13 +275,13 @@ export default function Sheet() {
           </label>
           <button
             onClick={exportCSV}
-            className="rounded-md border border-nexus-border px-2.5 py-1 text-[11px] text-nexus-muted transition-colors hover:text-nexus-text"
+            className="nx-btn nx-btn-secondary text-[11px]"
           >
             Exporter CSV
           </button>
           <button
             onClick={() => setCells({})}
-            className="rounded-md border border-nexus-border px-2.5 py-1 text-[11px] text-nexus-muted transition-colors hover:text-red-400"
+            className="nx-btn nx-btn-danger text-[11px]"
           >
             Effacer
           </button>

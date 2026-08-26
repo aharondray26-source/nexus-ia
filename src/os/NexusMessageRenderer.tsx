@@ -107,7 +107,7 @@ export const NexusMessageRenderer: React.FC<NexusMessageRendererProps> = ({
             }
 
             return (
-              <div className="relative my-2 rounded-xl border border-slate-800 bg-slate-950 overflow-hidden shadow-lg group">
+              <div className="nx-btn nx-btn-secondary relative my-2 overflow-hidden">
                 <div className="flex items-center justify-between px-3 py-1.5 bg-slate-900/90 border-b border-slate-800/80 text-[10px] text-slate-400 font-mono">
                   <span className="font-bold text-cyan-400">{match ? match[1] : "code"}</span>
                   <div className="flex items-center gap-1.5">

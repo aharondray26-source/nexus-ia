@@ -51,7 +51,7 @@ export default function AIHub() {
                 openAiWindow(`ai-${ai.name}`, ai.url);
               }
             }}
-            className="group flex flex-col items-start gap-2 rounded-xl border border-nexus-border bg-nexus-bg p-4 text-left transition-all duration-300 hover:border-white/20 hover:bg-white/5"
+            className="nx-btn nx-btn-secondary flex flex-col items-start gap-2 text-left"
           >
             <span
               className="flex h-9 w-9 items-center justify-center rounded-lg text-sm font-semibold"

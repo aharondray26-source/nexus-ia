@@ -179,7 +179,7 @@ function MinimizedBar() {
               toggleMinimize(w.id);
               focusWindow(w.id);
             }}
-            className="shrink-0 whitespace-nowrap rounded-md border border-nexus-border px-2.5 py-1 text-[11px] text-nexus-muted transition-colors hover:text-nexus-text"
+            className="nx-btn nx-btn-secondary shrink-0 whitespace-nowrap text-[11px]"
           >
             {app?.title ?? "Fenetre"}
           </button>

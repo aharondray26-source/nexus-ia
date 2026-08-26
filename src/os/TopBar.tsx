@@ -51,7 +51,7 @@ export default function TopBar() {
         <button
           onClick={() => openApp("mail", { width: 840, height: 600 })}
           title="Ouvrir Boîte Mail & Gmail"
-          className="flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-xs text-amber-300 hover:bg-amber-500/20 transition-all"
+          className="nx-btn nx-btn-secondary flex items-center gap-1.5 text-xs"
         >
           <Mail size={14} className="text-amber-400" />
           <span className="hidden xl:inline text-[11px] font-semibold">Mail</span>
@@ -60,7 +60,7 @@ export default function TopBar() {
         <button
           onClick={() => openApp("messages", { width: 820, height: 580 })}
           title="Ouvrir la Messagerie Instantanée"
-          className="flex items-center gap-1.5 rounded-lg border border-cyan-500/25 bg-cyan-500/[0.08] px-2 py-1 text-[11px] text-cyan-300 transition-colors hover:bg-cyan-500/15"
+          className="nx-btn nx-btn-secondary flex items-center gap-1.5 text-[11px]"
         >
           <MessageSquare size={14} className="text-cyan-400" />
           <span className="hidden xl:inline text-[11px]">Message</span>
@@ -69,7 +69,7 @@ export default function TopBar() {
         <button
           onClick={() => openApp("cloud", { width: 780, height: 580 })}
           title="Ouvrir Nexus Cloud & Google Drive"
-          className="flex items-center gap-1.5 rounded-lg border border-cyan-500/25 bg-cyan-500/[0.08] px-2 py-1 text-[11px] text-cyan-300 transition-colors hover:bg-cyan-500/15"
+          className="nx-btn nx-btn-secondary flex items-center gap-1.5 text-[11px]"
         >
           <Cloud size={14} className="text-cyan-400" />
           <span className="hidden xl:inline text-[11px] font-semibold">Cloud</span>
@@ -78,7 +78,7 @@ export default function TopBar() {
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           title={theme === "dark" ? "Passer en Mode Clair (Lumineux)" : "Passer en Mode Sombre (Nuit)"}
-          className="flex items-center gap-1.5 rounded-lg border border-nexus-border bg-transparent px-2 py-1 text-[11px] text-nexus-muted transition-colors hover:border-white/20 hover:text-nexus-text"
+          className="nx-btn nx-btn-secondary flex items-center gap-1.5 text-[11px]"
         >
           {theme === "dark" ? (
             <>
@@ -97,7 +97,7 @@ export default function TopBar() {
           href="https://github.com/aharondray26-source/nexus-ia"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 rounded-lg border border-nexus-border bg-transparent px-2 py-1 text-[11px] text-nexus-muted transition-colors hover:border-white/20 hover:text-nexus-text"
+          className="nx-btn nx-btn-secondary flex items-center gap-1.5 text-[11px]"
           title="Voir le code source du projet (open source)"
         >
           <Package size={14} className="text-cyan-400" />
@@ -108,7 +108,7 @@ export default function TopBar() {
         <QuickCapture />
         <button
           onClick={togglePalette}
-          className="hidden md:flex items-center gap-2 rounded-lg border border-nexus-border px-3 py-1 text-xs text-nexus-muted transition-colors hover:text-nexus-text"
+          className="nx-btn nx-btn-secondary hidden md:flex items-center gap-2 text-xs"
         >
           <span className="opacity-70">Rechercher</span>
           <kbd className="kbd-hint rounded border border-nexus-border px-1.5 py-0.5 text-[10px]">
@@ -119,7 +119,7 @@ export default function TopBar() {
           <button
             onClick={closeAll}
             title="Fermer toutes les fenetres"
-            className="nexus-fade-in rounded-md border border-nexus-border px-1.5 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-[11px] text-nexus-muted transition-colors hover:border-red-400/40 hover:text-red-400"
+            className="nx-btn nx-btn-danger sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px]"
           >
             Fermer tout
           </button>

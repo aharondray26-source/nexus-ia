@@ -214,7 +214,7 @@ export default function Settings() {
             <button
               key={d.key}
               onClick={() => setDockPos(d.key)}
-              className="rounded-lg border px-3 py-1.5 text-xs transition-colors"
+              className="nx-btn nx-btn-secondary text-xs"
               style={
                 dockPos === d.key
                   ? { borderColor: "var(--accent)", color: "var(--accent)" }
@@ -233,7 +233,7 @@ export default function Settings() {
         </span>
         <button
           onClick={() => setIconColors(!iconColors)}
-          className="w-fit rounded-lg border px-3 py-1.5 text-xs transition-colors"
+          className="nx-btn nx-btn-secondary w-fit text-xs"
           style={
             iconColors
               ? { borderColor: "var(--accent)", color: "var(--accent)" }
@@ -254,7 +254,7 @@ export default function Settings() {
               key={w.key}
               onClick={() => setWallpaper(w.key)}
               title={w.label}
-              className="h-12 rounded-lg border-2 transition-transform hover:scale-[1.03]"
+              className="nx-btn nx-btn-secondary h-12"
               style={{
                 background: w.css,
                 borderColor:
@@ -267,7 +267,7 @@ export default function Settings() {
             <button
               onClick={() => setWallpaper("perso")}
               title="Ton image"
-              className="h-12 rounded-lg border-2 transition-transform hover:scale-[1.03]"
+              className="nx-btn nx-btn-secondary h-12"
               style={{
                 background: `url('${customWallpaper}') center/cover no-repeat`,
                 borderColor:
@@ -311,7 +311,7 @@ export default function Settings() {
             <button
               key={b.key}
               onClick={() => setBackground(b.key)}
-              className="rounded-lg border px-3 py-1.5 text-xs transition-colors"
+              className="nx-btn nx-btn-secondary text-xs"
               style={
                 background === b.key
                   ? { borderColor: "var(--accent)", color: "var(--accent)" }
@@ -333,7 +333,7 @@ export default function Settings() {
             <button
               key={w.key}
               onClick={() => toggleWidget(w.key)}
-              className="rounded-lg border px-3 py-1.5 text-xs transition-colors"
+              className="nx-btn nx-btn-secondary text-xs"
               style={
                 widgets[w.key]
                   ? { borderColor: "var(--accent)", color: "var(--accent)" }
@@ -355,7 +355,7 @@ export default function Settings() {
           value={userName}
           onChange={(e) => setUserName(e.target.value)}
           placeholder="Comment veux-tu être accueilli ?"
-          className="rounded-lg border border-nexus-border bg-nexus-bg px-3 py-2 text-sm text-nexus-text outline-none focus:border-white/30"
+          className="nx-input text-sm"
         />
       </div>
 
@@ -378,7 +378,7 @@ export default function Settings() {
           value={geminiKey}
           onChange={(e) => handleKeyChange(e.target.value)}
           placeholder="Collez votre clé API Gemini (AIzaSy...)"
-          className="rounded-lg border border-nexus-border bg-nexus-bg px-3 py-2 text-xs text-nexus-text outline-none focus:border-cyan-500/50"
+          className="nx-input text-xs"
         />
         
         <button
@@ -446,7 +446,7 @@ export default function Settings() {
             <a
               href="https://github.com/aharondray26-source/nexus-ia" target="_blank" rel="noopener noreferrer"
               download="RAPPORT_TECHNIQUE_NEXUS_OS.md"
-              className="shrink-0 flex items-center gap-2 rounded-lg border border-purple-400/50 bg-purple-500/20 px-4 py-2 text-xs font-bold text-purple-200 hover:bg-purple-500/30 transition-all shadow-md"
+              className="nx-btn nx-btn-secondary shrink-0 flex items-center gap-2 text-xs"
             >
               <span>📄 Rapport .MD</span>
             </a>
@@ -460,7 +460,7 @@ export default function Settings() {
         </span>
         <button
           onClick={() => setAutoMinimizeInactive(!autoMinimizeInactive)}
-          className="w-full flex items-center justify-between rounded-xl border border-nexus-border bg-nexus-bg/50 p-3 text-xs text-nexus-text transition-colors hover:border-white/20"
+          className="nx-btn nx-btn-secondary w-full flex items-center justify-between text-xs"
         >
           <div className="flex flex-col items-start gap-0.5 pr-2">
             <span className="font-semibold text-white">Auto-réduction des fenêtres inactives (2 min)</span>
@@ -484,7 +484,7 @@ export default function Settings() {
         <div className="flex flex-wrap gap-2 pt-1">
           <button
             onClick={() => setReduceMotion(!reduceMotion)}
-            className="rounded-lg border px-3 py-1.5 text-xs transition-colors"
+            className="nx-btn nx-btn-secondary text-xs"
             style={
               reduceMotion
                 ? { borderColor: "var(--accent)", color: "var(--accent)" }
@@ -495,7 +495,7 @@ export default function Settings() {
           </button>
           <button
             onClick={() => setLargeText(!largeText)}
-            className="rounded-lg border px-3 py-1.5 text-xs transition-colors"
+            className="nx-btn nx-btn-secondary text-xs"
             style={
               largeText
                 ? { borderColor: "var(--accent)", color: "var(--accent)" }
@@ -539,7 +539,7 @@ export default function Settings() {
 
       <button
         onClick={reset}
-        className="mt-auto rounded-lg border border-nexus-border px-4 py-2 text-xs text-nexus-muted transition-colors hover:text-red-400"
+        className="nx-btn nx-btn-danger mt-auto text-xs"
       >
         Tout reinitialiser
       </button>

@@ -498,7 +498,7 @@ Je suis votre assistant IA haute performance propulsé par **Gemini 3.6 Flash**.
       ) : (
         <button
           onClick={() => setSidebarCollapsed(false)}
-          className="absolute top-3 left-3 z-30 p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-cyan-400 hover:border-cyan-500/40 shadow-lg transition-all"
+          className="nx-btn nx-btn-icon absolute top-3 left-3 z-30"
           title="Ouvrir l'historique"
         >
           <ChevronRight className="w-4 h-4" />
@@ -540,7 +540,7 @@ Je suis votre assistant IA haute performance propulsé par **Gemini 3.6 Flash**.
                 a.download = `${activeSession.title.toLowerCase().replace(/\s+/g, "_")}_nexus.txt`;
                 a.click();
               }}
-              className="p-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-cyan-300 hover:border-cyan-500/30 transition-colors"
+              className="nx-btn nx-btn-icon"
               title="Exporter la session de discussion"
             >
               <Download className="w-3.5 h-3.5" />
@@ -590,7 +590,7 @@ Je suis votre assistant IA haute performance propulsé par **Gemini 3.6 Flash**.
             {sandboxCollapsed && (
               <button
                 onClick={() => setSandboxCollapsed(false)}
-                className="p-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-cyan-400 transition-colors"
+                className="nx-btn nx-btn-icon"
                 title="Ouvrir le lecteur multimédia"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -672,7 +672,7 @@ Je suis votre assistant IA haute performance propulsé par **Gemini 3.6 Flash**.
                           setSandboxContent(msg.codeSnippet!);
                           setSandboxCollapsed(false);
                         }}
-                        className="px-3 py-1.5 rounded-lg bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 border border-cyan-500/40 text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95"
+                        className="nx-btn nx-btn-secondary text-xs flex items-center gap-1.5"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         <span>Ouvrir dans le lecteur</span>
@@ -734,7 +734,7 @@ Je suis votre assistant IA haute performance propulsé par **Gemini 3.6 Flash**.
                   onClick={() => {
                     setInput(chip.prompt);
                   }}
-                  className="shrink-0 px-3 py-1 rounded-xl bg-slate-900/90 hover:bg-cyan-500/20 border border-slate-800 hover:border-cyan-500/40 text-slate-300 hover:text-cyan-300 transition-all font-medium"
+                  className="nx-btn nx-btn-secondary shrink-0"
                 >
                   {chip.label}
                 </button>

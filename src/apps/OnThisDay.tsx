@@ -64,7 +64,7 @@ export default function OnThisDay() {
           <li key={i}>
             <button
               onClick={() => e.url && openAiWindow(`histoire-${e.year}`, e.url)}
-              className="flex w-full gap-3 rounded-lg border border-nexus-border bg-nexus-bg px-3 py-2.5 text-left transition-colors hover:border-white/20"
+              className="nx-btn nx-btn-secondary flex w-full gap-3 text-left"
             >
               <span
                 className="shrink-0 text-xs font-semibold"

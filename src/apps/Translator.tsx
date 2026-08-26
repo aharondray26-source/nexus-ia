@@ -65,7 +65,7 @@ export default function Translator() {
         </select>
         <button
           onClick={swap}
-          className="rounded-lg border border-nexus-border px-3 py-2 text-sm text-nexus-muted transition-colors hover:text-nexus-text"
+          className="nx-btn nx-btn-secondary text-sm"
           aria-label="Inverser"
         >
           ⇄
@@ -88,12 +88,12 @@ export default function Translator() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Texte a traduire..."
-          className="flex-1 resize-none rounded-lg border border-nexus-border bg-nexus-bg px-3 py-2 text-sm text-nexus-text outline-none focus:border-white/30"
+          className="nx-input flex-1 text-sm"
         />
         <button
           type="submit"
           disabled={loading}
-          className="rounded-lg border border-nexus-border bg-white/[0.04] px-4 py-2 text-sm text-nexus-text transition-colors hover:bg-white/[0.08] disabled:opacity-50"
+          className="nx-btn nx-btn-secondary text-sm"
         >
           {loading ? "..." : "Traduire"}
         </button>

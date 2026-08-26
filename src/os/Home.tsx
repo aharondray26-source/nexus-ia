@@ -152,7 +152,7 @@ export default function Home() {
                 <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse" />
                 <span className="text-xs sm:text-sm font-medium">Lancer une recherche ou poser une question à l'IA...</span>
               </span>
-              <kbd className="kbd-hint rounded-lg border border-nexus-border bg-nexus-card px-2.5 py-1 text-[10px] text-cyan-400 font-mono shadow-inner">
+              <kbd className="nx-btn nx-btn-secondary text-[10px] font-mono">
                 {searchShortcutLabel()}
               </kbd>
             </button>
@@ -162,28 +162,28 @@ export default function Home() {
           <div className="flex flex-wrap items-center justify-center gap-2">
             <button
               onClick={() => handleTriggerAiPrompt("Résoudre un devoir ou un problème")}
-              className="px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-200 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md"
+              className="nx-btn nx-btn-secondary text-xs flex items-center gap-1.5"
             >
               <Zap className="w-3.5 h-3.5 text-cyan-400" />
               <span>Devoirs & AI</span>
             </button>
             <button
               onClick={() => openApp("game", { width: 760, height: 620 })}
-              className="px-3 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-200 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md"
+              className="nx-btn nx-btn-secondary text-xs flex items-center gap-1.5"
             >
               <Gamepad2 className="w-3.5 h-3.5 text-purple-400" />
               <span>Partie d'Échecs</span>
             </button>
             <button
               onClick={() => openApp("recipes", { width: 680, height: 520 })}
-              className="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-200 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md"
+              className="nx-btn nx-btn-secondary text-xs flex items-center gap-1.5"
             >
               <Compass className="w-3.5 h-3.5 text-emerald-400" />
               <span>Recettes du Chef</span>
             </button>
             <button
               onClick={() => openApp("whiteboard", { width: 720, height: 520 })}
-              className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-200 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md"
+              className="nx-btn nx-btn-secondary text-xs flex items-center gap-1.5"
             >
               <Palette className="w-3.5 h-3.5 text-amber-400" />
               <span>Tableau Blanc</span>
@@ -198,7 +198,7 @@ export default function Home() {
         <div className="w-full bg-nexus-panel border border-nexus-border rounded-3xl p-5 sm:p-6 backdrop-blur-3xl shadow-2xl space-y-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-nexus-border pb-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+              <div className="nx-btn nx-btn-icon">
                 <LayoutGrid className="w-5 h-5" />
               </div>
               <div>

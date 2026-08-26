@@ -209,11 +209,11 @@ export default function Learn() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Apprendre n'importe quoi (ex : la photosynthese)..."
-          className="flex-1 rounded-lg border border-nexus-border bg-nexus-bg px-3 py-2 text-sm text-nexus-text outline-none focus:border-white/30"
+          className="nx-input flex-1 text-sm"
         />
         <button
           type="submit"
-          className="rounded-lg border border-nexus-border bg-white/[0.04] px-4 py-2 text-sm text-nexus-text transition-colors hover:bg-white/[0.08]"
+          className="nx-btn nx-btn-secondary text-sm"
         >
           Apprendre
         </button>
@@ -243,7 +243,7 @@ export default function Learn() {
             <button
               key={topic}
               onClick={() => loadTopic(topic)}
-              className="rounded-md border border-nexus-border bg-nexus-bg px-2.5 py-1 text-[11px] text-nexus-muted transition-colors hover:border-white/20 hover:text-nexus-text"
+              className="nx-btn nx-btn-secondary text-[11px]"
             >
               {topic}
             </button>

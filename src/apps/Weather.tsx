@@ -110,12 +110,12 @@ export default function Weather() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ta ville..."
-          className="flex-1 rounded-lg border border-nexus-border bg-nexus-bg px-3 py-2 text-sm text-nexus-text outline-none focus:border-white/30"
+          className="nx-input flex-1 text-sm"
         />
         <button
           type="submit"
           disabled={loading}
-          className="rounded-lg border border-nexus-border bg-white/[0.04] px-4 py-2 text-sm text-nexus-text transition-colors hover:bg-white/[0.08] disabled:opacity-50"
+          className="nx-btn nx-btn-secondary text-sm"
         >
           {loading ? "..." : "Voir"}
         </button>
