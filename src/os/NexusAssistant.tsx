@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import Mascotte from "./Mascotte";
 import { motion, AnimatePresence, useAnimation } from "motion/react";
 import {
   Sparkles,
@@ -99,6 +100,28 @@ export default function NexusAssistant() {
   const [showScrollBottom, setShowScrollBottom] = useState(false);
   
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const mascotRef = useRef<HTMLDivElement>(null);
+  // BUG CORRIGE : le panneau s'ouvrait toujours au meme endroit, meme si on
+  // avait deplace le bouton — il pouvait donc se retrouver coupe par un bord.
+  // Il s'ouvre desormais A COTE de la mascotte, en restant dans l'ecran.
+  const [panelPos, setPanelPos] = useState<{ left: number; top: number } | null>(null);
+  useEffect(() => {
+    if (!open) return;
+    const place = () => {
+      const r = mascotRef.current?.getBoundingClientRect();
+      if (!r) return;
+      const W = 420, H = Math.min(560, window.innerHeight - 90);
+      let left = r.left + r.width / 2 - W / 2;
+      let top = r.top - H - 12;                       // au-dessus par defaut
+      if (top < 52) top = Math.min(r.bottom + 12, window.innerHeight - H - 12);
+      left = Math.max(10, Math.min(left, window.innerWidth - W - 10));
+      top = Math.max(52, Math.min(top, window.innerHeight - H - 10));
+      setPanelPos({ left, top });
+    };
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [open]);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -429,8 +452,10 @@ export default function NexusAssistant() {
             className={`fixed select-none font-sans z-[99990] ${
               isDocked
                 ? "top-11 bottom-0 right-0 left-0 sm:left-auto w-full sm:w-[420px] max-w-full"
-                : "bottom-24 sm:bottom-16 right-2 sm:right-6 left-2 sm:left-auto flex flex-col items-end pointer-events-auto"
+                : "flex flex-col items-end pointer-events-auto w-[420px] max-w-[calc(100vw-20px)]"
             }`}
+            // Le panneau se place a cote de la mascotte, jamais hors de l'ecran.
+            style={!isDocked && panelPos ? { left: panelPos.left, top: panelPos.top } : undefined}
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.15, scaleY: 0.2, y: isDocked ? 0 : 80, x: isDocked ? 120 : 20, filter: "blur(12px)" }}
@@ -527,7 +552,7 @@ export default function NexusAssistant() {
                             {m.attachments.map((att, i) => (
                               <span
                                 key={i}
-                                className="nx-btn nx-btn-secondary inline-flex items-center gap-1 text-[10px] font-mono"
+                                className="nx-chip inline-flex items-center gap-1 text-[10px] font-mono"
                               >
                                 <FileText className="w-3 h-3 text-cyan-300" />
                                 <span className="truncate max-w-[120px]">{att.name}</span>
@@ -612,12 +637,12 @@ export default function NexusAssistant() {
 
             {/* Attached File Chips Bar */}
             {attachedFiles.length > 0 && (
-              <div className="nx-btn nx-btn-secondary flex items-center gap-2 overflow-x-auto mb-2">
+              <div className="flex items-center gap-2 overflow-x-auto mb-2 rounded-xl border border-nexus-border bg-white/[0.04] p-2">
                 <span className="text-[10px] text-slate-400 font-semibold uppercase">Joints:</span>
                 {attachedFiles.map((f) => (
                   <div
                     key={f.id}
-                    className="nx-btn nx-btn-secondary flex items-center gap-1.5 text-[10px] shrink-0"
+                    className="flex items-center gap-1.5 text-[10px] shrink-0 rounded-xl border border-nexus-border bg-white/[0.04] p-2"
                   >
                     <FileText className="w-3 h-3 text-cyan-400" />
                     <span className="max-w-[100px] truncate font-mono">{f.name}</span>
@@ -744,69 +769,24 @@ export default function NexusAssistant() {
         whileHover={{ scale: 1.03 }}
         className="fixed bottom-24 sm:bottom-16 right-3 sm:right-6 z-[999999] touch-none cursor-grab active:cursor-grabbing select-none"
       >
-        <div className="flex items-center gap-1 p-1 rounded-full bg-slate-950/95 border border-cyan-400/50 backdrop-blur-3xl shadow-[0_10px_40px_rgba(56,189,248,0.35)] hover:border-cyan-300 transition-colors group">
-          {/* Stage 0: Compact Orb mode */}
-          {pillSize === "compact" ? (
-            <motion.div
-              onTap={() => handleToggle()}
-              className="relative flex items-center justify-center h-10 w-10 rounded-full bg-slate-900 border border-cyan-400/40 p-1 cursor-pointer group-hover:scale-110 transition-transform"
-              title="Nexus IA Pro — Cliquer pour ouvrir"
-            >
-              <span className="absolute inset-0 rounded-full bg-cyan-400/20 animate-ping" />
-              <Sparkles className="w-5 h-5 text-cyan-300 relative z-10" />
-            </motion.div>
-          ) : pillSize === "normal" ? (
-            /* Stage 1: Standard Pill mode */
-            <motion.div
-              onTap={() => handleToggle()}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-white text-xs font-bold cursor-pointer"
-            >
-              <div className="relative flex items-center justify-center h-3 w-3">
-                <span className="absolute h-full w-full rounded-full bg-cyan-400 animate-ping opacity-75" />
-                <span className="relative h-2.5 w-2.5 rounded-full nx-grad" />
-              </div>
-              <span className="tracking-tight text-white font-extrabold text-xs">Nexus IA Pro</span>
-              <span className="shrink-0 text-[10px] text-cyan-300 bg-cyan-500/20 px-2 py-0.5 rounded-full font-semibold border border-cyan-500/30">
-                {open ? "Fermer" : "Lancer"}
-              </span>
-            </motion.div>
-          ) : (
-            /* Stage 2: Expanded Pro mode with quick actions in pill */
-            <div className="flex items-center gap-1 px-2 py-1 text-xs">
-              <motion.div
-                onTap={() => handleToggle()}
-                className="flex items-center gap-2 px-2 py-1 rounded-full text-white font-bold hover:bg-white/10 cursor-pointer"
-              >
-                <Sparkles className="w-4 h-4 text-cyan-300 animate-pulse" />
-                <span className="tracking-tight text-white font-extrabold text-xs">Nexus IA</span>
-              </motion.div>
-              <div className="h-4 w-px bg-white/20" />
-              <motion.div
-                onTap={() => fileInputRef.current?.click()}
-                className="nx-btn nx-btn-secondary text-[10px]"
-              >
-                + Fichier
-              </motion.div>
-              <motion.div
-                onTap={() => handleSend(undefined, "!apikey")}
-                className="nx-btn nx-btn-secondary text-[10px]"
-              >
-                🔑 Clé API
-              </motion.div>
-            </div>
-          )}
-
-          {/* Sizing Switcher Button (cycles compact -> normal -> expanded) */}
-          <motion.div
-            onTap={(e) => {
-              e.stopPropagation();
-              setPillSize((prev) => (prev === "compact" ? "normal" : prev === "normal" ? "expanded" : "compact"));
-            }}
-            title="Ajuster la taille du bouton (3 modes)"
-            className="p-1 rounded-full text-slate-400 hover:text-cyan-300 hover:bg-white/10 transition-colors cursor-pointer"
+        {/* La mascotte remplace l'ancienne pastille : le corps ouvre l'assistant,
+            l'oeil gauche ajoute un fichier, l'oeil droit ouvre la cle API. */}
+        <div ref={mascotRef} className="relative">
+          <Mascotte
+            active={open}
+            size={pillSize === "compact" ? 46 : pillSize === "normal" ? 58 : 70}
+            onBody={() => handleToggle()}
+            onLeftEye={() => fileInputRef.current?.click()}
+            onRightEye={() => handleSend(undefined, "!apikey")}
+          />
+          <button
+            onClick={(e) => { e.stopPropagation();
+              setPillSize((p) => (p === "compact" ? "normal" : p === "normal" ? "expanded" : "compact")); }}
+            title="Taille de la mascotte"
+            className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/65 text-white/70 backdrop-blur transition-colors hover:text-white"
           >
-            <Sliders className="w-3.5 h-3.5" />
-          </motion.div>
+            <Sliders className="h-3 w-3" />
+          </button>
         </div>
       </motion.div>
     )}

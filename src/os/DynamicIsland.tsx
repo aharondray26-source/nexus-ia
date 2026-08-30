@@ -38,9 +38,14 @@ export default function DynamicIsland() {
       <motion.div
         layout
         transition={{ type: "spring", stiffness: 380, damping: 25 }}
-        className={`bg-slate-950/95 border border-white/20 backdrop-blur-3xl shadow-[0_12px_40px_rgba(0,0,0,0.6)] flex items-center justify-between text-white overflow-hidden transition-colors ${
+        className={`bg-slate-950/95 border border-white/20 backdrop-blur-3xl shadow-[0_12px_40px_rgba(0,0,0,0.6)] flex items-center justify-between text-white transition-colors ${
           isMusicOpen ? "border-emerald-500/50 shadow-emerald-500/20" : "hover:border-cyan-400/60"
-        } ${expanded ? "w-[360px] max-w-[94vw] rounded-3xl p-3.5 sm:p-4 flex-col space-y-3 z-[999999]" : "h-8 min-w-[130px] sm:min-w-[220px] max-w-[220px] sm:max-w-[300px] rounded-full px-2.5 sm:px-3.5 cursor-pointer"}`}
+        } ${expanded
+          // Ouvert : ancre EN HAUT et deroule vers le bas. Avant, le panneau
+          // grandissait sur place, centre dans une barre de 44px : la moitie
+          // haute sortait de l'ecran et se retrouvait coupee.
+          ? "absolute top-1 left-1/2 -translate-x-1/2 w-[360px] max-w-[94vw] max-h-[80vh] overflow-y-auto rounded-3xl p-3.5 sm:p-4 flex-col space-y-3 z-[1000020]"
+          : "h-8 min-w-[130px] sm:min-w-[220px] max-w-[220px] sm:max-w-[300px] rounded-full px-2.5 sm:px-3.5 cursor-pointer"}`}
       >
         {!expanded ? (
           /* Collapsed View Pill */

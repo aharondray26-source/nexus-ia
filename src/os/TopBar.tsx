@@ -30,7 +30,7 @@ export default function TopBar() {
   const openCount = windows.filter((w) => !w.minimized).length;
 
   return (
-    <header className="z-[999999] relative flex h-11 shrink-0 items-center justify-between border-b border-nexus-border bg-nexus-panel/80 px-2 sm:px-4 backdrop-blur-[var(--glass-blur)]">
+    <header className="z-[999999] relative flex h-11 shrink-0 items-center justify-between overflow-visible border-b border-nexus-border bg-nexus-panel/80 px-2 sm:px-4 backdrop-blur-[var(--glass-blur)]">
       <button
         onClick={minimizeAll}
         title="Revenir à l'accueil (rien n'est fermé)"
@@ -43,11 +43,14 @@ export default function TopBar() {
         <span className="sm:hidden font-bold text-xs text-cyan-300">Nexus</span>
       </button>
 
-      <div className="absolute left-1/2 top-1.5 -translate-x-1/2 flex items-center justify-center z-[999999] pointer-events-auto">
+      {/* L'ilot fait partie de la rangee : il pousse les boutons au lieu de les couvrir. */}
+      <div className="relative mx-2 flex min-w-0 flex-1 items-center justify-center overflow-visible">
         <DynamicIsland />
       </div>
 
-      <div className="flex items-center gap-1.5 sm:gap-2.5 ml-auto shrink-0">
+      {/* Pas d'overflow ici : sinon les menus deroulants (Compte, capture rapide)
+          se retrouvent COUPES par le bord de la barre. */}
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5">
         <button
           onClick={() => openApp("mail", { width: 840, height: 600 })}
           title="Ouvrir Boîte Mail & Gmail"

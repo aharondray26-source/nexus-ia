@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import Dock from "./Dock";
 import TopBar from "./TopBar";
+import { estModeOnglet } from "../lib/ongletMode";
 import Window from "./Window";
+import ControlRoom from "./ControlRoom";
+import CallWatcher from "./CallWatcher";
 import Home from "./Home";
 import CommandPalette from "./CommandPalette";
 import { useWindows } from "./useWindows";
@@ -47,6 +50,7 @@ export default function Desktop() {
   }, []);
 
   // Position effective de la barre : en portrait telephone, toujours en bas.
+  const homeStyle = useSettings((st) => st.homeStyle);
   const pos: DockPos = isMobile ? "bottom" : dockPos;
   const horizontalDock = pos === "top" || pos === "bottom";
   const dockEl = <Dock horizontal={horizontalDock} pos={pos} />;
@@ -96,13 +100,14 @@ export default function Desktop() {
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-nexus-bg text-nexus-text">
       <TopBar />
-      {pos === "top" && dockEl}
+      <CallWatcher />
+      {!estModeOnglet() && pos === "top" && dockEl}
       <div
         className={`relative flex flex-1 overflow-hidden ${
           pos === "right" ? "flex-row-reverse" : "flex-row"
         }`}
       >
-        {(pos === "left" || pos === "right") && dockEl}
+        {!estModeOnglet() && (pos === "left" || pos === "right") && dockEl}
 
         {/* Le bureau ou se posent les fenetres. */}
         <div className="relative flex-1 overflow-hidden">
@@ -119,7 +124,8 @@ export default function Desktop() {
           />
 
           {/* L'accueil reapparait des qu'aucune fenetre n'est visible. */}
-          {windows.every((w) => w.minimized) && <Home />}
+          {windows.every((w) => w.minimized) &&
+            (estModeOnglet() || homeStyle === "classic" ? <Home /> : <ControlRoom />)}
 
           {windows.map((win) => {
             const app = getApp(win.appId);
@@ -134,7 +140,7 @@ export default function Desktop() {
         </div>
       </div>
 
-      {pos === "bottom" && dockEl}
+      {!estModeOnglet() && pos === "bottom" && dockEl}
 
       <CommandPalette />
 

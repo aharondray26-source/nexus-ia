@@ -6,6 +6,7 @@ import { useSettings, resolveWallpaper } from "./useSettings";
 import { APPS, AppDefinition } from "./appsRegistry";
 import { getActivity } from "../lib/activity";
 import { searchShortcutLabel } from "../lib/platform";
+import { estModeOnglet, chercherSurLeWeb } from "../lib/ongletMode";
 import HomeWidgets from "./HomeWidgets";
 import Icon from "./Icons";
 import Logo from "./Logo";
@@ -35,7 +36,10 @@ type CategoryType = "all" | "ai" | "productivity" | "entertainment" | "creation"
 export default function Home() {
   const [now, setNow] = useState(new Date());
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>("all");
+  const [recherche, setRecherche] = useState("");
   const [welcomed, setWelcomed] = useState<boolean>(() => {
+    // Un nouvel onglet ne fait pas la lecon : pas de carte de bienvenue.
+    if (estModeOnglet()) return true;
     try {
       return localStorage.getItem("nexus.welcomed") === "1";
     } catch {
@@ -140,22 +144,52 @@ export default function Home() {
           )}
         </div>
 
-        {/* AI Command & Quick Prompt Search Bar */}
+        {/* La barre de recherche. Dans un nouvel onglet du navigateur, elle se
+            comporte comme celle d'un navigateur : on tape, Entree, ca cherche
+            sur le web. Ailleurs, elle ouvre la palette de commandes. */}
         <div className="w-full max-w-xl space-y-3">
           <div className="relative group">
             <div className="absolute -inset-1 rounded-3xl nx-grad opacity-30 group-hover:opacity-75 blur-md transition duration-500" />
-            <button
-              onClick={() => setPaletteOpen(true)}
-              className="relative flex w-full items-center justify-between gap-3 rounded-2xl border border-nexus-border bg-nexus-panel px-5 py-3.5 text-sm text-nexus-text backdrop-blur-2xl transition-all duration-300 hover:bg-nexus-card shadow-2xl"
-            >
-              <span className="flex items-center gap-3">
-                <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse" />
-                <span className="text-xs sm:text-sm font-medium">Lancer une recherche ou poser une question à l'IA...</span>
-              </span>
-              <kbd className="nx-btn nx-btn-secondary text-[10px] font-mono">
-                {searchShortcutLabel()}
-              </kbd>
-            </button>
+            {estModeOnglet() ? (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  chercherSurLeWeb(recherche);
+                  setRecherche("");
+                }}
+                className="relative flex w-full items-center gap-2 rounded-2xl border border-nexus-border bg-nexus-panel px-4 py-3 backdrop-blur-2xl shadow-2xl"
+              >
+                <Search className="w-4 h-4 shrink-0 text-nexus-muted" />
+                <input
+                  autoFocus
+                  value={recherche}
+                  onChange={(e) => setRecherche(e.target.value)}
+                  placeholder="Rechercher sur le web, ou une adresse…"
+                  className="min-w-0 flex-1 bg-transparent text-sm text-nexus-text outline-none placeholder:text-nexus-muted"
+                />
+                <button
+                  type="button"
+                  onClick={() => setPaletteOpen(true)}
+                  title="Poser la question à l'IA"
+                  className="nx-btn nx-btn-secondary shrink-0 !px-2.5 !py-1.5"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                </button>
+              </form>
+            ) : (
+              <button
+                onClick={() => setPaletteOpen(true)}
+                className="relative flex w-full items-center justify-between gap-3 rounded-2xl border border-nexus-border bg-nexus-panel px-5 py-3.5 text-sm text-nexus-text backdrop-blur-2xl transition-all duration-300 hover:bg-nexus-card shadow-2xl"
+              >
+                <span className="flex items-center gap-3">
+                  <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse" />
+                  <span className="text-xs sm:text-sm font-medium">Lancer une recherche ou poser une question à l'IA...</span>
+                </span>
+                <kbd className="nx-chip text-[10px] font-mono">
+                  {searchShortcutLabel()}
+                </kbd>
+              </button>
+            )}
           </div>
 
           {/* AI Quick Prompts Pills */}
@@ -198,7 +232,7 @@ export default function Home() {
         <div className="w-full bg-nexus-panel border border-nexus-border rounded-3xl p-5 sm:p-6 backdrop-blur-3xl shadow-2xl space-y-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-nexus-border pb-4">
             <div className="flex items-center gap-2">
-              <div className="nx-btn nx-btn-icon">
+              <div className="rounded-xl border border-nexus-border bg-white/[0.04] p-2">
                 <LayoutGrid className="w-5 h-5" />
               </div>
               <div>

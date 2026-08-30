@@ -6,3 +6,6 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Reglages locaux de l outil, rien a publier
+.claude/

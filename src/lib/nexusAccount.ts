@@ -86,7 +86,8 @@ export function humanError(e: any): string {
     return "Mot de passe incorrect pour cette adresse.";
   if (c === "auth/invalid-email") return "Adresse e-mail invalide.";
   if (c === "auth/email-already-in-use")
-    return "Cette adresse a deja un compte Nexus cree via Google. Clique sur « Continuer avec Google » : c'est le MEME compte. Tu pourras ensuite y ajouter ce mot de passe.";
+    return "Cette adresse a deja un compte Nexus. Entre avec Google, ou avec ton mot de passe : c'est le MEME compte.";
+  if (c === COMPTE_INCONNU) return e.message;
   if (c === "auth/provider-already-linked" || c === "auth/credential-already-in-use")
     return "Ce mot de passe est deja associe a ce compte.";
   if (c === "auth/requires-recent-login")
@@ -131,16 +132,25 @@ export async function pushToCloud(): Promise<void> {
 /** Installe sur cet appareil les donnees recues du compte. */
 function applyRemote(data: Record<string, string>): number {
   applying = true;
-  let n = 0;
+  const changees: string[] = [];
   for (const [k, v] of Object.entries(data)) {
     if (isSynced(k) && typeof v === "string") {
-      if (localStorage.getItem(k) !== v) { localStorage.setItem(k, v); n++; }
+      if (localStorage.getItem(k) !== v) { localStorage.setItem(k, v); changees.push(k); }
     }
   }
   lastRemote = JSON.stringify(snapshot());
-  if (n) window.dispatchEvent(new CustomEvent("nexus:persist-update", { detail: {} }));
+  // BUG CORRIGE (le plus couteux du projet) : on prevenait l'ecran avec un
+  // evenement SANS nom de cle — { detail: {} }. Or chaque espace n'ecoute que
+  // SA cle : « detail.key === key ». Personne ne se reveillait donc jamais.
+  // Resultat : une note ecrite sur le Mac arrivait bien dans le compte et bien
+  // dans ce navigateur, mais l'espace Notes continuait d'afficher l'ancienne
+  // liste jusqu'au rechargement complet de la page. On previent maintenant
+  // pour CHAQUE cle qui a change.
+  for (const k of changees) {
+    window.dispatchEvent(new CustomEvent("nexus:persist-update", { detail: { key: k } }));
+  }
   window.setTimeout(() => { applying = false; }, 300);
-  return n;
+  return changees.length;
 }
 
 export async function pullFromCloud(): Promise<number> {
@@ -151,30 +161,35 @@ export async function pullFromCloud(): Promise<number> {
   return applyRemote((snap.data()?.data ?? {}) as Record<string, string>);
 }
 
+/** Erreur particuliere : l'adresse est peut-etre inconnue. On NE CREE PAS de
+ *  compte tout seul (une faute de frappe creerait un deuxieme compte vide, et
+ *  on croirait ses notes perdues). On propose, l'utilisateur decide. */
+export const COMPTE_INCONNU = "nexus/compte-inconnu";
+
 export async function nexusSignIn(email: string, password: string): Promise<NexusUser> {
   let user: User;
   try {
     user = (await signInWithEmailAndPassword(auth, email, password)).user;
   } catch (e: any) {
     const c = e?.code || "";
-    // Firebase renvoie la MEME erreur pour "compte inexistant" et "mauvais mot de
-    // passe". On tente donc la creation : si elle echoue en disant que l'adresse
-    // existe, c'est que le compte est la et que le mot de passe est faux.
     if (c === "auth/user-not-found" || c === "auth/invalid-credential" || c === "auth/wrong-password") {
-      try {
-        user = (await createUserWithEmailAndPassword(auth, email, password)).user;
-      } catch (e2: any) {
-        if (e2?.code === "auth/email-already-in-use") {
-          const err: any = new Error("mot de passe incorrect");
-          err.code = "auth/email-already-in-use";
-          throw err;
-        }
-        throw e2;
-      }
-    } else throw e;
+      const err: any = new Error(
+        "Mot de passe incorrect — ou cette adresse n'a pas encore de compte Nexus."
+      );
+      err.code = COMPTE_INCONNU;
+      throw err;
+    }
+    throw e;
   }
   const restored = await pullFromCloud();
   if (!restored) await pushToCloud();   // premier appareil : on depose l'etat local
+  return { uid: user.uid, email: user.email || email };
+}
+
+/** Creation VOLONTAIRE d'un compte Nexus. */
+export async function nexusSignUp(email: string, password: string): Promise<NexusUser> {
+  const user = (await createUserWithEmailAndPassword(auth, email.trim(), password)).user;
+  await pushToCloud();
   return { uid: user.uid, email: user.email || email };
 }
 

@@ -28,6 +28,7 @@ import Game from "../apps/Game";
 import Sheet from "../apps/Sheet";
 import FileViewer from "../apps/FileViewer";
 import About from "../apps/About";
+import MacIntegration from "../apps/MacIntegration";
 import Changelog from "../apps/Changelog";
 import VideoEditor from "../apps/VideoEditor";
 import Recipes from "../apps/Recipes";
@@ -106,6 +107,7 @@ export const APPS: AppDefinition[] = [
   { id: "chess", title: "Echecs", icon: "chess", hue: "#7babea", keywords: "echecs chess jeu strategie plateau", Component: ChessGame, width: 620, height: 620 },
   { id: "game", title: "Arcade & Échecs", icon: "game", hue: "#d946ef", keywords: "echecs chess jeu neon arena serpent snake pause detente", Component: Game, width: 760, height: 620 },
   { id: "focus", title: "Musique & Détente", icon: "music", hue: "#f43f5e", keywords: "musique concentration lofi ambiance son youtube", Component: Focus, width: 480, height: 520 },
+  { id: "mac", title: "Nexus sur ton Mac", icon: "settings", hue: "#84b6cd", keywords: "mac macos fond ecran wallpaper extension widget bureau integration", Component: MacIntegration, width: 560, height: 640 },
   { id: "settings", title: "Paramètres & Thème", icon: "settings", hue: "#6565e6", keywords: "reglages couleur accent prenom theme fond", Component: Settings, width: 420, height: 480 },
   { id: "changelog", title: "Nouveautés OS", icon: "star", hue: "#fbc437", keywords: "nouveautes mises a jour changelog evolution", Component: Changelog, width: 460, height: 500 },
   { id: "about", title: "À propos", icon: "info", hue: "#669be6", keywords: "a propos infos contact partager qui pourquoi", Component: About, width: 440, height: 520 },

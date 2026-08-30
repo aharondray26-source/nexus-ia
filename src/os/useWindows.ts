@@ -45,9 +45,14 @@ function nextOffset(count: number) {
   return 60 + (count % 6) * 34;
 }
 
+import { estModeOnglet } from "../lib/ongletMode";
+
 // Restaure la session precedente : les fenetres ouvertes survivent au
 // rechargement, comme dans un vrai systeme.
 function loadSession(): { windows: OpenWindow[]; zCounter: number } {
+  // Dans un nouvel onglet du navigateur, on repart PROPRE : personne n'attend
+  // de retrouver ses fenetres de la veille en ouvrant un onglet.
+  if (estModeOnglet()) return { windows: [], zCounter: 1 };
   try {
     const raw = localStorage.getItem("nexus.session");
     if (!raw) return { windows: [], zCounter: 1 };

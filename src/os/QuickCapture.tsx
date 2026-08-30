@@ -1,6 +1,7 @@
 import { useRef, useState, type KeyboardEvent } from "react";
 import { useDismiss } from "../lib/useDismiss";
 import Icon from "./Icons";
+import { Plus } from "lucide-react";
 
 // Capture rapide : un « + » dans la barre du haut pour noter une idee ou une
 // tache en une seconde, sans ouvrir d'espace. Enregistre direct au bon endroit.
@@ -55,10 +56,10 @@ export default function QuickCapture() {
       <button
         onClick={() => setOpen((o) => !o)}
         title="Capture rapide (note ou tache)"
-        className="nx-btn nx-btn-secondary flex h-7 w-7 items-center justify-center"
+        className="nx-btn nx-btn-icon shrink-0"
         aria-label="Capture rapide"
       >
-        <span className="text-base leading-none">+</span>
+        <Plus size={15} />
       </button>
 
       {open && (
@@ -86,7 +87,7 @@ export default function QuickCapture() {
               onChange={(e) => setText(e.target.value)}
               onKeyDown={onKey}
               placeholder={kind === "note" ? "Une idee..." : "A faire..."}
-              className="nx-btn nx-btn-secondary flex-1 text-xs"
+              className="nx-input flex-1 text-xs"
             />
             <button
               onClick={save}

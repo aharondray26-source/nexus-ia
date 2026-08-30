@@ -168,6 +168,7 @@ function startArena(){
     dashCd: 0, dashT: 0, dashCdMax: 1.4,
     fireCd: 0, fireRate: .30, rapidT: 0, spreadT: 0,
     bulletDmg: 1, pierce: 1, shots: 1, magnet: 40,
+    bounce: 0, boom: 0, shock: 0, shieldMax: 0, shieldT: 0, mines: [],
     bullets: [], enemies: [], drops: [], parts: [], shots_e: [], pops: [],
     wave: 0, toSpawn: 0, spawnT: 0, betweenT: 1.2, phase: "fight",
     score: 0, combo: 1, comboT: 0, slowT: 0, shake: 0,
@@ -177,7 +178,7 @@ function startArena(){
 function pop(x, y, txt, c){ A.pops.push({ x, y, txt, c, life: .9 }); }
 function startNextWave(){
   A.wave++; A.betweenT = 1.6;
-  if(A.wave % 5 === 0) spawnEnemy("boss"); else A.toSpawn = 4 + A.wave*2;
+  if(A.wave % 5 === 0) spawnEnemy("boss"); else A.toSpawn = 4 + Math.round(A.wave*2.6);
 }
 function spawnEnemy(kind){
   const side = Math.floor(Math.random()*4);
@@ -189,11 +190,34 @@ function spawnEnemy(kind){
   }
   const r = Math.random();
   const w = A.wave;
-  if(r < .40) A.enemies.push({ type:"chase", x, y, r: 11, hp: 2, sp: 70+w*4,  c: "#f472b6", pts: 10 });
-  else if(r < .62) A.enemies.push({ type:"fast", x, y, r: 7,  hp: 1, sp: 130+w*5, c: "#fb923c", pts: 15 });
-  else if(r < .80) A.enemies.push({ type:"tank", x, y, r: 17, hp: 6+Math.floor(w/2), sp: 42, c: "#a78bfa", pts: 30 });
-  else if(r < .92) A.enemies.push({ type:"shoot", x, y, r: 12, hp: 3, sp: 46, c: "#38bdf8", pts: 25, shootT: rand(1,2) });
-  else A.enemies.push({ type:"split", x, y, r: 14, hp: 3, sp: 60, c: "#34d399", pts: 20 });
+  // Les ennemis montent en puissance avec les vagues : sans cela, un joueur
+  // ameliore devenait invincible.
+  const T = 1 + w*0.22;
+  if(r < .40) A.enemies.push({ type:"chase", x, y, r: 11, hp: Math.round(2*T), sp: 70+w*6,  c: "#f472b6", pts: 10 });
+  else if(r < .62) A.enemies.push({ type:"fast", x, y, r: 7,  hp: Math.round(1*T), sp: 130+w*7, c: "#fb923c", pts: 15 });
+  else if(r < .80) A.enemies.push({ type:"tank", x, y, r: 17, hp: Math.round((6+w)*T*0.8), sp: 42+w*2, c: "#a78bfa", pts: 30 });
+  else if(r < .92) A.enemies.push({ type:"shoot", x, y, r: 12, hp: Math.round(3*T), sp: 46+w*2, c: "#38bdf8", pts: 25, shootT: rand(.8,1.7) });
+  else if(r < .965) A.enemies.push({ type:"split", x, y, r: 14, hp: Math.round(3*T), sp: 60+w*3, c: "#34d399", pts: 20 });
+  // --- Nouveaux ennemis (des la vague 3) : plus de varietes de menaces ---
+  else if(w >= 3 && Math.random() < .5)
+    // Orbiteur : tourne autour du joueur au lieu de foncer dessus
+    A.enemies.push({ type:"orbit", x, y, r: 10, hp: Math.round(3*T), sp: 95+w*4, c: "#fbbf24", pts: 35, ang: rand(0,7) });
+  else if(w >= 3 && Math.random() < .45)
+    // Essaim : petit, rapide, arrive en groupe
+    for(let k=0;k<4;k++) A.enemies.push({ type:"fast", x:x+rand(-30,30), y:y+rand(-30,30), r:5, hp:1, sp:160+w*5, c:"#f0abfc", pts:6 });
+  // --- Bouclier : invulnerable de face, il faut le contourner ---
+  else if(w >= 5 && Math.random() < .5)
+    A.enemies.push({ type:"shield", x, y, r: 15, hp: Math.round(5*T), sp: 58+w*2, c:"#7dd3fc", pts: 45, ang: 0 });
+  // --- Teleporteur : disparait et resurgit ailleurs, impossible a camper ---
+  else if(w >= 6 && Math.random() < .5)
+    A.enemies.push({ type:"blink", x, y, r: 11, hp: Math.round(3*T), sp: 88+w*3, c:"#c4b5fd", pts: 40, blinkT: rand(1.4, 2.6) });
+  // --- Guerisseur : soigne les autres, a abattre en priorite ---
+  else if(w >= 7 && Math.random() < .5)
+    A.enemies.push({ type:"healer", x, y, r: 13, hp: Math.round(4*T), sp: 52, c:"#86efac", pts: 55, healT: 1.6 });
+  // --- Mineur : depose des mines qui explosent apres un delai ---
+  else if(w >= 8)
+    A.enemies.push({ type:"miner", x, y, r: 12, hp: Math.round(4*T), sp: 70+w*2, c:"#fdba74", pts: 50, mineT: rand(1.2, 2.2) });
+  else A.enemies.push({ type:"chase", x, y, r: 11, hp: Math.round(2*T), sp: 70+w*6, c: "#f472b6", pts: 10 });
 }
 function burst(x, y, c, n){
   for(let i=0;i<n;i++){ const a = Math.random()*6.283, s = 40+Math.random()*160;
@@ -212,19 +236,28 @@ function killEnemy(e, i){
       kind: r<.28 ? "shield" : r<.5 ? "rapid" : r<.68 ? "heart" : r<.84 ? "spread" : "slow" });
   }
 }
+// Chaque amelioration est PLAFONNEE : sans plafond, la cadence devenait infinie,
+// l'ecran se remplissait de tirs et il devenait impossible de perdre.
 const UPGRADES = [
-  { ico:"⚡", name:"Tir rapide", desc:"Cadence de tir +18%", apply:a=>a.fireRate*=.82 },
-  { ico:"✦", name:"Degats", desc:"+1 degat par tir", apply:a=>a.bulletDmg+=1 },
-  { ico:"❤", name:"Vitalite", desc:"+1 coeur (max +1)", apply:a=>{a.maxHp+=1;a.hp=Math.min(a.maxHp,a.hp+1)} },
-  { ico:"»", name:"Dash affute", desc:"Dash plus frequent", apply:a=>a.dashCdMax*=.8 },
-  { ico:"⋔", name:"Multi-tir", desc:"+1 projectile en eventail", apply:a=>a.shots+=1 },
-  { ico:"→", name:"Perforant", desc:"Les tirs traversent +1 ennemi", apply:a=>a.pierce+=1 },
-  { ico:"➤", name:"Vitesse", desc:"Deplacement +12%", apply:a=>a.speed+=32 },
-  { ico:"◎", name:"Aimant", desc:"Ramasse les bonus de plus loin", apply:a=>a.magnet+=40 },
+  { ico:"⚡", name:"Tir rapide", desc:"Cadence +18%", max:a=>a.fireRate<=.075, apply:a=>a.fireRate=Math.max(.075,a.fireRate*.82) },
+  { ico:"✦", name:"Degats", desc:"+1 degat par tir", max:a=>a.bulletDmg>=8, apply:a=>a.bulletDmg=Math.min(8,a.bulletDmg+1) },
+  { ico:"❤", name:"Vitalite", desc:"+1 coeur", max:a=>a.maxHp>=8, apply:a=>{a.maxHp=Math.min(8,a.maxHp+1);a.hp=Math.min(a.maxHp,a.hp+1)} },
+  { ico:"»", name:"Dash affute", desc:"Dash plus frequent", max:a=>a.dashCdMax<=.45, apply:a=>a.dashCdMax=Math.max(.45,a.dashCdMax*.85) },
+  { ico:"⋔", name:"Multi-tir", desc:"+1 projectile", max:a=>a.shots>=5, apply:a=>a.shots=Math.min(5,a.shots+1) },
+  { ico:"→", name:"Perforant", desc:"Traverse +1 ennemi", max:a=>a.pierce>=3, apply:a=>a.pierce=Math.min(3,a.pierce+1) },
+  { ico:"➤", name:"Vitesse", desc:"Deplacement +12%", max:a=>a.speed>=430, apply:a=>a.speed=Math.min(430,a.speed+30) },
+  { ico:"◎", name:"Aimant", desc:"Ramasse de plus loin", max:a=>a.magnet>=180, apply:a=>a.magnet=Math.min(180,a.magnet+35) },
+  // Nouvelles voies : plus de varietes de parties possibles
+  { ico:"✧", name:"Ricochet", desc:"Les tirs rebondissent sur les bords", max:a=>a.bounce>=2, apply:a=>a.bounce=(a.bounce||0)+1 },
+  { ico:"◈", name:"Bouclier", desc:"Absorbe un coup, se recharge", max:a=>a.shieldMax>=3, apply:a=>{a.shieldMax=(a.shieldMax||0)+1;a.shield=a.shieldMax} },
+  { ico:"✹", name:"Onde de choc", desc:"Le dash repousse les ennemis", max:a=>a.shock>=2, apply:a=>a.shock=(a.shock||0)+1 },
+  { ico:"☢", name:"Tirs explosifs", desc:"Degats de zone a l'impact", max:a=>a.boom>=2, apply:a=>a.boom=(a.boom||0)+1 },
 ];
 function openUpgrades(){
   A.phase = "upgrade";
-  const pool = UPGRADES.slice().sort(()=>Math.random()-.5).slice(0,3);
+  let dispo = UPGRADES.filter(u => !u.max || !u.max(A));
+  if(dispo.length < 3) dispo = UPGRADES.slice();
+  const pool = dispo.sort(()=>Math.random()-.5).slice(0,3);
   const box = $("upCards"); box.innerHTML = "";
   pool.forEach(u => {
     const el = document.createElement("div"); el.className = "card";
@@ -241,14 +274,45 @@ function updateArena(dt){
   let dx = (keys["arrowright"]||keys["d"]?1:0) - (keys["arrowleft"]||keys["a"]||keys["q"]?1:0);
   let dy = (keys["arrowdown"]||keys["s"]?1:0) - (keys["arrowup"]||keys["w"]||keys["z"]?1:0);
   const point = touchPos || mouseTarget;
-  if(point){ const ddx=touchPos.x-A.px, ddy=touchPos.y-A.py, d=Math.hypot(ddx,ddy);
+  if(point){ const ddx=point.x-A.px, ddy=point.y-A.py, d=Math.hypot(ddx,ddy);
     if(d>8){ dx=ddx/d; dy=ddy/d; } else { dx=0; dy=0; } }
   const l = Math.hypot(dx,dy) || 1;
   const sp = A.dashT > 0 ? A.speed*3.1 : A.speed;
   A.px = Math.max(A.pr, Math.min(W-A.pr, A.px + dx/l*sp*dt));
   A.py = Math.max(A.pr, Math.min(H-A.pr, A.py + dy/l*sp*dt));
   A.dashCd -= dt; A.dashT -= dt; A.inv -= dt;
-  if(keys[" "] && A.dashCd <= 0 && (dx||dy)){ A.dashT=.16; A.inv=Math.max(A.inv,.25); A.dashCd=A.dashCdMax; }
+  if(keys[" "] && A.dashCd <= 0 && (dx||dy)){
+    A.dashT=.16; A.inv=Math.max(A.inv,.25); A.dashCd=A.dashCdMax;
+    // AMELIORATION « Onde de choc » : le dash repousse et blesse les ennemis proches.
+    if(A.shock > 0){
+      const rayon = 90 + A.shock*45;
+      for(const e of A.enemies){
+        const d = Math.hypot(e.x-A.px, e.y-A.py);
+        if(d < rayon){
+          const a = Math.atan2(e.y-A.py, e.x-A.px);
+          e.x += Math.cos(a) * (rayon - d) * 0.85;
+          e.y += Math.sin(a) * (rayon - d) * 0.85;
+          e.hp -= A.shock;
+        }
+      }
+      for(let k=0;k<18;k++){ const a=rand(0,7);
+        A.parts.push({x:A.px+Math.cos(a)*20, y:A.py+Math.sin(a)*20, vx:Math.cos(a)*300, vy:Math.sin(a)*300, life:.4, c:"#a5f3fc"}); }
+      A.shake = Math.max(A.shake, .45);
+    }
+  }
+
+  // Mines : elles clignotent, puis explosent en zone.
+  A.mines = A.mines || [];
+  for(let i=A.mines.length-1;i>=0;i--){
+    const m = A.mines[i];
+    m.t -= dt;
+    if(m.t <= 0){
+      for(let k=0;k<22;k++) A.parts.push({ x:m.x, y:m.y, vx:rand(-260,260), vy:rand(-260,260), life:.6, c:"#fb923c" });
+      if(Math.hypot(A.px-m.x, A.py-m.y) < 62 && A.inv <= 0) hitPlayer();
+      A.shake = Math.max(A.shake, .5);
+      A.mines.splice(i,1);
+    }
+  }
 
   if(A.enemies.length===0 && A.toSpawn<=0 && !A.boss){
     A.betweenT -= dt;
@@ -260,6 +324,11 @@ function updateArena(dt){
   if(A.toSpawn > 0){ A.spawnT -= dt; if(A.spawnT<=0){ A.spawnT=Math.max(.12,.5-A.wave*.02); A.toSpawn--; spawnEnemy(); } }
 
   A.fireCd -= dt; A.rapidT -= dt; A.spreadT -= dt;
+  // AMELIORATION « Bouclier » : il se regenere tout seul avec le temps.
+  if(A.shieldMax > 0){
+    A.shieldT = (A.shieldT || 0) + dt;
+    if(A.shieldT > 9 && A.shield < A.shieldMax){ A.shieldT = 0; A.shield++; pop(A.px, A.py-24, "Bouclier", "#6ee7f9"); }
+  }
   const rate = A.rapidT>0 ? A.fireRate/2.2 : A.fireRate;
   let tgt=A.boss, td=A.boss?Math.hypot(A.boss.x-A.px,A.boss.y-A.py):1e9;
   for(const e of A.enemies){ const d=Math.hypot(e.x-A.px,e.y-A.py); if(d<td){td=d;tgt=e;} }
@@ -275,9 +344,43 @@ function updateArena(dt){
   for(let i=A.bullets.length-1;i>=0;i--){ const b=A.bullets[i];
     b.x+=b.vx*dt; b.y+=b.vy*dt; b.life-=dt;
     if(b.life<=0){ A.bullets.splice(i,1); continue; }
+
+    // AMELIORATION « Ricochet » : le tir rebondit sur les bords de l'arene.
+    if(A.bounce > 0){
+      b.bounces = b.bounces || 0;
+      if(b.bounces < A.bounce){
+        let a = false;
+        if(b.x < 4){ b.x = 4; b.vx = Math.abs(b.vx); a = true; }
+        else if(b.x > W-4){ b.x = W-4; b.vx = -Math.abs(b.vx); a = true; }
+        if(b.y < 4){ b.y = 4; b.vy = Math.abs(b.vy); a = true; }
+        else if(b.y > H-4){ b.y = H-4; b.vy = -Math.abs(b.vy); a = true; }
+        if(a){ b.bounces++; b.life = Math.max(b.life, .5); burst(b.x, b.y, "#6ee7f9", 4); }
+      }
+    }
+
     let gone=false;
     for(let j=A.enemies.length-1;j>=0;j--){ const e=A.enemies[j];
-      if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+3){ e.hp-=b.dmg; b.pierce--; if(e.hp<=0) killEnemy(e,j);
+      if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+3){
+        // Un ennemi « bouclier » encaisse beaucoup moins si on le touche de face.
+        let deg = b.dmg;
+        if(e.type === "shield"){
+          const angTir = Math.atan2(b.y-e.y, b.x-e.x);
+          let ecart = Math.abs(((angTir - e.ang + Math.PI*3) % (Math.PI*2)) - Math.PI);
+          if(ecart > 2.2) deg = Math.max(1, Math.round(b.dmg * 0.15));   // de face : bloque
+        }
+        e.hp -= deg; b.pierce--;
+
+        // AMELIORATION « Tirs explosifs » : degats de zone a l'impact.
+        if(A.boom > 0){
+          const rayon = 42 + A.boom*22;
+          for(const o of A.enemies){
+            if(o !== e && Math.hypot(o.x-b.x, o.y-b.y) < rayon) o.hp -= Math.max(1, Math.round(b.dmg*0.6));
+          }
+          for(let k=0;k<10;k++) A.parts.push({x:b.x,y:b.y,vx:rand(-200,200),vy:rand(-200,200),life:.35,c:"#fbbf24"});
+          A.shake = Math.max(A.shake, .18);
+        }
+
+        if(e.hp<=0) killEnemy(e,j);
         if(b.pierce<=0){ gone=true; } break; } }
     if(!gone && A.boss && Math.hypot(A.boss.x-b.x,A.boss.y-b.y)<A.boss.r+3){
       A.boss.hp-=b.dmg; b.pierce--; if(b.pierce<=0) gone=true;
@@ -286,10 +389,68 @@ function updateArena(dt){
   }
   for(let i=A.enemies.length-1;i>=0;i--){ const e=A.enemies[i];
     const a=Math.atan2(A.py-e.y,A.px-e.x);
-    e.x+=Math.cos(a)*e.sp*slow*dt; e.y+=Math.sin(a)*e.sp*slow*dt;
+
+    // ---- COMPORTEMENTS PROPRES A CHAQUE TYPE ----
+    if(e.type === "orbit"){
+      // Tourne autour du joueur en se rapprochant : impossible de rester immobile
+      e.ang = (e.ang || 0) + dt * 1.6;
+      const dist = Math.max(80, Math.hypot(A.px-e.x, A.py-e.y) - 34*dt);
+      e.x = A.px + Math.cos(e.ang) * dist;
+      e.y = A.py + Math.sin(e.ang) * dist;
+    } else if(e.type === "blink"){
+      // Se volatilise et resurgit ailleurs : impossible de camper
+      e.blinkT -= dt;
+      if(e.blinkT <= 0){
+        e.blinkT = rand(1.6, 3);
+        const ang = rand(0,7), d = rand(140, 250);
+        e.x = Math.max(24, Math.min(W-24, A.px + Math.cos(ang)*d));
+        e.y = Math.max(24, Math.min(H-24, A.py + Math.sin(ang)*d));
+        for(let k=0;k<12;k++) A.parts.push({x:e.x,y:e.y,vx:rand(-150,150),vy:rand(-150,150),life:.5,c:e.c});
+      }
+      e.x += Math.cos(a)*e.sp*slow*dt; e.y += Math.sin(a)*e.sp*slow*dt;
+    } else {
+      e.x += Math.cos(a)*e.sp*slow*dt; e.y += Math.sin(a)*e.sp*slow*dt;
+    }
+
+    if(e.type === "shield") e.ang = a;              // le bouclier fait face au joueur
+
+    if(e.type === "healer"){                        // soigne ses congeneres
+      e.healT -= dt;
+      if(e.healT <= 0){
+        e.healT = 1.8;
+        for(const o of A.enemies){
+          if(o !== e && Math.hypot(o.x-e.x, o.y-e.y) < 150){
+            o.hp += 1;
+            for(let k=0;k<4;k++) A.parts.push({x:o.x,y:o.y,vx:rand(-40,40),vy:rand(-70,-20),life:.5,c:"#86efac"});
+          }
+        }
+      }
+    }
+
+    if(e.type === "miner"){                         // seme des mines
+      e.mineT -= dt;
+      if(e.mineT <= 0){
+        e.mineT = rand(1.6, 2.6);
+        A.mines = A.mines || [];
+        if(A.mines.length < 14) A.mines.push({x:e.x, y:e.y, t:2.2, r:9});
+      }
+    }
+
     if(e.type==="shoot"){ e.shootT-=dt; if(e.shootT<=0){ e.shootT=rand(1.6,2.6);
       A.shots_e.push({x:e.x,y:e.y,vx:Math.cos(a)*150,vy:Math.sin(a)*150,life:4}); } }
     if(Math.hypot(e.x-A.px,e.y-A.py)<e.r+A.pr) hitPlayer(e,i);
+  }
+
+  // Les mines clignotent puis explosent en zone
+  A.mines = A.mines || [];
+  for(let i=A.mines.length-1;i>=0;i--){
+    const m = A.mines[i]; m.t -= dt;
+    if(m.t <= 0){
+      for(let k=0;k<22;k++) A.parts.push({x:m.x,y:m.y,vx:rand(-260,260),vy:rand(-260,260),life:.6,c:"#fb923c"});
+      if(Math.hypot(A.px-m.x, A.py-m.y) < 62 && A.inv <= 0) hitPlayer();
+      A.shake = Math.max(A.shake, .5);
+      A.mines.splice(i,1);
+    }
   }
   if(A.boss){ const b=A.boss; b.t+=dt; b.shootT-=dt;
     const a=Math.atan2(A.py-b.y,A.px-b.x);
@@ -330,22 +491,103 @@ function hitPlayer(src, idx){
   A.hp--; A.inv=1.1; A.combo=1;
   if(A.hp<=0) gameOver("ARENE TERMINEE", A.score, "arcade.best.arena", "Vague "+A.wave+" atteinte");
 }
+// Champ d'etoiles sur trois plans : donne de la profondeur et du mouvement.
+let STARS = null;
+function initStars(){
+  STARS = [];
+  for(let i=0;i<170;i++) STARS.push({ x:Math.random(), y:Math.random(),
+    z: 1 + Math.floor(Math.random()*3), r: rand(.4,1.5) });
+}
 function drawArena(){
   ctx.save();
   if(A.shake>0) ctx.translate(rand(-1,1)*A.shake*7, rand(-1,1)*A.shake*7);
-  ctx.fillStyle="#060609"; ctx.fillRect(-20,-20,W+40,H+40);
-  ctx.strokeStyle="rgba(255,255,255,0.035)"; ctx.lineWidth=1;
-  for(let x=0;x<W;x+=48){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
-  for(let y=0;y<H;y+=48){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  // Ciel profond, teinte par la vague en cours
+  const hue = (A.wave*22) % 360;
+  const sky = ctx.createRadialGradient(W/2, H*0.35, 40, W/2, H*0.5, Math.max(W,H)*0.8);
+  sky.addColorStop(0, `hsla(${hue}, 60%, 12%, 1)`);
+  sky.addColorStop(1, "#040407");
+  ctx.fillStyle = sky; ctx.fillRect(-20,-20,W+40,H+40);
+
+  // Etoiles en parallaxe : elles derivent selon la position du joueur
+  if(!STARS) initStars();
+  const ox = (A.px - W/2) * .02, oy = (A.py - H/2) * .02;
+  for(const st of STARS){
+    const px = ((st.x*W - ox*st.z) % W + W) % W;
+    const py = ((st.y*H - oy*st.z) % H + H) % H;
+    ctx.globalAlpha = .18 + st.z*.16;
+    ctx.fillStyle = st.z===3 ? "#a5f3fc" : "#e2e8f0";
+    ctx.beginPath(); ctx.arc(px, py, st.r, 0, 7); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // Grille qui respire au rythme des vagues
+  const pulse = .028 + Math.sin(A.t*1.4)*.014;
+  ctx.strokeStyle = `rgba(255,255,255,${pulse})`; ctx.lineWidth=1;
+  const gs = 48;
+  for(let x=0;x<W;x+=gs){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for(let y=0;y<H;y+=gs){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  // Halo au centre : repere visuel
+  ctx.globalAlpha = .06 + Math.sin(A.t*2)*.02;
+  ctx.fillStyle = `hsl(${hue}, 80%, 60%)`;
+  ctx.beginPath(); ctx.arc(W/2, H/2, Math.min(W,H)*0.42, 0, 7); ctx.fill();
+  ctx.globalAlpha = 1;
   const glow=(c,b)=>{ctx.shadowColor=c;ctx.shadowBlur=b;};
   for(const d of A.drops){ glow("#6ee7f9",12);
     ctx.fillStyle = d.kind==="heart"?"#fb7185":d.kind==="shield"?"#6ee7f9":d.kind==="spread"?"#c084fc":d.kind==="slow"?"#93c5fd":"#fbbf24";
     ctx.beginPath(); ctx.arc(d.x,d.y,7+Math.sin(A.t*5)*1.5,0,7); ctx.fill(); }
-  glow("#6ee7f9",8); ctx.fillStyle="#6ee7f9";
-  for(const b of A.bullets){ ctx.beginPath(); ctx.arc(b.x,b.y,3,0,7); ctx.fill(); }
+  // Tirs avec trainee lumineuse
+  for(const b of A.bullets){
+    const sp = Math.hypot(b.vx||0, b.vy||0) || 1;
+    glow("#6ee7f9",14);
+    ctx.strokeStyle="rgba(110,231,249,.45)"; ctx.lineWidth=2.4; ctx.lineCap="round";
+    ctx.beginPath(); ctx.moveTo(b.x,b.y);
+    ctx.lineTo(b.x-(b.vx||0)/sp*13, b.y-(b.vy||0)/sp*13); ctx.stroke();
+    ctx.fillStyle="#dffaff"; ctx.beginPath(); ctx.arc(b.x,b.y,3.1,0,7); ctx.fill();
+  }
   glow("#f472b6",8); ctx.fillStyle="#f472b6";
   for(const s of A.shots_e){ ctx.beginPath(); ctx.arc(s.x,s.y,5,0,7); ctx.fill(); }
-  for(const e of A.enemies){ glow(e.c,14); ctx.fillStyle=e.c; ctx.beginPath(); ctx.arc(e.x,e.y,e.r,0,7); ctx.fill(); }
+  // Mines : elles clignotent de plus en plus vite avant d'exploser
+  for(const m of (A.mines||[])){
+    const urgence = 1 - m.t/2.2;
+    const pulse = Math.abs(Math.sin(A.t * (5 + urgence*22)));
+    glow("#fb923c", 8 + pulse*18);
+    ctx.fillStyle = `rgba(251,146,60,${.45 + pulse*.55})`;
+    ctx.beginPath(); ctx.arc(m.x, m.y, m.r + pulse*3, 0, 7); ctx.fill();
+    ctx.strokeStyle = `rgba(251,146,60,${.25 + pulse*.3})`; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.arc(m.x, m.y, 62 * (0.5 + urgence*0.5), 0, 7); ctx.stroke();
+  }
+
+  for(const e of A.enemies){
+    glow(e.c,14); ctx.fillStyle=e.c;
+    ctx.beginPath(); ctx.arc(e.x,e.y,e.r,0,7); ctx.fill();
+
+    // Bouclier : arc protecteur du cote ou il regarde
+    if(e.type === "shield"){
+      ctx.strokeStyle="#e0f2fe"; ctx.lineWidth=4; ctx.lineCap="round";
+      ctx.beginPath(); ctx.arc(e.x, e.y, e.r+6, e.ang-0.85, e.ang+0.85); ctx.stroke();
+    }
+    // Guerisseur : croix verte + halo de soin
+    if(e.type === "healer"){
+      ctx.shadowBlur=0; ctx.strokeStyle="#052e16"; ctx.lineWidth=2.6; ctx.lineCap="round";
+      ctx.beginPath(); ctx.moveTo(e.x-4,e.y); ctx.lineTo(e.x+4,e.y);
+      ctx.moveTo(e.x,e.y-4); ctx.lineTo(e.x,e.y+4); ctx.stroke();
+      ctx.strokeStyle=`rgba(134,239,172,${.12+Math.abs(Math.sin(A.t*2))*.14})`; ctx.lineWidth=1.6;
+      ctx.beginPath(); ctx.arc(e.x,e.y,150,0,7); ctx.stroke();
+    }
+    // Teleporteur : cerne qui se resserre avant le saut
+    if(e.type === "blink"){
+      const p = 1 - Math.min(1, e.blinkT/1.6);
+      ctx.shadowBlur=0; ctx.strokeStyle=`rgba(196,181,253,${.25+p*.55})`; ctx.lineWidth=1.8;
+      ctx.beginPath(); ctx.arc(e.x, e.y, e.r + 14 - p*12, 0, 7); ctx.stroke();
+    }
+    // Mineur : petit point orange qui clignote
+    if(e.type === "miner"){
+      ctx.shadowBlur=0; ctx.fillStyle="#7c2d12";
+      ctx.beginPath(); ctx.arc(e.x, e.y, 4 + Math.abs(Math.sin(A.t*4))*1.5, 0, 7); ctx.fill();
+    }
+  }
   if(A.boss){ const b=A.boss; glow("#a78bfa",26); ctx.fillStyle="#a78bfa";
     ctx.beginPath(); ctx.arc(b.x,b.y,b.r+Math.sin(b.t*3)*2,0,7); ctx.fill();
     ctx.shadowBlur=0; ctx.fillStyle="rgba(255,255,255,.15)"; ctx.fillRect(W/2-120,26,240,5);

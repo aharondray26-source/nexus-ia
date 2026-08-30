@@ -1,7 +1,7 @@
 {
-  "name": "Nexus Espace",
+  "name": "Nexus",
   "short_name": "Nexus",
-  "description": "Ton espace de travail tout-en-un : IA, notes, apprentissage, outils et musique.",
+  "description": "Ton espace de travail tout-en-un : IA, notes, revisions, messagerie et appels.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#060609",
@@ -12,6 +12,38 @@
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "scope": "/",
+  "categories": [
+    "productivity",
+    "education",
+    "utilities"
+  ],
+  "shortcuts": [
+    {
+      "name": "Messagerie",
+      "url": "/?app=messages"
+    },
+    {
+      "name": "Notes",
+      "url": "/?app=notes"
+    },
+    {
+      "name": "Salle de controle",
+      "url": "/"
     }
   ]
 }

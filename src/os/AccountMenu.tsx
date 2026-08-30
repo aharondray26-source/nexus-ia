@@ -3,6 +3,8 @@ import { User as UserIcon, LogOut, Check, Eye, EyeOff } from "lucide-react";
 import { initAuth, googleSignIn, googleSignInBasic } from "../lib/googleAuth";
 import {
   nexusSignIn,
+  nexusSignUp,
+  COMPTE_INCONNU,
   nexusSignOut,
   watchNexusUser,
   watchSync,
@@ -27,6 +29,9 @@ export default function AccountMenu() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
+  // Quand l'adresse est peut-etre inconnue : on PROPOSE de creer, on ne cree pas
+  // tout seul. Une faute de frappe creerait un deuxieme compte vide.
+  const [proposerCreation, setProposerCreation] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
 
@@ -76,15 +81,33 @@ export default function AccountMenu() {
     if (busy) return;
     setBusy(true);
     setMsg(null);
+    setProposerCreation(false);
     try {
       await nexusSignIn(email.trim(), password);
       setMsg({ text: "Connecte. Tes donnees Nexus sont synchronisees.", ok: true });
       setPassword("");
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.code === COMPTE_INCONNU) setProposerCreation(true);
       setMsg({ text: humanError(err), ok: false });
     } finally {
       setBusy(false);
     }
+  }
+
+  async function creerCompte() {
+    if (password.length < 6) {
+      setMsg({ text: "Choisis un mot de passe de 6 caracteres minimum.", ok: false });
+      return;
+    }
+    setBusy(true); setMsg(null);
+    try {
+      await nexusSignUp(email.trim(), password);
+      setProposerCreation(false);
+      setPassword("");
+      setMsg({ text: "Compte Nexus cree. Tes donnees sont maintenant synchronisees.", ok: true });
+    } catch (err) {
+      setMsg({ text: humanError(err), ok: false });
+    } finally { setBusy(false); }
   }
 
   // Entree normale : ouverte a TOUT LE MONDE (aucune validation Google requise).
@@ -212,7 +235,7 @@ export default function AccountMenu() {
                 </button>
               </div>
               {!hasPassword() && (
-                <div className="nx-btn nx-btn-icon flex flex-col gap-1.5">
+                <div className="flex flex-col gap-1.5 rounded-xl border border-nexus-border bg-white/[0.04] p-2">
                   <span className="text-[10px] leading-relaxed text-nexus-muted">
                     Ce compte a ete cree via Google. Ajoute un mot de passe pour
                     pouvoir aussi entrer sans Google, depuis n'importe ou.
@@ -223,7 +246,7 @@ export default function AccountMenu() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Nouveau mot de passe"
-                      className="nx-btn nx-btn-secondary min-w-0 flex-1 text-[11px]"
+                      className="nx-input min-w-0 flex-1 text-[11px]"
                     />
                     <button
                       type="button"
@@ -260,7 +283,7 @@ export default function AccountMenu() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ton@email.com"
-                className="nx-btn nx-btn-secondary text-xs"
+                className="nx-input text-xs"
               />
               <div className="relative">
                 <input
@@ -270,7 +293,7 @@ export default function AccountMenu() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Mot de passe (6 min.)"
-                  className="nx-btn nx-btn-secondary w-full text-xs"
+                  className="nx-input w-full text-xs"
                 />
                 <button
                   type="button"
@@ -331,6 +354,25 @@ export default function AccountMenu() {
                 te suivent, que tu entres par Google ou par mot de passe.
               </p>
             </>
+          )}
+
+          {proposerCreation && (
+            <div className="mt-2 flex flex-col gap-1.5 rounded-lg border border-nexus-border bg-nexus-bg p-2.5">
+              <span className="text-[11px] leading-relaxed text-nexus-muted">
+                Si c'est ta premiere fois, cree le compte. Si tu en as deja un,
+                verifie le mot de passe ou entre par Google — c'est le meme compte.
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                <button onClick={creerCompte} disabled={busy}
+                  className="nx-btn nx-btn-primary text-[11px]">
+                  Creer mon compte Nexus
+                </button>
+                <button onClick={onReset} disabled={busy}
+                  className="nx-btn nx-btn-secondary text-[11px]">
+                  Mot de passe oublie
+                </button>
+              </div>
+            </div>
           )}
 
           {msg && (

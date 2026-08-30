@@ -31,6 +31,7 @@ import {
   ChevronDown
 } from "lucide-react";
 import { GoogleGenAI } from "@google/genai";
+import { generateNexusResponse } from "../lib/nexusBrain";
 import { addNexusTask } from "../lib/persist";
 
 interface ChatMessage {
@@ -330,31 +331,15 @@ Je suis votre assistant IA haute performance propulsé par **Gemini 3.6 Flash**.
         }
       }
 
-      // 3. Fallback intelligent autonome local
+      // 3. Moteur local — celui qui répond VRAIMENT, sans clé et sans réseau.
+      //    Avant, cette branche fabriquait un faux widget HTML ou un texte creux
+      //    (« Analyse complète effectuée »). Ça n'aidait personne et ça donnait
+      //    l'impression que l'IA répondait alors qu'elle ne comprenait rien.
       if (!replyText) {
         if (thinkingMode) {
-          thinkingText = `[Mode Réflexion Nexus IA - Analyse Étape par Étape]\n1. Décomposition de la requête : "${userText}"\n2. Alignement des contraintes et planification multi-modale.\n3. Synthèse optimisée de la réponse et préparation des composants.`;
+          thinkingText = `Pas d'accès au modèle distant : réponse construite par le moteur local de Nexus, sur cet appareil.`;
         }
-
-        if (
-          userText.toLowerCase().includes("html") ||
-          userText.toLowerCase().includes("code") ||
-          userText.toLowerCase().includes("widget") ||
-          userText.toLowerCase().includes("site")
-        ) {
-          replyText = `Voici le code interactif généré pour votre projet. Vous pouvez l'examiner et le tester en direct dans le lecteur multimédia adjacent.`;
-          codeSnippet = {
-            type: "html",
-            title: "Composant HTML Interactif Nexus",
-            code: `<div style="padding: 24px; font-family: system-ui, sans-serif; background: #090d16; color: #38bdf8; border-radius: 16px; border: 1px solid #0284c7; box-shadow: 0 10px 30px rgba(2,132,199,0.2);">
-  <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: bold; color: #ffffff;">🚀 Composant Web Nexus</h3>
-  <p style="margin: 0 0 16px 0; color: #94a3b8; font-size: 13px;">Généré pour : "${userText}"</p>
-  <button onclick="alert('Module Nexus IA Pro réactif !')" style="padding: 10px 18px; background: #0284c7; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Tester l'interactivité</button>
-</div>`,
-          };
-        } else {
-          replyText = `### Analyse Nexus IA Pro\n\nVoici la réponse à votre demande **"${userText}"** :\n\n- **Moteur :** Analyse complète effectuée.\n- **Réflexion :** Raisonnement pas à pas actif.\n- **Rendu :** Affichage optimisé pour l'espace de travail.`;
-        }
+        replyText = generateNexusResponse(userText);
       }
       }
 

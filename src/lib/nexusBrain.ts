@@ -1,3 +1,5 @@
+import { auth } from "./googleAuth";
+
 // Moteur IA Hybride Haute Performance pour Nexus OS
 // Bascule automatiquement entre l'API Gemini Serveur (gemini-3.6-flash),
 // l'API Gemini Directe Client (si clé API configurée) et le Cerveau Autonome Avancé.
@@ -95,6 +97,28 @@ export async function queryNexusAI(userText: string, history: NexusMessage[] = [
 export function generateNexusResponse(userText: string, history: NexusMessage[] = []): string {
   const query = userText.toLowerCase().trim();
 
+  // Une commande adressee au Mac : ce n'est pas a moi d'y repondre, c'est a
+  // l'application Nexus installee sur la machine. Elle lit cette conversation
+  // depuis le compte et executera l'ordre elle-meme.
+  if (/^mac\s*[,:]?\s+/i.test(userText.trim())) {
+    const ordre = userText.trim().replace(/^mac\s*[,:]?\s+/i, "");
+    // Le pont passe par ton compte : sans compte, rien ne peut voyager.
+    // Le dire tout de suite, au lieu de laisser croire que c'est parti.
+    if (!auth.currentUser) {
+      return `**Je ne peux pas transmettre « ${ordre} » à ton Mac.**\n\n` +
+        `Tu n'es pas connecté à ton compte Nexus sur ce site. Or c'est ton compte ` +
+        `qui sert de facteur entre le site et l'application.\n\n` +
+        `Clique sur **Compte**, en haut à droite, connecte-toi avec la même adresse ` +
+        `que dans l'application, puis réessaie.`;
+    }
+    return `**Transmis au Mac** — « ${ordre} »\n\n` +
+      `Compte : ${auth.currentUser.email}. L'application Nexus lit cette conversation ` +
+      `et va exécuter la demande. Sa réponse arrivera ici même, précédée de 🖥, ` +
+      `dans la minute qui vient.\n\n` +
+      `Si rien n'arrive : vérifie que Nexus tourne sur ton Mac (l'icône dans la ` +
+      `barre des menus, en haut à droite) et qu'il est connecté au même compte.`;
+  }
+
   // Évaluation Mathématique Directe si expression numérique simple
   if (/^[0-9+\-*/().\s^]+$/.test(userText.trim()) && userText.trim().length > 1) {
     try {
@@ -119,7 +143,16 @@ export function generateNexusResponse(userText: string, history: NexusMessage[] 
 
   // 1. Identité et Créateur
   if (query.includes("qui t'a") || query.includes("créé") || query.includes("creer") || query.includes("invente") || query.includes("créateur") || query.includes("qui es-tu")) {
-    return `Je suis **Nexus AI Pro**, l'intelligence artificielle universelle intégrée au cœur de **Nexus OS** ! 🚀\n\nJ'ai été entièrement pensé, conçu et développé par **Aharon Dray**. Je combine puissance d'analyse, vitesse d'exécution et autonomie totale.`;
+    return `Je suis l'assistant de **Nexus**, l'espace de travail conçu et développé par **Aharon Dray**.
+
+C'est lui qui a imaginé Nexus et qui en dirige la construction, morceau par morceau :
+
+- **le site** que tu utilises en ce moment, avec ses espaces de travail ;
+- **une vraie application macOS** qui ouvre tes applications, retrouve tes fichiers, lit ce qu'il y a à l'écran et fabrique de vrais raccourcis ;
+- **un compte Nexus** qui fait suivre tes notes, tes tâches et tes discussions d'un appareil à l'autre ;
+- **une extension pour le navigateur**, pour que Nexus soit là dès le premier onglet.
+
+Rien de tout ça n'était acquis : chaque partie a été pensée, contestée, refaite jusqu'à ce qu'elle tienne.`;
   }
 
   // 2. Seconde Guerre Mondiale & Histoire

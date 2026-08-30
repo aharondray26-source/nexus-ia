@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Sun, Moon, Type, Check } from "lucide-react";
 import { ACCENTS, BACKGROUNDS, WALLPAPERS, FONTS, useSettings } from "../os/useSettings";
+import InstallCalls from "../os/InstallCalls";
 
 // Reduit l'image importee (max 1600px, JPEG) pour tenir dans le stockage local.
 function shrinkImage(file: File): Promise<string> {
@@ -46,6 +47,10 @@ export default function Settings() {
   const setDockPos = useSettings((s) => s.setDockPos);
   const iconColors = useSettings((s) => s.iconColors);
   const setIconColors = useSettings((s) => s.setIconColors);
+  const homeStyle = useSettings((s) => s.homeStyle);
+  const switchEffort = useSettings((s) => s.switchEffort);
+  const setSwitchEffort = useSettings((s) => s.setSwitchEffort);
+  const setHomeStyle = useSettings((s) => s.setHomeStyle);
   const reduceMotion = useSettings((s) => s.reduceMotion);
   const setReduceMotion = useSettings((s) => s.setReduceMotion);
   const largeText = useSettings((s) => s.largeText);
@@ -84,6 +89,59 @@ export default function Settings() {
 
   return (
     <div className="flex h-full flex-col gap-5 overflow-y-auto">
+      <InstallCalls />
+
+      {/* Choix de l'ecran d'accueil */}
+      <div className="flex flex-col gap-2">
+        <span className="text-xs uppercase tracking-wider text-nexus-muted">
+          Écran d'accueil
+        </span>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <button
+            onClick={() => setHomeStyle("control")}
+            className={`flex flex-col items-start gap-1 rounded-xl border p-3 text-left transition-all ${
+              homeStyle === "control" ? "border-cyan-500 bg-cyan-500/10" : "border-nexus-border bg-white/[0.02] hover:bg-white/[0.05]"
+            }`}
+          >
+            <span className="text-xs font-bold text-nexus-text">Salle de contrôle</span>
+            <span className="text-[11px] leading-relaxed text-nexus-muted">
+              Un widget par application, avec ses infos et ses outils. Clic droit pour personnaliser.
+            </span>
+          </button>
+          <button
+            onClick={() => setHomeStyle("classic")}
+            className={`flex flex-col items-start gap-1 rounded-xl border p-3 text-left transition-all ${
+              homeStyle === "classic" ? "border-cyan-500 bg-cyan-500/10" : "border-nexus-border bg-white/[0.02] hover:bg-white/[0.05]"
+            }`}
+          >
+            <span className="text-xs font-bold text-nexus-text">Accueil classique</span>
+            <span className="text-[11px] leading-relaxed text-nexus-muted">
+              Grande horloge, barre de recherche centrale et catalogue d'applications.
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* Insistance pour passer d'un ecran a l'autre — reglee au curseur */}
+      {homeStyle === "control" && (
+        <div className="flex flex-col gap-2">
+          <span className="text-xs uppercase tracking-wider text-nexus-muted">
+            Passage accueil ↔ salle de contrôle · {switchEffort}%
+          </span>
+          <p className="text-[11px] leading-relaxed text-nexus-muted">
+            Effort nécessaire pour changer d'écran. Vers la gauche, ça bascule au
+            moindre geste ; vers la droite, il faut un geste franc et volontaire.
+          </p>
+          <input
+            type="range" min={0} max={100} value={switchEffort}
+            onChange={(e) => setSwitchEffort(Number(e.target.value))}
+          />
+          <div className="flex justify-between text-[10px] text-nexus-muted/70">
+            <span>Très souple</span><span>Très ferme</span>
+          </div>
+        </div>
+      )}
+
       {/* Mode Thème (Sombre / Clair) */}
       <div className="flex flex-col gap-2">
         <span className="text-xs uppercase tracking-wider text-nexus-muted">
@@ -125,7 +183,7 @@ export default function Settings() {
               key={a.value}
               onClick={() => setAccent(a.value)}
               title={a.name}
-              className="flex h-8 w-8 items-center justify-center rounded-full border-2 transition-transform hover:scale-110"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition-transform hover:scale-110"
               style={{
                 backgroundColor: a.value,
                 borderColor: accent === a.value ? "#ffffff" : "transparent",

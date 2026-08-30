@@ -144,6 +144,10 @@ interface SettingsState {
   setIconColors: (on: boolean) => void;
   reduceMotion: boolean;
   setReduceMotion: (on: boolean) => void;
+  homeStyle: "control" | "classic";
+  setHomeStyle: (v: "control" | "classic") => void;
+  switchEffort: number;                 // 0 = tres leger, 100 = tres ferme
+  setSwitchEffort: (v: number) => void;
   largeText: boolean;
   setLargeText: (on: boolean) => void;
   autoMinimizeInactive: boolean;
@@ -238,6 +242,16 @@ export const useSettings = create<SettingsState>((set) => ({
   setIconColors: (on) => {
     localStorage.setItem("nexus.iconColors", JSON.stringify(on));
     set({ iconColors: on });
+  },
+  homeStyle: load<"control" | "classic">("nexus.homeStyle", "control"),
+  switchEffort: load<number>("nexus.switchEffort", 45),
+  setSwitchEffort: (v) => {
+    localStorage.setItem("nexus.switchEffort", JSON.stringify(v));
+    set({ switchEffort: v });
+  },
+  setHomeStyle: (v) => {
+    localStorage.setItem("nexus.homeStyle", JSON.stringify(v));
+    set({ homeStyle: v });
   },
   reduceMotion: initialMotion,
   setReduceMotion: (on) => {

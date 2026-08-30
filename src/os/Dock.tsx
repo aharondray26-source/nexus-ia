@@ -14,7 +14,7 @@ export default function Dock({ horizontal = false, pos = "left" }: { horizontal?
   // Horizontal bar for smaller mobile viewports
   if (horizontal) {
     return (
-      <nav className="z-40 flex shrink-0 gap-1.5 overflow-x-auto border-t border-nexus-border bg-nexus-panel px-3 py-2 backdrop-blur-2xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden shadow-2xl">
+      <nav className={`nx-dock nx-dock-magnify ${pos === "top" ? "nx-dock-float-top" : "nx-dock-float-bottom"} z-40 flex shrink-0 items-center justify-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}>
         {APPS.filter((a) => !a.hidden).map((app) => {
           const isOpen = windows.some((w) => w.appId === app.id);
           return (
@@ -47,14 +47,14 @@ export default function Dock({ horizontal = false, pos = "left" }: { horizontal?
       <nav 
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className={`absolute top-0 ${pos === "right" ? "right-0" : "left-0"} flex h-full flex-col gap-1.5 overflow-y-auto overflow-x-hidden border-r border-nexus-border bg-nexus-panel py-4 backdrop-blur-3xl transition-all duration-300 ease-out [scrollbar-width:none] [&::-webkit-scrollbar]:hidden shadow-2xl z-50 ${isHovered ? 'w-60' : 'w-16'}`}
+        className={`nx-dock ${pos === "right" ? "nx-dock-float-right right-0" : "nx-dock-float-left left-0"} ${isHovered ? "" : "nx-dock-magnify"} absolute top-0 flex h-[calc(100%-20px)] flex-col gap-1.5 overflow-y-auto overflow-x-hidden py-3 transition-all duration-300 ease-out [scrollbar-width:none] [&::-webkit-scrollbar]:hidden z-50 ${isHovered ? 'w-60' : 'w-16'}`}
       >
         {/* OS Brand Header */}
-        <div className="mb-3 flex items-center gap-3.5 px-3.5 w-60">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-nexus-card border border-nexus-border shadow-inner">
+        <div className={`mb-3 flex items-center ${isHovered ? "w-60 gap-3.5 px-3.5" : "w-full justify-center px-0"}`}>
+          <div className={`flex shrink-0 items-center justify-center rounded-2xl border border-nexus-border bg-nexus-card shadow-inner ${isHovered ? "h-9 w-9" : "h-8 w-8"}`}>
             <Logo size={22} />
           </div>
-          <div className={`flex flex-col whitespace-nowrap transition-opacity duration-300 pointer-events-none ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+          <div className={`flex-col whitespace-nowrap transition-opacity duration-300 pointer-events-none ${isHovered ? 'flex opacity-100' : 'hidden'}`}>
             <span className="text-xs font-bold text-nexus-text tracking-wider">NEXUS PRO OS</span>
             <span className="text-[10px] text-cyan-400 font-semibold">Workspace Pro</span>
           </div>
@@ -71,7 +71,11 @@ export default function Dock({ horizontal = false, pos = "left" }: { horizontal?
                 key={app.id}
                 onClick={() => openApp(app.id, { width: app.width, height: app.height })}
                 title={isHovered ? "" : app.title}
-                className={`group/btn relative mx-2 flex w-52 items-center gap-3.5 rounded-2xl border px-3 py-2.5 transition-all duration-200 active:scale-95 ${
+                className={`group/btn relative flex items-center rounded-2xl border transition-all duration-200 active:scale-95 ${
+                  isHovered
+                    ? "w-52 shrink-0 gap-3.5 justify-start px-3 py-2.5 self-start ml-2"
+                    : "h-11 w-11 shrink-0 justify-center gap-0 px-0 py-0 self-center"
+                } ${
                   isOpen
                     ? "border-cyan-400/50 bg-cyan-500/15 text-nexus-text shadow-lg shadow-cyan-500/10 font-semibold"
                     : "border-transparent text-nexus-muted hover:border-nexus-border hover:bg-nexus-card hover:text-nexus-text"

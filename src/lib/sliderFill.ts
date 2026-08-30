@@ -8,21 +8,26 @@ function paint(el: HTMLInputElement) {
   el.style.setProperty("--p", pct + "%");
 }
 
-export function initSliderFill() {
+export function initSliderFill(): () => void {
   const paintAll = () =>
     document
       .querySelectorAll<HTMLInputElement>('input[type="range"]')
       .forEach(paint);
 
-  document.addEventListener("input", (e) => {
+  const onInput = (e: Event) => {
     const t = e.target as HTMLElement;
     if (t instanceof HTMLInputElement && t.type === "range") paint(t);
-  });
+  };
+  document.addEventListener("input", onInput);
 
   paintAll();
   // Les curseurs apparaissent quand on ouvre une fenetre : on repeint a chaque ajout.
-  new MutationObserver(paintAll).observe(document.body, {
-    childList: true,
-    subtree: true,
-  });
+  const obs = new MutationObserver(paintAll);
+  obs.observe(document.body, { childList: true, subtree: true });
+
+  // On renvoie de quoi tout retirer proprement (evite les fuites).
+  return () => {
+    document.removeEventListener("input", onInput);
+    obs.disconnect();
+  };
 }

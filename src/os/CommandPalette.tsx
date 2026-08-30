@@ -189,7 +189,7 @@ export default function CommandPalette() {
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="nx-btn nx-btn-secondary shrink-0 flex items-center justify-center w-7 h-7">
+                    <span className="nx-chip shrink-0 flex items-center justify-center w-7 h-7">
                       {typeof item.icon === "string" ? (
                         <Icon name={item.icon} size={16} />
                       ) : (
