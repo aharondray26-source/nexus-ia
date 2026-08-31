@@ -77,12 +77,12 @@ export default function NexusChatPro() {
             thinking: "Analyse du profil de l'utilisateur. Activation du moteur Gemini 3.6 Flash avec mode réflexion approfondi.",
             content: `### Bienvenue dans Nexus IA Pro Studio (Gemini 3.6 Flash)
 
-Je suis votre assistant IA haute performance propulsé par **Gemini 3.6 Flash**. Cette application vous offre un **espace de chat agrandi**, un **mode réflexion approfondi** et un **bac à sable multimédia** (Code HTML/JS, PDF, Audio, Vidéo).
+Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. Cette application vous offre un **espace de chat agrandi**, un **mode réflexion approfondi** et un **bac à sable multimédia** (Code HTML/JS, PDF, Audio, Vidéo).
 
 #### Moteur & Réflexion :
 1. **Gemini 3.6 Flash** : Le modèle de dernière génération ultra-rapide et multimodal.
-2. **Mode Réflexion (Thinking Mode)** : Activez le switch pour forcer l'IA à analyser étape par étape vos problèmes complexes.
-3. **Espace Chat XXL & Panneaux Ajustables** : Les panneaux latéraux sont réduits par défaut et redimensionnables pour laisser la priorité maximale à vos discussions.`,
+2. **Mode Réflexion (Thinking Mode)** : Activez le switch pour forcer l'IA à analyser étape par étape tes problèmes complexes.
+3. **Espace Chat XXL & Panneaux Ajustables** : Les panneaux latéraux sont réduits par défaut et redimensionnables pour laisser la priorité maximale à tes discussions.`,
             codeSnippet: {
               type: "html",
               title: "Démo Widget Interactif Nexus",
@@ -182,7 +182,7 @@ Je suis votre assistant IA haute performance propulsé par **Gemini 3.6 Flash**.
           id: `m-${Date.now()}`,
           role: "assistant",
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          content: `Session Gemini 3.6 Flash initialisée (${selectedModel}). Comment puis-je vous aider ?`,
+          content: `Session Gemini 3.6 Flash initialisée (${selectedModel}). Comment puis-je t'aider ?`,
         },
       ],
     };
@@ -269,7 +269,7 @@ Je suis votre assistant IA haute performance propulsé par **Gemini 3.6 Flash**.
 
         addNexusTask(taskText, timeText || undefined);
 
-        replyText = `⏰ **Rappel Enregistré dans l'Application !**\n\nJ'ai ajouté votre rappel directement dans l'application **Tâches & Rappels** (et dans votre widget d'accueil).\n\n- **Rappel :** ${taskText}\n${timeText ? `- **Horaire :** ${timeText}\n` : ""}- **Statut :** Enregistré et Actif dans le système\n\n*Tu peux retrouver ce rappel à tout moment dans l'application Tâches !*`;
+        replyText = `⏰ **Rappel Enregistré dans l'Application !**\n\nJ'ai ajouté ton rappel directement dans l'application **Tâches & Rappels** (et dans ton widget d'accueil).\n\n- **Rappel :** ${taskText}\n${timeText ? `- **Horaire :** ${timeText}\n` : ""}- **Statut :** Enregistré et Actif dans le système\n\n*Tu peux retrouver ce rappel à tout moment dans l'application Tâches !*`;
       } else {
         // 1. Priorité au serveur backend (/api/gemini/chat) avec Gemini 3.6 Flash
         try {
@@ -385,7 +385,7 @@ Je suis votre assistant IA haute performance propulsé par **Gemini 3.6 Flash**.
       const fallbackMsg: ChatMessage = {
         id: `err-${Date.now()}`,
         role: "assistant",
-        content: `J'ai traité votre demande : **"${userText}"**.\n\nN'hésitez pas à poser d'autres questions ou à affiner votre requête !`,
+        content: `J'ai traité ton demande : **"${userText}"**.\n\nN'hésitez pas à poser d'autres questions ou à affiner ton requête !`,
         timestamp: nowStr,
       };
       setSessions((prev) =>

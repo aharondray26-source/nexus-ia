@@ -80,14 +80,14 @@ export default function Docs() {
       id: "doc-welcome",
       title: "Rapport de Projet - Nexus OS Studio.docx",
       content: `<h1><strong>Document Officiel Nexus OS Studio</strong></h1>
-<p>Bienvenue dans votre nouvel éditeur de documents inspiré de <em>Google Docs</em> et <em>Microsoft Word</em>. Cet outil complet vous permet de rédiger, mettre en page et formater vos textes professionnels avec élégance.</p>
+<p>Bienvenue dans ton nouvel éditeur de documents inspiré de <em>Google Docs</em> et <em>Microsoft Word</em>. Cet outil complet te permet de rédiger, mettre en page et formater tes textes professionnels avec élégance.</p>
 <hr/>
 <h2>1. Fonctionnalités Principales</h2>
 <ul>
   <li><strong>Mise en forme avancée :</strong> Gras, Italique, Souligné, Barré, Polices variées et Tailles de texte.</li>
   <li><strong>Couleurs & Surlignage :</strong> Palette de couleurs pour le texte et surligneurs de couleur.</li>
   <li><strong>Alignement & Listes :</strong> Alignement à gauche, centré, à droite ou justifié, plus listes à puces ou numérotées.</li>
-  <li><strong>Exportation Directe :</strong> Enregistrement automatique dans votre <em>Gestionnaire de Fichiers</em> Nexus OS ou exportation en fichier HTML / Impression PDF.</li>
+  <li><strong>Exportation Directe :</strong> Enregistrement automatique dans ton <em>Gestionnaire de Fichiers</em> Nexus OS ou exportation en fichier HTML / Impression PDF.</li>
 </ul>
 <blockquote><p>💡 <strong>Astuce :</strong> Le document est présenté sur une page A4 réaliste avec enregistrement continu en arrière-plan !</p></blockquote>`,
       updatedAt: Date.now(),
@@ -138,7 +138,7 @@ export default function Docs() {
     const newDoc: DocumentItem = {
       id: `doc-${Date.now()}`,
       title: `Nouveau Document ${docs.length + 1}.docx`,
-      content: `<h1>Nouveau Document</h1><p>Commencez à rédiger votre texte ici...</p>`,
+      content: `<h1>Nouveau Document</h1><p>Commencez à rédiger ton texte ici...</p>`,
       updatedAt: Date.now(),
     };
     setDocs((prev) => [newDoc, ...prev]);
@@ -772,12 +772,12 @@ export default function Docs() {
               <h3 className="text-sm font-bold text-white">Assistant Rédaction IA</h3>
             </div>
             <p className="text-xs text-slate-400">
-              Décrivez ce que vous souhaitez rédiger (ex: "Rédige une histoire pour un enfant avant de dormir" ou "Crée un compte-rendu").
+              Décrivez ce que tu souhaitez rédiger (ex: "Rédige une histoire pour un enfant avant de dormir" ou "Crée un compte-rendu").
             </p>
             <textarea
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
-              placeholder="Ex: Rédige une belle histoire du soir pour s'endormir..."
+              placeholder="Ce que tu veux écrire…"
               className="w-full h-28 p-3 rounded-xl bg-black/60 border border-white/20 text-xs text-white focus:outline-none focus:border-purple-400 resize-none leading-relaxed"
             />
             <div className="flex justify-end gap-2 pt-1">

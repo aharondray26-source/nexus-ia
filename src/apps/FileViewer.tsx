@@ -207,7 +207,7 @@ export default function FileViewer() {
           <button
             onClick={() => triggerDownload(file.blob, file.name)}
             className="flex items-center gap-1.5 rounded-lg nx-grad px-3 py-1.5 text-xs font-bold text-white hover:opacity-90 shadow-md shadow-cyan-500/20 active:scale-95 transition-all"
-            title="Télécharger le fichier sur votre appareil"
+            title="Télécharger le fichier sur ton appareil"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Télécharger</span>
@@ -296,7 +296,7 @@ export default function FileViewer() {
               <p className="text-[11px] text-slate-400">Taille: {formatFileSize(file.size)}</p>
             </div>
             <p className="text-xs text-slate-300 bg-black/40 p-3 rounded-xl border border-white/10">
-              Le document tableur est prêt dans votre stockage local.
+              Le document tableur est prêt dans ton stockage local.
             </p>
             <button
               onClick={() => triggerDownload(file.blob, file.name)}

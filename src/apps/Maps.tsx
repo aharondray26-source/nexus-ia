@@ -183,7 +183,7 @@ export default function Maps() {
               type="text"
               value={placeQuery}
               onChange={(e) => setPlaceQuery(e.target.value)}
-              placeholder="Rechercher une ville, adresse, monument..."
+              placeholder="Une ville, une adresse…"
               className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/60"
             />
           </div>

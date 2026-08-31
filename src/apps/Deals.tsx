@@ -51,7 +51,7 @@ export default function Deals() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Tape un produit ou une marque (ex: iPhone 16, PC Gamer, Baskets, Écran...)"
+            placeholder="Un produit ou une marque…"
             className="flex-1 rounded-xl border border-nexus-border bg-black/40 px-3.5 py-2 text-xs text-white placeholder-nexus-muted focus:border-purple-500 focus:outline-none"
           />
           <button

@@ -461,13 +461,13 @@ export default function Settings() {
                   https://aistudio.google.com/app/apikey
                 </a>
               </li>
-              <li>Connectez-vous avec ton compte Gmail habituel. <i>(Aucune carte bancaire demandée)</i>.</li>
+              <li>Connecte-toi avec ton compte Gmail habituel. <i>(Aucune carte bancaire demandée)</i>.</li>
               <li>Clique sur le bouton bleu <b>"Create API Key"</b> (Créer une clé API).</li>
               <li>Copiez la clé générée (commençant par <code>AIzaSy...</code>).</li>
               <li>Collez-la dans la case ci-dessus !</li>
             </ol>
             <p className="text-[10px] text-cyan-200/80 italic border-t border-cyan-500/20 pt-2">
-              💡 Une fois collée, votre IA est immédiatement débloquée et autonome sur tout navigateur.
+              💡 Une fois collée, ton IA est immédiatement débloquée et autonome sur tout navigateur.
             </p>
           </div>
         )}
@@ -482,7 +482,7 @@ export default function Settings() {
             <div className="space-y-0.5">
               <h4 className="text-xs font-bold text-white">Projet Nexus OS complet (.ZIP)</h4>
               <p className="text-[11px] text-slate-300">
-                L'intégralité du code source (Express, React, Vite, 30+ apps, Serveur IA) à décompresser sur votre PC.
+                L'intégralité du code source (Express, React, Vite, 30+ apps, Serveur IA) à décompresser sur ton PC.
               </p>
             </div>
             <a

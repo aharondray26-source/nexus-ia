@@ -55,7 +55,7 @@ const SAMPLES = {
 <body>
   <h3 style="margin-bottom:10px; color:#38bdf8;">🎮 Mini Jeu Canvas Arcade</h3>
   <canvas id="gameCanvas" width="400" height="300"></canvas>
-  <p style="font-size:12px; color:#94a3b8;">Déplacez votre souris sur le canvas pour contrôler la balle !</p>
+  <p style="font-size:12px; color:#94a3b8;">Déplacez ton souris sur le canvas pour contrôler la balle !</p>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
@@ -272,7 +272,7 @@ ${codeToSet}
             <textarea
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="Saisis ou collez votre code HTML/JS/CSS ici..."
+              placeholder="Colle ton code HTML, JS ou CSS…"
               className="flex-1 w-full bg-slate-900/90 text-cyan-100 font-mono text-xs p-3.5 rounded-xl border border-white/10 focus:outline-none focus:border-cyan-400/60 resize-none leading-relaxed [scrollbar-width:thin]"
             />
           </div>

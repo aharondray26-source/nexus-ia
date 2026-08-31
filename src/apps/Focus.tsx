@@ -100,7 +100,7 @@ export default function Focus() {
       }
     } catch (err) {
       console.error("Erreur de recherche musicale:", err);
-      setSearchError("Impossible de se connecter au service musical. Vérifie votre connexion.");
+      setSearchError("Impossible de se connecter au service musical. Vérifie ton connexion.");
     } finally {
       setIsSearching(false);
     }
@@ -244,7 +244,7 @@ export default function Focus() {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Chercher un chanteur, groupe ou titre (ex: Stromae, Daft Punk)..."
+                placeholder="Un artiste ou un titre…"
                 className="w-full rounded-xl border border-white/10 bg-slate-900/90 pl-9 pr-3 py-2 text-xs text-white placeholder-slate-400 outline-none focus:border-purple-500 transition-all"
               />
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
@@ -395,7 +395,7 @@ export default function Focus() {
               <input
                 value={linkInput}
                 onChange={(e) => setLinkInput(e.target.value)}
-                placeholder="ex: https://www.youtube.com/watch?v=... ou https://site.com/audio.mp3"
+                placeholder="Colle un lien YouTube ou audio…"
                 className="flex-1 rounded-xl border border-white/10 bg-slate-900/90 px-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-purple-500"
               />
               <button

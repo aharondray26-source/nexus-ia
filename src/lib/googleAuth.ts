@@ -80,7 +80,7 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
     console.error("Erreur de connexion Google:", error);
     const errMsg = error?.message || String(error);
     if (errMsg.includes("Database is closing") || errMsg.includes("hidden") || errMsg.includes("indexedDB")) {
-      throw new Error("La sécurité de l'aperçu bloque la popup IndexedDB. Ouvrez le site dans un nouvel onglet pour vous connecter à Google.");
+      throw new Error("La sécurité de l'aperçu bloque la popup IndexedDB. Ouvrez le site dans un nouvel onglet pour te connecter à Google.");
     }
     throw error;
   } finally {
@@ -124,7 +124,7 @@ export async function fetchRealGmailMessages(): Promise<Array<{
   starred: boolean;
 }>> {
   const token = getAccessToken();
-  if (!token) throw new Error("Accès Google non autorisé. Veuillez vous connecter.");
+  if (!token) throw new Error("Accès Google non autorisé. Merci de te connecter.");
 
   const listRes = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=15", {
     headers: { Authorization: `Bearer ${token}` },
@@ -203,7 +203,7 @@ export async function fetchRealGmailMessages(): Promise<Array<{
 
 export async function sendRealGmailMessage(to: string, subject: string, bodyText: string): Promise<boolean> {
   const token = getAccessToken();
-  if (!token) throw new Error("Accès Google non autorisé. Veuillez vous connecter.");
+  if (!token) throw new Error("Accès Google non autorisé. Merci de te connecter.");
 
   const emailLines = [
     `To: ${to}`,

@@ -76,7 +76,7 @@ export default function Tasks() {
             type="text"
             value={dueDateInput}
             onChange={(e) => setDueDateInput(e.target.value)}
-            placeholder="Heure / Date optionnelle (ex: Demain 18h, À 14h30...)"
+            placeholder="Quand ? Demain 18 h…"
             className="flex-1 rounded-lg border border-white/5 bg-white/5 px-2.5 py-1 text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-cyan-500/30"
           />
         </div>

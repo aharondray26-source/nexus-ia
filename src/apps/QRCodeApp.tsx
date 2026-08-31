@@ -260,7 +260,7 @@ export default function QRCodeApp() {
       }
     } catch (err) {
       console.error(err);
-      setScanError("Impossible d'accéder à la caméra. Vérifie vos autorisations.");
+      setScanError("Impossible d'accéder à la caméra. Vérifie tes autorisations.");
       setIsCameraActive(false);
     }
   };
@@ -405,7 +405,7 @@ export default function QRCodeApp() {
                     <textarea
                       value={textInput}
                       onChange={(e) => setTextInput(e.target.value)}
-                      placeholder="Écrivez votre message à encoder..."
+                      placeholder="Écrivez ton message à encoder..."
                       rows={3}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/60 resize-none"
                     />

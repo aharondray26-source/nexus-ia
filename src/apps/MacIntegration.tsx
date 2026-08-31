@@ -101,7 +101,7 @@ export default function MacIntegration() {
       const manifest = {
         manifest_version: 3,
         name: "Nexus",
-        version: "2.4.0",
+        version: "2.5.0",
         description:
           "Ton espace Nexus à chaque onglet. Enregistre une note, une tâche ou " +
           "un morceau de page choisie — tout rejoint ton compte.",
@@ -624,6 +624,33 @@ body.reglages #ombre{opacity:1;pointer-events:auto;
              border-radius .58s cubic-bezier(.3,.9,.2,1) .06s,
              opacity .3s ease}
 body.reglages #panneau{transform:scale(1);border-radius:26px;opacity:1;pointer-events:auto}
+
+/* SUR UN FOND CLAIR, un verre sombre devient un rectangle gris delave : ni
+   beau, ni franc. Le panneau s'eclaircit avec le fond, comme le fait macOS. */
+body.clair #panneau{background:rgba(252,252,254,.72);
+  border-color:rgba(0,0,0,.1);color:#15151b;
+  box-shadow:0 26px 70px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.95)}
+body.clair #panneau header{border-bottom-color:rgba(0,0,0,.09)}
+body.clair #fermer{background:rgba(0,0,0,.07);color:#4a4a56}
+body.clair #fermer:hover{background:rgba(0,0,0,.13);color:#15151b}
+body.clair .sec{color:#6c6c78}
+body.clair .opt{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1);color:#3c3c48}
+body.clair .opt:hover{background:rgba(0,0,0,.1)}
+body.clair .opt.on{background:var(--acc,#6366f1);border-color:transparent;color:#fff}
+/* Sur les pastilles claires, une bordure blanche ne se voit pas. */
+body.clair .pastille.on{border-color:#15151b}
+body.clair .champ{background:rgba(255,255,255,.8);border-color:rgba(0,0,0,.12);color:#15151b}
+body.clair .champ::placeholder{color:#8b8b96}
+body.clair .bascule{border-bottom-color:rgba(0,0,0,.07)}
+body.clair .inter{background:rgba(0,0,0,.16)}
+body.clair .note{color:#6c6c78}
+body.clair #pied{border-top-color:rgba(0,0,0,.08);color:#7b7b86}
+body.clair #ombre{background:rgba(255,255,255,.28)}
+body.clair #roue{background:rgba(255,255,255,.62);border-color:rgba(0,0,0,.12);color:#4a4a56;
+  box-shadow:0 6px 18px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.9)}
+body.clair #roue:hover{background:rgba(255,255,255,.85);color:#15151b}
+body.clair .rep{color:#15151b}
+body.clair .lien .p{background:rgba(0,0,0,.06)}
 /* Le contenu n'apparait qu'une fois la bulle devenue carre : sinon on voit le
    texte s'etirer pendant la deformation, et c'est laid. */
 #panneau > *{opacity:0;transition:opacity .28s ease .3s}
@@ -770,7 +797,7 @@ body.reglages #panneau > *{opacity:1}
     <div class="note">Limite chaque réponse au strict nécessaire. Recommandé si tu
       partages la même clé avec l'application macOS.</div>
   </div>
-  <div id="pied"><span></span>Nexus 2.2 — conçu par Aharon Dray</div>
+  <div id="pied"><span></span>Nexus — conçu par Aharon Dray</div>
 </aside>
 
 <script src="onglet.js"></script>
@@ -912,6 +939,8 @@ function appliquer() {
   $("mac").style.display = R.boutonMac ? "" : "none";
 
   document.body.classList.toggle("calme", !R.halos);
+  // Le panneau, la roue et les cartes doivent s'eclaircir avec le fond.
+  document.body.classList.toggle("clair", clair);
   $("lueur").style.display = R.halos && !R.fondImage ? "" : "none";
   battre();
   dessinerRaccourcis();
@@ -1508,7 +1537,7 @@ $("testerCle").addEventListener("click", async () => {
 })();
 `;
 
-      const lisezMoi = `EXTENSION NEXUS 2.4 — installation gratuite, 4 clics
+      const lisezMoi = `EXTENSION NEXUS 2.5 — installation gratuite, 4 clics
 
 SI TU AVAIS DEJA UNE VERSION DE NEXUS : supprime-la d'abord.
 Sur chrome://extensions, sur la carte « Nexus », clique « Supprimer ».
@@ -1571,7 +1600,12 @@ LE BOUTON DANS LA BARRE D'OUTILS
   retrouver sur ton Mac et tes autres appareils, connecte-toi au site : le
   bouton « Compte », en bas de la petite fenetre, y mene directement.
 
-NOUVEAU EN 2.4 — raccourcis de sites a la place des anciens
+NOUVEAU EN 2.5 — sur un fond clair (Neige, Papier ou ta propre
+image claire), les reglages, la roue et les cartes passent au verre CLAIR :
+avant, un panneau sombre a moitie transparent devenait un rectangle gris
+delave, et les boutons actifs perdaient leur couleur.
+
+RAPPEL 2.4 — raccourcis de sites a la place des anciens
 boutons (qui menaient tous au meme endroit), petite fenetre redessinee en
 carte flottante qui suit le theme clair ou sombre du navigateur.
 

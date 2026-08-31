@@ -92,7 +92,7 @@ export default function NexusAssistant() {
     {
       id: "init-1",
       role: "assistant",
-      text: "Bonjour ! Je suis **Nexus AI Pro** avec intelligence intégrée et recherche Web. Tu peux me poser vos questions, **glisser-déposer tes fichiers** ou basculer en **mode latéral (ancré au mur)**.",
+      text: "Bonjour ! Je suis **Nexus AI Pro** avec intelligence intégrée et recherche Web. Tu peux me poser tes questions, **glisser-déposer tes fichiers** ou basculer en **mode latéral (ancré au mur)**.",
     },
   ]);
   const [loading, setLoading] = useState(false);
@@ -334,12 +334,12 @@ export default function NexusAssistant() {
     // 4. EXPLICIT SETTINGS OPENING
     else if (isExplicitSystemCommand && (lower.includes("paramètre") || lower.includes("reglage") || lower.includes("réglage") || lower.includes("police") || lower.includes("font") || lower.includes("fond d'écran"))) {
       openApp("settings", { width: 420, height: 480 });
-      overrideSystemReply = `⚙️ **Système Nexus : Personnalisation Ouverte !**\n\nJ'ai ouvert l'espace **Réglages**. Tu peux y choisir votre police d'écran tech et vos préférences.`;
+      overrideSystemReply = `⚙️ **Système Nexus : Personnalisation Ouverte !**\n\nJ'ai ouvert l'espace **Réglages**. Tu peux y choisir ta police d'écran tech et tes préférences.`;
     }
     // 4b. CLOUD & GOOGLE ACCOUNT OPENING
     else if (lower.includes("cloud") || lower.includes("google drive") || lower.includes("google account") || lower.includes("compte google") || lower.includes("sauvegarde cloud")) {
       openApp("cloud", { width: 780, height: 580 });
-      overrideSystemReply = `☁️ **Nexus Cloud & Compte Google !**\n\nL'application **Nexus Cloud** est ouverte. Tu peux y gérer ton compte Google, tes fichiers et sauvegarder votre système.`;
+      overrideSystemReply = `☁️ **Nexus Cloud & Compte Google !**\n\nL'application **Nexus Cloud** est ouverte. Tu peux y gérer ton compte Google, tes fichiers et sauvegarder ton système.`;
     }
     // 4c. MESSAGING OPENING
     else if (lower.includes("messagerie") || lower.includes("message") || lower.includes("tchat") || lower.includes("discussion")) {
@@ -349,7 +349,7 @@ export default function NexusAssistant() {
     // 4d. MAIL OPENING
     else if (lower.includes("mail") || lower.includes("e-mail") || lower.includes("email") || lower.includes("gmail") || lower.includes("boite mail")) {
       openApp("mail", { width: 840, height: 600 });
-      overrideSystemReply = `📧 **Boîte Mail Nexus & Google Gmail !**\n\nTon client **Nexus Mail** est ouvert. Consulte votre boîte de réception, vos pièces jointes Cloud et envoyez des messages.`;
+      overrideSystemReply = `📧 **Boîte Mail Nexus & Google Gmail !**\n\nTon client **Nexus Mail** est ouvert. Consulte ta boîte de réception, tes pièces jointes Cloud et envoyez des messages.`;
     }
     // 5. EXPLICIT GAMES OPENING
     else if (isExplicitSystemCommand && (lower.includes("jeu") || lower.includes("échec") || lower.includes("arcade"))) {
@@ -385,7 +385,7 @@ export default function NexusAssistant() {
       addNexusTask(taskText, timeText || undefined);
       openApp("tasks", { width: 520, height: 500 });
 
-      overrideSystemReply = `⏰ **Rappel Enregistré dans l'Application Tâches & Rappels !**\n\nJ'ai créé votre rappel avec succès dans l'application **Tâches & Rappels** et sur votre widget de bureau.\n\n- **Contenu du rappel :** ${taskText}\n${timeText ? `- **Horaire spécifié :** ${timeText}\n` : ""}- **Statut :** Enregistré et Actif\n\n*L'application Tâches a été ouverte automatiquement pour vous permettre de le consulter !*`;
+      overrideSystemReply = `⏰ **Rappel Enregistré dans l'Application Tâches & Rappels !**\n\nJ'ai créé ton rappel avec succès dans l'application **Tâches & Rappels** et sur ton widget de bureau.\n\n- **Contenu du rappel :** ${taskText}\n${timeText ? `- **Horaire spécifié :** ${timeText}\n` : ""}- **Statut :** Enregistré et Actif\n\n*L'application Tâches a été ouverte automatiquement pour te permettre de le consulter !*`;
     }
 
     await new Promise((resolve) => setTimeout(resolve, 500));

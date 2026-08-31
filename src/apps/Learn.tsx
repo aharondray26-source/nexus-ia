@@ -208,7 +208,7 @@ export default function Learn() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Apprendre n'importe quoi (ex : la photosynthese)..."
+          placeholder="Apprendre quoi ? La photosynthèse…"
           className="nx-input flex-1 text-sm"
         />
         <button

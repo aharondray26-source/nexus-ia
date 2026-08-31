@@ -54,7 +54,7 @@ const DOCUMENTATION_SITE_PDF: DocumentPDF = {
         
         <div style="background: #f8fafc; p-3; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #e2e8f0;">
           <h3 style="margin: 0; color: #0f172a; font-size: 16px;">📁 Gestionnaire de Fichiers</h3>
-          <p style="margin: 5px 0 0 0; color: #475569; font-size: 13px;">Permet d'importer, classer, prévisualiser et télécharger tes documents (PDF, Word, Excel, PowerPoint, Images, Vidéos, Audios). Tout votre stockage reste privé dans ton navigateur.</p>
+          <p style="margin: 5px 0 0 0; color: #475569; font-size: 13px;">Permet d'importer, classer, prévisualiser et télécharger tes documents (PDF, Word, Excel, PowerPoint, Images, Vidéos, Audios). Tout ton stockage reste privé dans ton navigateur.</p>
         </div>
 
         <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #e2e8f0;">

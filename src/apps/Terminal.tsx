@@ -179,7 +179,7 @@ Uptime: ${Math.floor(performance.now() / 1000)}s`,
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={onKeyDown}
-          placeholder="Saisis une commande... (ex: sysinfo, help, ai...)"
+          placeholder="Une commande… (help, ai, sysinfo)"
           className="flex-1 bg-transparent outline-none font-mono text-xs placeholder:opacity-40"
           autoFocus
         />

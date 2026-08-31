@@ -191,7 +191,7 @@ Pour dénicher les **meilleurs codes promo et réductions** en direct sur le web
 2. **Astuces infaillibles pour payer moins cher :**
    - Testez les codes génériques : \`BIENVENUE10\`, \`WELCOME\`, \`PROMO15\`, \`VIP20\`.
    - Laissez votre panier rempli pendant 24h sans valider : la plupart des e-commerçants vous envoient un code de réduction de 10% par email pour relancer votre achat.
-   - Inscrivez-vous à la Newsletter du site ciblé (souvent -10% immédiats sur le 1er achat).
+   - Inscris-toi à la Newsletter du site ciblé (souvent -10% immédiats sur le 1er achat).
 
 ---
 💡 *Pour scanner un site marchand spécifique en temps réel avec IA, assurez-vous d'avoir une clé API Gemini active ci-dessous.*`;
@@ -213,7 +213,7 @@ Pour dénicher les **meilleurs codes promo et réductions** en direct sur le web
 
   // 6. Lettres & Mails
   if (query.includes("lettre") || query.includes("mail") || query.includes("courrier") || query.includes("motivation")) {
-    return `### 📄 Modèle de Lettre Rédigé par Nexus AI\n\n**Objet :** Proposition de collaboration / Demande formelle\n\nMadame, Monsieur,\n\nC'est avec un vif intérêt que je vous adresse la présente démarche. Fort d'une expérience rigoureuse et axée sur l'excellence, je souhaite mettre mes compétences à votre service.\n\nMon parcours m'a permis d'acquérir une grande autonomie ainsi qu'une maîtrise approfondie de mes domaines d'intervention. Intégrer votre équipe ou collaborer avec vous représenterait une opportunité majeure.\n\nJe reste à votre entière disposition pour tout échange complémentaire.\n\nVeuillez agréer, Madame, Monsieur, l'expression de mes salutations distinguées.\n\n*Rédigé avec soin par Nexus AI Pro.*`;
+    return `### 📄 Modèle de Lettre Rédigé par Nexus AI\n\n**Objet :** Proposition de collaboration / Demande formelle\n\nMadame, Monsieur,\n\nC'est avec un vif intérêt que je vous adresse la présente démarche. Fort d'une expérience rigoureuse et axée sur l'excellence, je souhaite mettre mes compétences à votre service.\n\nMon parcours m'a permis d'acquérir une grande autonomie ainsi qu'une maîtrise approfondie de mes domaines d'intervention. Intégrer votre équipe ou collaborer avec vous représenterait une opportunité majeure.\n\nJe reste à votre entière disposition pour tout échange complémentaire.\n\nMerci de agréer, Madame, Monsieur, l'expression de mes salutations distinguées.\n\n*Rédigé avec soin par Nexus AI Pro.*`;
   }
 
   // 7. Rapports & Compte-rendu
@@ -257,7 +257,7 @@ Vous voulez activer toute la puissance de l'IA **Gemini 3.5 / 3.6 Flash** sur **
 
 #### 1️⃣ **Étape 1 : Allez sur Google AI Studio**
 - Ouvrez le site officiel gratuit : **[https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)**
-- Connectez-vous simplement avec ton compte Google (Gmail).
+- Connecte-toi simplement avec ton compte Google (Gmail).
 - *Astuce : C'est 100% gratuit et aucune carte de crédit n'est requise !*
 
 #### 2️⃣ **Étape 2 : Générez ta clé en 1 clic**

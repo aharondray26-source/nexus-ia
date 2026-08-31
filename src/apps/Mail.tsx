@@ -227,11 +227,11 @@ export default function Mail() {
         });
         setNotification(`${realMails.length} e-mails Gmail synchronisés en direct !`);
       } else {
-        setNotification("Aucun nouvel e-mail dans votre boîte Gmail.");
+        setNotification("Aucun nouvel e-mail dans ta boîte Gmail.");
       }
     } catch (err: any) {
       console.error(err);
-      setNotification(`Sync Gmail: ${err?.message || "Veuillez vous connecter à Google"}`);
+      setNotification(`Sync Gmail: ${err?.message || "Merci de te connecter à Google"}`);
     } finally {
       setIsSyncingGmail(false);
       setTimeout(() => setNotification(null), 4000);
@@ -327,7 +327,7 @@ export default function Mail() {
             setShowAccountModal(true);
           }}
           className="nx-btn nx-btn-icon flex items-center gap-2.5 text-left"
-          title="Clique pour changer votre adresse email"
+          title="Clique pour changer ton adresse email"
         >
           <img
             src={googleUser?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentUserName)}`}
@@ -371,7 +371,7 @@ export default function Mail() {
               onClick={handleSyncGmail}
               disabled={isSyncingGmail}
               className="nx-btn nx-btn-secondary flex items-center justify-center gap-2 text-xs"
-              title="Synchroniser avec votre boîte Gmail réelle"
+              title="Synchroniser avec ta boîte Gmail réelle"
             >
               <RefreshCw size={13} className={isSyncingGmail ? "animate-spin text-emerald-400" : "text-emerald-400"} />
               <span>{isSyncingGmail ? "Sync en cours..." : "Sync Gmail Réel"}</span>
@@ -681,7 +681,7 @@ export default function Mail() {
                   required
                   value={recipient}
                   onChange={(e) => setRecipient(e.target.value)}
-                  placeholder="ex: aharondray26@gmail.com ou support@nexus-os.io"
+                  placeholder="Adresse du destinataire"
                   className="w-full mt-1 rounded-xl border border-white/10 bg-black/50 px-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
                 />
               </div>
@@ -693,7 +693,7 @@ export default function Mail() {
                   required
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  placeholder="ex: Projet Nexus OS - Remarques et Fichiers"
+                  placeholder="Objet du message"
                   className="w-full mt-1 rounded-xl border border-white/10 bg-black/50 px-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
                 />
               </div>
@@ -705,7 +705,7 @@ export default function Mail() {
                   rows={6}
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
-                  placeholder="Rédigez votre message ici..."
+                  placeholder="Rédigez ton message ici..."
                   className="w-full mt-1 rounded-xl border border-white/10 bg-black/50 p-3 text-xs text-white outline-none focus:border-cyan-500 resize-none"
                 />
               </div>
@@ -792,7 +792,7 @@ export default function Mail() {
             </div>
 
             <p className="text-xs text-slate-300">
-              Entre votre propre adresse email Google. Chaque utilisateur retrouve ses propres e-mails, fichiers et notes synchronisés.
+              Entre ton propre adresse email Google. Chaque utilisateur retrouve ses propres e-mails, fichiers et notes synchronisés.
             </p>
 
             <form onSubmit={handleSaveAccount} className="flex flex-col gap-3">

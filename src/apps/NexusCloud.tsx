@@ -132,7 +132,7 @@ export default function NexusCloud() {
       }
     } catch (err: any) {
       console.error(err);
-      setSyncStatus(`Sync Drive: ${err?.message || "Veuillez connecter ton compte Google Drive"}`);
+      setSyncStatus(`Sync Drive: ${err?.message || "Merci de connecter ton compte Google Drive"}`);
     } finally {
       setIsSyncingDrive(false);
       setTimeout(() => setSyncStatus(null), 4000);
@@ -181,17 +181,17 @@ export default function NexusCloud() {
 
     const token = getAccessToken();
     if (token) {
-      setSyncStatus(`Envoi de "${file.name}" sur votre VRAI Google Drive...`);
+      setSyncStatus(`Envoi de "${file.name}" sur ton VRAI Google Drive...`);
       try {
         const text = await file.text().catch(() => "Contenu du fichier");
         await uploadRealDriveFile(file.name, text, file.type || "text/plain");
-        setSyncStatus(`Fichier "${file.name}" téléversé avec SUCCÈS sur votre Google Drive réel !`);
+        setSyncStatus(`Fichier "${file.name}" téléversé avec SUCCÈS sur ton Google Drive réel !`);
       } catch (err: any) {
         console.error(err);
         setSyncStatus(`Ajouté localement. (Upload Drive: ${err?.message || "Erreur"})`);
       }
     } else {
-      setSyncStatus(`Fichier "${file.name}" importé dans votre Nexus Cloud !`);
+      setSyncStatus(`Fichier "${file.name}" importé dans ton Nexus Cloud !`);
     }
 
     setTimeout(() => setSyncStatus(null), 4000);
@@ -353,7 +353,7 @@ export default function NexusCloud() {
           <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
             <div className="h-full rounded-full nx-grad w-[22%]" />
           </div>
-          <p className="text-[10px] text-slate-500 mt-1.5">11.8 GB disponibles sur votre stockage gratuit</p>
+          <p className="text-[10px] text-slate-500 mt-1.5">11.8 GB disponibles sur ton stockage gratuit</p>
         </div>
 
         <div className="rounded-xl border border-white/10 bg-black/40 p-3.5">
@@ -445,7 +445,7 @@ export default function NexusCloud() {
           <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-cyan-950/80 backdrop-blur-sm rounded-2xl border-2 border-dashed border-cyan-400 text-cyan-200">
             <UploadCloud size={40} className="animate-bounce text-cyan-300" />
             <p className="text-sm font-bold mt-2">Dépose le fichier ici !</p>
-            <p className="text-xs text-cyan-300/80">Il sera automatiquement enregistré dans votre Nexus Cloud.</p>
+            <p className="text-xs text-cyan-300/80">Il sera automatiquement enregistré dans ton Nexus Cloud.</p>
           </div>
         )}
         {filteredFiles.length > 0 ? (
@@ -519,7 +519,7 @@ export default function NexusCloud() {
         ) : (
           <div className="flex flex-col items-center justify-center h-48 text-slate-500">
             <Cloud size={32} className="opacity-30 mb-2" />
-            <p className="text-xs">Aucun fichier trouvé dans votre Nexus Cloud.</p>
+            <p className="text-xs">Aucun fichier trouvé dans ton Nexus Cloud.</p>
           </div>
         )}
       </div>

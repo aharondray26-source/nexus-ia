@@ -46,8 +46,8 @@ export default function About() {
         tâches, apprentissage, dictionnaire, traducteur, cartes, musique et plus encore.
         <br />
         <span className="text-nexus-text">Gratuit, utilisable sans compte</span> : tout
-        reste alors sur votre appareil. Si vous créez un compte Nexus, tes données vous
-        suivent sur tous vos appareils — elles restent privées et ne sont ni vendues ni partagées.
+        reste alors sur ton appareil. Si vous créez un compte Nexus, tes données vous
+        suivent sur tous tes appareils — elles restent privées et ne sont ni vendues ni partagées.
       </p>
 
       <div className="rounded-xl border border-nexus-border bg-nexus-bg p-3 text-xs leading-relaxed text-nexus-muted">

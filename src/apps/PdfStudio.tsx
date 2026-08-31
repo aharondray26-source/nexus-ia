@@ -101,7 +101,7 @@ export default function PdfStudio() {
   // 1. VRAIE Conversion PDF vers Word (.docx) avec extraction réelle de texte
   const handlePdfToWord = async () => {
     if (files.length === 0) {
-      setStatusMessage({ type: "error", text: "Veuillez d'abord sélectionner un fichier PDF à convertir." });
+      setStatusMessage({ type: "error", text: "Merci de d'abord sélectionner un fichier PDF à convertir." });
       return;
     }
 
@@ -340,7 +340,7 @@ export default function PdfStudio() {
   // 4. Diviser PDF
   const handleSplitPdf = async () => {
     if (files.length === 0) {
-      setStatusMessage({ type: "error", text: "Veuillez importer un fichier PDF à diviser." });
+      setStatusMessage({ type: "error", text: "Merci de importer un fichier PDF à diviser." });
       return;
     }
 
@@ -386,7 +386,7 @@ export default function PdfStudio() {
   const handleImagesToPdf = async () => {
     const imgFiles = files.filter((f) => f.dataUrl || f.type.startsWith("image/"));
     if (imgFiles.length === 0) {
-      setStatusMessage({ type: "error", text: "Veuillez ajouter au moins une image (JPG, PNG, WEBP)." });
+      setStatusMessage({ type: "error", text: "Merci de ajouter au moins une image (JPG, PNG, WEBP)." });
       return;
     }
 
@@ -506,7 +506,7 @@ export default function PdfStudio() {
               </span>
             </h1>
             <p className="text-[11px] text-nexus-muted">
-              Convertissez, fusionnez, divisez et éditez vos PDF en toute sécurité sur votre machine
+              Convertissez, fusionnez, divisez et éditez tes PDF en toute sécurité sur ton machine
             </p>
           </div>
         </div>
@@ -717,7 +717,7 @@ export default function PdfStudio() {
                   rows={6}
                   value={customTextContent}
                   onChange={(e) => setCustomTextContent(e.target.value)}
-                  placeholder="Tape ou collez votre texte ici..."
+                  placeholder="Tape ou colle ton texte ici..."
                   className="w-full bg-nexus-card border border-nexus-border rounded-xl p-3 text-xs text-nexus-text focus:outline-none focus:border-cyan-400 resize-none font-mono"
                 />
               </div>
