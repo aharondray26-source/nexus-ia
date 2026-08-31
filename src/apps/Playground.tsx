@@ -272,7 +272,7 @@ ${codeToSet}
             <textarea
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="Saisissez ou collez votre code HTML/JS/CSS ici..."
+              placeholder="Saisis ou collez votre code HTML/JS/CSS ici..."
               className="flex-1 w-full bg-slate-900/90 text-cyan-100 font-mono text-xs p-3.5 rounded-xl border border-white/10 focus:outline-none focus:border-cyan-400/60 resize-none leading-relaxed [scrollbar-width:thin]"
             />
           </div>

@@ -92,7 +92,7 @@ Uptime: ${Math.floor(performance.now() / 1000)}s`,
 
       case "ai":
         if (!args) {
-          newLogs.push({ type: "error", text: "Erreur: fournissez votre question après 'ai '" });
+          newLogs.push({ type: "error", text: "Erreur: fournissez ta question après 'ai '" });
         } else {
           newLogs.push({ type: "system", text: "Transmission à Nexus AI Pro..." });
           setLogs(newLogs);
@@ -179,7 +179,7 @@ Uptime: ${Math.floor(performance.now() / 1000)}s`,
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={onKeyDown}
-          placeholder="Saisissez une commande... (ex: sysinfo, help, ai...)"
+          placeholder="Saisis une commande... (ex: sysinfo, help, ai...)"
           className="flex-1 bg-transparent outline-none font-mono text-xs placeholder:opacity-40"
           autoFocus
         />

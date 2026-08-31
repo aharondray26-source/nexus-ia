@@ -177,7 +177,7 @@ La **Seconde Guerre Mondiale** est le conflit armé le plus vaste et le plus meu
    - **2 septembre 1945 :** Capitulation officielle du Japon et fin de la guerre.
 
 ---
-💡 *Note : Pour approfondir des événements spécifiques ou analyser des archives détaillées, Gemini 3.6 Flash prend le relais si votre clé API est configurée.*`;
+💡 *Note : Pour approfondir des événements spécifiques ou analyser des archives détaillées, Gemini 3.6 Flash prend le relais si ta clé API est configurée.*`;
   }
 
   // 3. Réductions, Bon de Réduction & Recherche Web
@@ -199,11 +199,11 @@ Pour dénicher les **meilleurs codes promo et réductions** en direct sur le web
 
   // 4. Crêpes & Recettes de Cuisine
   if (query.includes("crêpe") || query.includes("crepe")) {
-    return `### 🥞 Recette Traditionnelle des Crêpes Moelleuses\n\n**Temps de préparation :** 10 min | **Repos :** 30 min | **Cuisson :** 15 min | **Difficulté :** Très facile\n\n#### 🛒 Ingrédients (pour 12 à 15 crêpes) :\n- **250 g** de farine de blé (type T55)\n- **4** œufs frais\n- **500 ml** de lait demi-écrémé ou entier\n- **1 pincée** de sel\n- **2 c. à soupe** de sucre en poudre (pour crêpes sucrées)\n- **50 g** de beurre fondu (ou 2 c. à soupe d'huile)\n- *Optionnel :* 1 c. à soupe de rhum, de fleur d'oranger ou d'extrait de vanille.\n\n---\n\n#### 👨‍🍳 Étapes de Préparation :\n1. **La Pâte :** Dans un grand saladier, mélangez la farine, le sucre et le sel. Formez un puits au centre.\n2. **Les Œufs :** Cassez les 4 œufs au centre. Fouettez doucement en incorporant la farine petit à petit.\n3. **Le Lait :** Versez le lait progressivement tout en fouettant pour éviter les grumeaux.\n4. **La Touche Finale :** Ajoutez le beurre fondu et l'arôme choisi.\n5. **Le Repos :** Laissez reposer la pâte 30 minutes.\n6. **La Cuisson :** Cuisez chaque crêpe 1 à 2 minutes de chaque côté dans une poêle très chaude et beurrée.\n\n*Régalez-vous ! Bon appétit !* 😋`;
+    return `### 🥞 Recette Traditionnelle des Crêpes Moelleuses\n\n**Temps de préparation :** 10 min | **Repos :** 30 min | **Cuisson :** 15 min | **Difficulté :** Très facile\n\n#### 🛒 Ingrédients (pour 12 à 15 crêpes) :\n- **250 g** de farine de blé (type T55)\n- **4** œufs frais\n- **500 ml** de lait demi-écrémé ou entier\n- **1 pincée** de sel\n- **2 c. à soupe** de sucre en poudre (pour crêpes sucrées)\n- **50 g** de beurre fondu (ou 2 c. à soupe d'huile)\n- *Optionnel :* 1 c. à soupe de rhum, de fleur d'oranger ou d'extrait de vanille.\n\n---\n\n#### 👨‍🍳 Étapes de Préparation :\n1. **La Pâte :** Dans un grand saladier, mélangez la farine, le sucre et le sel. Formez un puits au centre.\n2. **Les Œufs :** Cassez les 4 œufs au centre. Fouettez doucement en incorporant la farine petit à petit.\n3. **Le Lait :** Versez le lait progressivement tout en fouettant pour éviter les grumeaux.\n4. **La Touche Finale :** Ajoute le beurre fondu et l'arôme choisi.\n5. **Le Repos :** Laissez reposer la pâte 30 minutes.\n6. **La Cuisson :** Cuisez chaque crêpe 1 à 2 minutes de chaque côté dans une poêle très chaude et beurrée.\n\n*Régalez-vous ! Bon appétit !* 😋`;
   }
 
   if (query.includes("recette") || query.includes("cuisine") || query.includes("plat") || query.includes("gâteau") || query.includes("gateau")) {
-    return `### 🍳 Recette : Poulet Sauté aux Légumes & Sauce Soja\n\n**Temps :** 20 min | **Difficulté :** Facile\n\n#### 🛒 Ingrédients :\n- 400g de filets de poulet en dés\n- 1 poivron, 1 courgette, 1 carotte en bâtonnets\n- 3 cuillères à soupe de sauce soja\n- 1 cuillère à soupe d'huile d'olive / sésame\n- Ail haché, sel, poivre\n\n#### 👨‍🍳 Préparation :\n1. Dans une poêle très chaude, faites dorer le poulet 5 min avec l'huile.\n2. Ajoutez l'ail et les légumes. Saisissez 5 min à feu vif.\n3. Déglacez avec la sauce soja et servez chaud avec du riz basmati !`;
+    return `### 🍳 Recette : Poulet Sauté aux Légumes & Sauce Soja\n\n**Temps :** 20 min | **Difficulté :** Facile\n\n#### 🛒 Ingrédients :\n- 400g de filets de poulet en dés\n- 1 poivron, 1 courgette, 1 carotte en bâtonnets\n- 3 cuillères à soupe de sauce soja\n- 1 cuillère à soupe d'huile d'olive / sésame\n- Ail haché, sel, poivre\n\n#### 👨‍🍳 Préparation :\n1. Dans une poêle très chaude, faites dorer le poulet 5 min avec l'huile.\n2. Ajoute l'ail et les légumes. Saisis 5 min à feu vif.\n3. Déglacez avec la sauce soja et servez chaud avec du riz basmati !`;
   }
 
   // 5. Histoire / Conte pour enfants
@@ -239,11 +239,11 @@ Pour dénicher les **meilleurs codes promo et réductions** en direct sur le web
   // 10. Réponse Générique pour questions complexes / Hors-ligne sans clé API active
   return `### 💡 Analyse Nexus AI Pro (Mode Autonome)
 
-Vous avez posé une question complexe : **"${userText}"**.
+Tu as posé une question complexe : **"${userText}"**.
 
 Cette requête nécessite la puissance complète du modèle de langage étendu **Gemini 3.6 Flash** pour fournir une réponse approfondie avec des données actualisées.
 
-En mode autonome (ou si la limite temporaire du serveur est atteinte), vous pouvez activer **gratuitement** l'IA en direct sur votre navigateur en moins de 30 secondes :
+En mode autonome (ou si la limite temporaire du serveur est atteinte), tu peux activer **gratuitement** l'IA en direct sur ton navigateur en moins de 30 secondes :
 
 ${getApiKeyTutorialMessage()}`;
 }
@@ -257,25 +257,25 @@ Vous voulez activer toute la puissance de l'IA **Gemini 3.5 / 3.6 Flash** sur **
 
 #### 1️⃣ **Étape 1 : Allez sur Google AI Studio**
 - Ouvrez le site officiel gratuit : **[https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)**
-- Connectez-vous simplement avec votre compte Google (Gmail).
+- Connectez-vous simplement avec ton compte Google (Gmail).
 - *Astuce : C'est 100% gratuit et aucune carte de crédit n'est requise !*
 
-#### 2️⃣ **Étape 2 : Générez votre clé en 1 clic**
-- Cliquez sur le bouton bleu **"Create API Key"** (ou "Créer une clé API").
-- Sélectionnez un projet par défaut ou cliquez sur **"Create API Key in new project"**.
+#### 2️⃣ **Étape 2 : Générez ta clé en 1 clic**
+- Clique sur le bouton bleu **"Create API Key"** (ou "Créer une clé API").
+- Sélectionne un projet par défaut ou cliquez sur **"Create API Key in new project"**.
 
-#### 3️⃣ **Étape 3 : Copiez votre clé**
+#### 3️⃣ **Étape 3 : Copiez ta clé**
 - Une clé commençant par \`AIzaSy...\` s'affiche à l'écran.
-- Cliquez sur le bouton **"Copy"** pour la copier dans votre presse-papier.
+- Clique sur le bouton **"Copy"** pour la copier dans votre presse-papier.
 
 #### 4️⃣ **Étape 4 : Collez la clé dans Nexus OS**
 - Dans Nexus OS, ouvrez l'application **Réglages ⚙️** (dans le Dock ou le Menu Démarrer).
 - Faites défiler jusqu'à la section **"🔑 Clé API Gemini"**.
-- Collez votre clé (\`AIzaSy...\`) dans le champ de texte.
-- C'est terminé ! Votre clé est automatiquement sauvegardée dans votre navigateur.
+- Collez ta clé (\`AIzaSy...\`) dans le champ de texte.
+- C'est terminé ! Ton clé est automatiquement sauvegardée dans ton navigateur.
 
 ---
-💡 **Commande rapide :** Tapez \`!apikey\` dans ce chat à tout moment pour revoir ce tutoriel !`;
+💡 **Commande rapide :** Tape \`!apikey\` dans ce chat à tout moment pour revoir ce tutoriel !`;
 }
 
 // ============================================================================

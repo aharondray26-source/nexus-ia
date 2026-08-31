@@ -65,6 +65,25 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   </React.StrictMode>
 );
 
+// Une petite porte, volontaire et etroite : ouvrir un espace depuis
+// l'exterieur. Elle sert au banc d'essai (qui peut ainsi verifier les 45
+// espaces un par un) et a l'application macOS, qui affiche le site dans une
+// de ses fenetres et doit pouvoir lui demander quelque chose.
+// On n'expose PAS le magasin entier : seulement ce qui est utile.
+declare global {
+  interface Window { nexus?: { ouvrir: (id: string) => void; espaces: () => string[] } }
+}
+window.nexus = {
+  ouvrir(id: string) {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    useWindows.getState().openApp(id, {
+      width: Math.min(1320, Math.round(vw * 0.88)),
+      height: Math.min(900, Math.round(vh * 0.86)),
+    });
+  },
+  espaces: () => useWindows.getState().windows.map((w) => w.appId),
+};
+
 demandesDeLExtension();
 runMigrations();
 initSliderFill();

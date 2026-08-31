@@ -100,7 +100,7 @@ export default function Focus() {
       }
     } catch (err) {
       console.error("Erreur de recherche musicale:", err);
-      setSearchError("Impossible de se connecter au service musical. Vérifiez votre connexion.");
+      setSearchError("Impossible de se connecter au service musical. Vérifie votre connexion.");
     } finally {
       setIsSearching(false);
     }
@@ -184,7 +184,7 @@ export default function Focus() {
       return;
     }
 
-    setLinkError("Lien non reconnu. Saisissez un lien YouTube ou un fichier audio MP3 valide.");
+    setLinkError("Lien non reconnu. Saisis un lien YouTube ou un fichier audio MP3 valide.");
   }
 
   return (

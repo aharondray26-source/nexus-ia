@@ -4,6 +4,11 @@ import { useWindows } from "./useWindows";
 import Icon from "./Icons";
 import { Sparkles, Search, Calculator, ArrowRight } from "lucide-react";
 
+/// Minuscules et sans accents : « Réglages », « reglages » et « RÉGLAGES »
+/// deviennent la même chose.
+const sansAccent = (s: string) =>
+  (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
 export default function CommandPalette() {
   const open = useWindows((s) => s.paletteOpen);
   const setOpen = useWindows((s) => s.setPaletteOpen);
@@ -31,12 +36,15 @@ export default function CommandPalette() {
 
   // App matches
   const appMatches = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    // On replie les accents des DEUX cotes : taper « réglages » doit trouver
+    // « reglages », et l'inverse aussi. Sans ca, ecrire correctement le
+    // francais empechait de trouver — l'exact contraire du bon sens.
+    const q = sansAccent(query.trim());
     const visible = APPS.filter((a) => !a.hidden);
     if (!q) return visible;
     return visible.filter(
       (a) =>
-        a.title.toLowerCase().includes(q) || a.keywords.includes(q)
+        sansAccent(a.title).includes(q) || sansAccent(a.keywords).includes(q)
     );
   }, [query]);
 
@@ -85,7 +93,10 @@ export default function CommandPalette() {
         type: "app",
         id: app.id,
         title: app.title,
-        subtitle: `Ouvrir l'application ${app.title}`,
+        // Le sous-titre disait « Ouvrir l'application X » sous un titre deja
+        // nomme X : du bruit. On montre ce qu'on FAIT dans cet espace.
+        subtitle: (app.keywords || "")
+          .split(/\s+/).filter(Boolean).slice(0, 5).join(" · "),
         icon: app.icon,
         appId: app.id,
       });
@@ -147,22 +158,22 @@ export default function CommandPalette() {
 
   return (
     <div
-      className="fixed inset-0 z-[900] flex items-start justify-center bg-black/40 pt-[12vh] backdrop-blur-md"
+      className="fixed inset-0 z-[900] flex items-start justify-center bg-black/45 px-4 pt-[13vh] backdrop-blur-[3px]"
       onClick={() => setOpen(false)}
     >
       <div
-        className="nexus-naissance w-full max-w-xl overflow-hidden rounded-[26px] border border-nexus-border bg-nexus-panel/85 shadow-2xl backdrop-blur-2xl"
+        className="nexus-naissance nx-palette w-full max-w-2xl overflow-hidden rounded-[26px]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative flex items-center border-b border-nexus-border px-4 py-3">
-          <Search className="w-4 h-4 text-cyan-400 mr-2 shrink-0" />
+        <div className="relative flex items-center gap-3 border-b border-white/10 px-5 py-4">
+          <Search className="h-[18px] w-[18px] shrink-0 text-nexus-muted" />
           <input
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Posez une question à l'IA, faites un calcul, ou cherchez une application..."
-            className="w-full bg-transparent text-sm text-nexus-text outline-none placeholder:text-nexus-muted font-sans"
+            placeholder="Chercher un espace, calculer, ou demander à l'IA"
+            className="nx-champ w-full bg-transparent text-nexus-text outline-none placeholder:text-nexus-muted font-sans"
           />
           {query && (
             <button
@@ -174,7 +185,7 @@ export default function CommandPalette() {
           )}
         </div>
 
-        <ul className="nx-entre-liste max-h-80 overflow-y-auto p-2 space-y-1 [scrollbar-width:thin]">
+        <ul className="nx-entre-liste max-h-[min(52vh,420px)] overflow-y-auto p-2 pb-3 space-y-1 [scrollbar-width:thin]">
           {items.map((item, i) => {
             const isSelected = i === selectedIndex;
             return (
@@ -182,7 +193,7 @@ export default function CommandPalette() {
                 <button
                   onClick={() => executeItem(item)}
                   onMouseEnter={() => setSelectedIndex(i)}
-                  className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-[220ms] [transition-timing-function:var(--appui)] ${
+                  className={`flex w-full items-center justify-between gap-3 rounded-2xl px-3.5 py-2.5 text-left transition-all duration-[220ms] [transition-timing-function:var(--appui)] ${
                     isSelected
                       ? "bg-cyan-500/15 border border-cyan-500/40 text-nexus-text"
                       : "text-nexus-muted hover:bg-nexus-card hover:text-nexus-text"
@@ -197,11 +208,11 @@ export default function CommandPalette() {
                       )}
                     </span>
                     <div className="flex flex-col min-w-0">
-                      <span className="text-xs font-semibold truncate text-nexus-text">
+                      <span className="text-[13px] font-semibold truncate text-nexus-text">
                         {item.title}
                       </span>
                       {item.subtitle && (
-                        <span className="text-[10px] text-nexus-muted truncate">
+                        <span className="text-[11px] text-nexus-muted truncate">
                           {item.subtitle}
                         </span>
                       )}
@@ -216,7 +227,7 @@ export default function CommandPalette() {
 
           {items.length === 0 && (
             <li className="px-3 py-8 text-center text-xs text-slate-400">
-              Tapez une question ou le nom d'un outil...
+              Tape une question ou le nom d'un outil...
             </li>
           )}
         </ul>

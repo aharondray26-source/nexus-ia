@@ -769,22 +769,22 @@ export default function ControlRoom() {
             révisions, outils et détente — au même endroit.
           </p>
           <button onClick={() => setPaletteOpen(true)}
-            className="mt-1 flex w-full max-w-md items-center gap-3 rounded-2xl border border-nexus-border bg-nexus-panel/70 px-5 py-3.5 text-left backdrop-blur-[var(--glass-blur)] transition-colors hover:bg-nexus-panel">
-            <Sparkles size={17} style={{ color: "var(--accent)" }} />
-            <span className="flex-1 truncate text-sm text-nexus-muted">
-              Rechercher, ou demander à l'IA
+            className="nx-boite mt-1 flex w-full max-w-xl items-center gap-3 rounded-2xl px-5 py-4 text-left">
+            <Search size={17} className="shrink-0 text-nexus-muted" />
+            <span className="flex-1 truncate text-[15px] text-nexus-muted">
+              Chercher un espace, calculer, ou demander à l'IA
             </span>
-            <kbd className="nx-chip text-[10px] font-mono">{searchShortcutLabel()}</kbd>
+            <kbd className="nx-chip shrink-0 text-[10px] font-mono">{searchShortcutLabel()}</kbd>
           </button>
           {/* NEXUS PARTOUT — les trois portes d'entree, des l'accueil.
               Epurees pour ne pas encombrer, assez presentes pour donner envie.
               Elles arrivent l'une apres l'autre, comme tout le reste. */}
-          <div className="nx-entre-liste mt-5 grid w-full max-w-md grid-cols-1 gap-2 sm:grid-cols-3">
+          <div className="nx-entre-liste mt-5 grid w-full max-w-xl grid-cols-1 items-stretch gap-2.5 sm:grid-cols-3">
             {([
               { href: "/Nexus-macOS.zip", telecharger: true, icone: <Monitor size={15} />,
                 titre: "Sur ton Mac", detail: "Barre des menus, widgets, dock" },
               { href: "?app=mac", telecharger: false, icone: <Chrome size={15} />,
-                titre: "Dans ton navigateur", detail: "Chaque onglet devient Nexus" },
+                titre: "Navigateur", detail: "Chaque onglet devient Nexus" },
               { href: "https://neo-school-nine.vercel.app/", telecharger: false, externe: true,
                 icone: <GraduationCap size={15} />,
                 titre: "NeoSchool", detail: "Notes, devoirs, emploi du temps" },
@@ -795,7 +795,7 @@ export default function ControlRoom() {
                 {...(x.telecharger ? { download: true } : {})}
                 {...("externe" in x && x.externe
                   ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                className="group flex flex-col gap-1 rounded-2xl border border-nexus-border bg-nexus-panel/60 px-3.5 py-3 text-left backdrop-blur-[var(--glass-blur)] transition-all duration-[260ms] [transition-timing-function:var(--appui)] hover:-translate-y-1 hover:border-[color:var(--accent)] hover:bg-nexus-panel"
+                className="nx-boite group flex h-full flex-col gap-1 rounded-2xl px-3.5 py-3 text-left "
               >
                 <span
                   className="flex h-7 w-7 items-center justify-center rounded-xl transition-transform duration-[260ms] [transition-timing-function:var(--appui)] group-hover:scale-110"
@@ -805,7 +805,7 @@ export default function ControlRoom() {
                   {x.icone}
                 </span>
                 <span className="text-xs font-semibold text-nexus-text">{x.titre}</span>
-                <span className="text-[10px] leading-snug text-nexus-muted">{x.detail}</span>
+                <span className="text-[10.5px] leading-snug text-nexus-muted">{x.detail}</span>
               </a>
             ))}
           </div>

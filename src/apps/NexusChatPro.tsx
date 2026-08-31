@@ -269,7 +269,7 @@ Je suis votre assistant IA haute performance propulsé par **Gemini 3.6 Flash**.
 
         addNexusTask(taskText, timeText || undefined);
 
-        replyText = `⏰ **Rappel Enregistré dans l'Application !**\n\nJ'ai ajouté votre rappel directement dans l'application **Tâches & Rappels** (et dans votre widget d'accueil).\n\n- **Rappel :** ${taskText}\n${timeText ? `- **Horaire :** ${timeText}\n` : ""}- **Statut :** Enregistré et Actif dans le système\n\n*Vous pouvez retrouver ce rappel à tout moment dans l'application Tâches !*`;
+        replyText = `⏰ **Rappel Enregistré dans l'Application !**\n\nJ'ai ajouté votre rappel directement dans l'application **Tâches & Rappels** (et dans votre widget d'accueil).\n\n- **Rappel :** ${taskText}\n${timeText ? `- **Horaire :** ${timeText}\n` : ""}- **Statut :** Enregistré et Actif dans le système\n\n*Tu peux retrouver ce rappel à tout moment dans l'application Tâches !*`;
       } else {
         // 1. Priorité au serveur backend (/api/gemini/chat) avec Gemini 3.6 Flash
         try {
@@ -323,7 +323,7 @@ Je suis votre assistant IA haute performance propulsé par **Gemini 3.6 Flash**.
 
             replyText = res.text || "";
             if (thinkingMode) {
-              thinkingText = `Analyse réalisée en direct avec votre clé API Gemini 3.6 Flash (${selectedModel}).`;
+              thinkingText = `Analyse réalisée en direct avec ta clé API Gemini 3.6 Flash (${selectedModel}).`;
             }
           } catch (clientKeyErr) {
             console.warn("Clé API client en échec, bascule sur le moteur autonome local", clientKeyErr);
@@ -733,7 +733,7 @@ Je suis votre assistant IA haute performance propulsé par **Gemini 3.6 Flash**.
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder={`Posez votre question à Gemini 3.6 Flash (${selectedModel}) - Code, Analyse, HTML...`}
+              placeholder={`Posez ta question à Gemini 3.6 Flash (${selectedModel}) - Code, Analyse, HTML...`}
               className="flex-1 bg-transparent px-3 py-1.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none"
             />
 

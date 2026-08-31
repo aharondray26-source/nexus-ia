@@ -321,7 +321,7 @@ export default function Maps() {
                     type="text"
                     value={destPlace}
                     onChange={(e) => setDestPlace(e.target.value)}
-                    placeholder="Entrez une destination..."
+                    placeholder="Entre une destination..."
                     className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500"
                   />
                 </div>

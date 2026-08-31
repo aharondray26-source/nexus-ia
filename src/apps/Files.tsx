@@ -470,7 +470,7 @@ export default function Files() {
                 <File className="w-10 h-10 text-slate-500 mb-2" />
                 <p className="text-xs font-semibold text-slate-300">Aucun fichier dans ce dossier</p>
                 <p className="text-[11px] text-slate-500 mt-1">
-                  Glissez-déposez vos documents ici ou cliquez sur "Importer"
+                  Glisse-déposez tes documents ici ou cliquez sur "Importer"
                 </p>
                 <button
                   onClick={() => fileInputRef.current?.click()}

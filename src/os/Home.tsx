@@ -366,7 +366,7 @@ export default function Home() {
               Bienvenue sur Nexus OS Pro
             </h2>
             <p className="text-xs leading-relaxed text-slate-300">
-              Votre environnement multitâche intelligent nouvelle génération. Accédez aux applications depuis le catalogue, la barre latérale ou la recherche rapide avec{" "}
+              Ton environnement multitâche intelligent nouvelle génération. Accédez aux applications depuis le catalogue, la barre latérale ou la recherche rapide avec{" "}
               <kbd className="rounded border border-white/20 px-2 py-0.5 text-[10px] text-cyan-300 bg-cyan-950 font-mono">
                 {searchShortcutLabel()}
               </kbd>

@@ -92,7 +92,7 @@ export default function NexusAssistant() {
     {
       id: "init-1",
       role: "assistant",
-      text: "Bonjour ! Je suis **Nexus AI Pro** avec intelligence intégrée et recherche Web. Vous pouvez me poser vos questions, **glisser-déposer vos fichiers** ou basculer en **mode latéral (ancré au mur)**.",
+      text: "Bonjour ! Je suis **Nexus AI Pro** avec intelligence intégrée et recherche Web. Tu peux me poser vos questions, **glisser-déposer tes fichiers** ou basculer en **mode latéral (ancré au mur)**.",
     },
   ]);
   const [loading, setLoading] = useState(false);
@@ -324,22 +324,22 @@ export default function NexusAssistant() {
     // 2. EXPLICIT TERMINAL OPENING
     else if (isExplicitSystemCommand && (lower.includes("terminal") || lower.includes("console") || lower.includes("bash") || lower.includes("cmd"))) {
       openApp("terminal", { width: 620, height: 440 });
-      overrideSystemReply = `💻 **Système Nexus : Terminal CLI Ouvert !**\n\nVotre terminal virtuel interactif est prêt. Vous pouvez y exécuter des commandes comme \`help\`, \`matrix\`, \`clear\`, \`date\`, ou \`calc\`.`;
+      overrideSystemReply = `💻 **Système Nexus : Terminal CLI Ouvert !**\n\nTon terminal virtuel interactif est prêt. Tu peux y exécuter des commandes comme \`help\`, \`matrix\`, \`clear\`, \`date\`, ou \`calc\`.`;
     }
     // 3. EXPLICIT PLAYGROUND OPENING
     else if (isExplicitSystemCommand && (lower.includes("bac à sable") || lower.includes("playground"))) {
       openApp("playground", { width: 780, height: 560 });
-      overrideSystemReply = `⚡ **Système Nexus : Bac à Sable Ouvert !**\n\nVotre studio de test web interactif est prêt. Vous pouvez y exécuter ou tester du code HTML/JS/CSS en direct.`;
+      overrideSystemReply = `⚡ **Système Nexus : Bac à Sable Ouvert !**\n\nTon studio de test web interactif est prêt. Tu peux y exécuter ou tester du code HTML/JS/CSS en direct.`;
     }
     // 4. EXPLICIT SETTINGS OPENING
     else if (isExplicitSystemCommand && (lower.includes("paramètre") || lower.includes("reglage") || lower.includes("réglage") || lower.includes("police") || lower.includes("font") || lower.includes("fond d'écran"))) {
       openApp("settings", { width: 420, height: 480 });
-      overrideSystemReply = `⚙️ **Système Nexus : Personnalisation Ouverte !**\n\nJ'ai ouvert l'espace **Réglages**. Vous pouvez y choisir votre police d'écran tech et vos préférences.`;
+      overrideSystemReply = `⚙️ **Système Nexus : Personnalisation Ouverte !**\n\nJ'ai ouvert l'espace **Réglages**. Tu peux y choisir votre police d'écran tech et vos préférences.`;
     }
     // 4b. CLOUD & GOOGLE ACCOUNT OPENING
     else if (lower.includes("cloud") || lower.includes("google drive") || lower.includes("google account") || lower.includes("compte google") || lower.includes("sauvegarde cloud")) {
       openApp("cloud", { width: 780, height: 580 });
-      overrideSystemReply = `☁️ **Nexus Cloud & Compte Google !**\n\nL'application **Nexus Cloud** est ouverte. Vous pouvez y gérer votre compte Google, vos fichiers et sauvegarder votre système.`;
+      overrideSystemReply = `☁️ **Nexus Cloud & Compte Google !**\n\nL'application **Nexus Cloud** est ouverte. Tu peux y gérer ton compte Google, tes fichiers et sauvegarder votre système.`;
     }
     // 4c. MESSAGING OPENING
     else if (lower.includes("messagerie") || lower.includes("message") || lower.includes("tchat") || lower.includes("discussion")) {
@@ -349,7 +349,7 @@ export default function NexusAssistant() {
     // 4d. MAIL OPENING
     else if (lower.includes("mail") || lower.includes("e-mail") || lower.includes("email") || lower.includes("gmail") || lower.includes("boite mail")) {
       openApp("mail", { width: 840, height: 600 });
-      overrideSystemReply = `📧 **Boîte Mail Nexus & Google Gmail !**\n\nVotre client **Nexus Mail** est ouvert. Consultez votre boîte de réception, vos pièces jointes Cloud et envoyez des messages.`;
+      overrideSystemReply = `📧 **Boîte Mail Nexus & Google Gmail !**\n\nTon client **Nexus Mail** est ouvert. Consulte votre boîte de réception, vos pièces jointes Cloud et envoyez des messages.`;
     }
     // 5. EXPLICIT GAMES OPENING
     else if (isExplicitSystemCommand && (lower.includes("jeu") || lower.includes("échec") || lower.includes("arcade"))) {
@@ -479,7 +479,7 @@ export default function NexusAssistant() {
             {isDragging && (
               <div className="absolute inset-0 z-50 bg-cyan-950/90 border-2 border-dashed border-cyan-400 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center animate-fade-in">
                 <Paperclip className="w-10 h-10 text-cyan-300 mb-2 animate-bounce" />
-                <p className="text-sm font-bold text-white">Déposez vos fichiers ici</p>
+                <p className="text-sm font-bold text-white">Dépose tes fichiers ici</p>
                 <p className="text-xs text-cyan-200 mt-1">Analyse automatique par Nexus AI Pro</p>
               </div>
             )}

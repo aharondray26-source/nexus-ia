@@ -11,7 +11,7 @@ const CHANGELOG: Entry[] = [
     date: "Aout 2026",
     title: "Compte Nexus, chat et appels",
     items: [
-      "Compte Nexus : tes notes, reglages, discussions et scores te suivent sur tous tes appareils.",
+      "Compte Nexus : tes notes, réglages, discussions et scores te suivent sur tous tes appareils.",
       "Un seul compte, deux entrees : par Google ou par mot de passe, au choix.",
       "Chat en direct et appels audio/video entre comptes Nexus, dans un salon partage.",
       "Les jeux se jouent aussi a la souris ; Rejouer relance le bon jeu.",

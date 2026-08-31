@@ -97,7 +97,7 @@ export default function NexusCloud() {
           avatar: res.user.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(res.user.email || "Google")}`,
           connectedAt: new Date().toLocaleDateString("fr-FR"),
         });
-        setSyncStatus("Connexion Google Drive réussie ! Chargement de vos fichiers...");
+        setSyncStatus("Connexion Google Drive réussie ! Chargement de tes fichiers...");
         handleSyncDrive();
       }
     } catch (err: any) {
@@ -132,7 +132,7 @@ export default function NexusCloud() {
       }
     } catch (err: any) {
       console.error(err);
-      setSyncStatus(`Sync Drive: ${err?.message || "Veuillez connecter votre compte Google Drive"}`);
+      setSyncStatus(`Sync Drive: ${err?.message || "Veuillez connecter ton compte Google Drive"}`);
     } finally {
       setIsSyncingDrive(false);
       setTimeout(() => setSyncStatus(null), 4000);
@@ -261,7 +261,7 @@ export default function NexusCloud() {
                 <button
                   onClick={handleGoogleSignInDrive}
                   className="nx-btn nx-btn-danger flex items-center justify-center gap-1.5 text-xs"
-                  title="Connecter votre compte Google Drive réel"
+                  title="Connecter ton compte Google Drive réel"
                 >
                   <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
                     <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z" />
@@ -276,7 +276,7 @@ export default function NexusCloud() {
                   onClick={handleSyncDrive}
                   disabled={isSyncingDrive}
                   className="nx-btn nx-btn-secondary flex items-center justify-center gap-1.5 text-xs"
-                  title="Synchroniser vos fichiers Google Drive réels"
+                  title="Synchroniser tes fichiers Google Drive réels"
                 >
                   <RefreshCw size={14} className={isSyncingDrive ? "animate-spin text-emerald-400" : "text-emerald-400"} />
                   <span>{isSyncingDrive ? "Sync Drive..." : "Sync Drive Réel"}</span>
@@ -301,7 +301,7 @@ export default function NexusCloud() {
               <div>
                 <h2 className="text-base font-bold text-white">Nexus Cloud Drive</h2>
                 <p className="text-xs text-slate-300">
-                  Connectez votre compte Google pour sauvegarder et synchroniser vos fichiers.
+                  Connectez ton compte Google pour sauvegarder et synchroniser tes fichiers.
                 </p>
               </div>
             </div>
@@ -444,7 +444,7 @@ export default function NexusCloud() {
         {isDragging && (
           <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-cyan-950/80 backdrop-blur-sm rounded-2xl border-2 border-dashed border-cyan-400 text-cyan-200">
             <UploadCloud size={40} className="animate-bounce text-cyan-300" />
-            <p className="text-sm font-bold mt-2">Déposez le fichier ici !</p>
+            <p className="text-sm font-bold mt-2">Dépose le fichier ici !</p>
             <p className="text-xs text-cyan-300/80">Il sera automatiquement enregistré dans votre Nexus Cloud.</p>
           </div>
         )}
@@ -552,7 +552,7 @@ export default function NexusCloud() {
               </div>
               <h3 className="text-base font-bold text-white">Connexion Google</h3>
               <p className="text-xs text-slate-400">
-                Liez votre compte Google à votre espace de travail Nexus OS.
+                Liez ton compte Google à ton espace de travail Nexus OS.
               </p>
             </div>
 

@@ -197,7 +197,7 @@ export default function Docs() {
   }
 
   function insertImagePrompt() {
-    const url = prompt("Entrez l'URL de l'image :");
+    const url = prompt("Entre l'URL de l'image :");
     if (url) {
       exec("insertImage", url);
     }
@@ -539,7 +539,7 @@ export default function Docs() {
           <button
             onClick={handleDirectDownloadDoc}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl nx-grad text-white text-xs font-bold hover:opacity-90 transition-all shadow-md active:scale-95"
-            title="Télécharger sur votre ordinateur"
+            title="Télécharger sur ton ordinateur"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Télécharger</span>

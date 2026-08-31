@@ -429,13 +429,13 @@ export default function Settings() {
           )}
         </div>
         <p className="text-[11px] text-nexus-muted">
-          Si vous hébergez le site en statique (sur Netlify Drop), saisissez votre clé gratuite Gemini pour garantir 100% de la puissance de Gemini 3.5/3.6 Flash.
+          Si vous hébergez le site en statique (sur Netlify Drop), saisissez ta clé gratuite Gemini pour garantir 100% de la puissance de Gemini 3.5/3.6 Flash.
         </p>
         <input
           type="password"
           value={geminiKey}
           onChange={(e) => handleKeyChange(e.target.value)}
-          placeholder="Collez votre clé API Gemini (AIzaSy...)"
+          placeholder="Collez ta clé API Gemini (AIzaSy...)"
           className="nx-input text-xs"
         />
         
@@ -461,8 +461,8 @@ export default function Settings() {
                   https://aistudio.google.com/app/apikey
                 </a>
               </li>
-              <li>Connectez-vous avec votre compte Gmail habituel. <i>(Aucune carte bancaire demandée)</i>.</li>
-              <li>Cliquez sur le bouton bleu <b>"Create API Key"</b> (Créer une clé API).</li>
+              <li>Connectez-vous avec ton compte Gmail habituel. <i>(Aucune carte bancaire demandée)</i>.</li>
+              <li>Clique sur le bouton bleu <b>"Create API Key"</b> (Créer une clé API).</li>
               <li>Copiez la clé générée (commençant par <code>AIzaSy...</code>).</li>
               <li>Collez-la dans la case ci-dessus !</li>
             </ol>

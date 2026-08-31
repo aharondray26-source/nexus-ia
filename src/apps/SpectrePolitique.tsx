@@ -288,7 +288,7 @@ export default function SpectrePolitique() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Entrez un nom, une idée ou un concept (ex: Mélenchon, ISF, Privatisation, Souverainisme)..."
+            placeholder="Entre un nom, une idée ou un concept (ex: Mélenchon, ISF, Privatisation, Souverainisme)..."
             className="w-full rounded-xl border border-white/10 bg-slate-900/90 pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-purple-500 transition-all"
           />
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />

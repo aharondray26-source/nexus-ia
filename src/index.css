@@ -143,6 +143,61 @@ html.light-mode [class*="backdrop-blur"] {
   animation: nexus-fade-in 420ms var(--doux);
 }
 
+/* LA BOITE DE RECHERCHE DE L'ACCUEIL.
+   La meme matiere que celle de l'extension : du verre epais, un lisere clair
+   en haut, et un anneau de couleur quand on la vise. C'etait une simple
+   bordure grise — plate a cote du reste. */
+.nx-boite {
+  background: rgba(255, 255, 255, 0.07);
+  -webkit-backdrop-filter: blur(22px) saturate(175%);
+  backdrop-filter: blur(22px) saturate(175%);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.24),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: border-color var(--t-petit) var(--doux),
+              background var(--t-petit) var(--doux),
+              box-shadow var(--t-moyen) var(--doux),
+              transform var(--t-moyen) var(--appui);
+}
+.nx-boite:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  transform: translateY(-2px);
+}
+.nx-boite:active { transform: translateY(0) scale(.99) }
+html.light-mode .nx-boite {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(15, 23, 42, 0.1);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* LA PALETTE DE COMMANDES.
+   Elle etait presque invisible : « bg-nexus-panel/85 » applique une opacite
+   Tailwind a une variable qui est DEJA une rgba — l'opacite ne prend pas, et
+   sur un fond sombre la boite disparaissait. On peint donc la surface nous-
+   memes, exactement comme la boite de recherche de l'extension. */
+.nx-palette {
+  background: rgba(20, 20, 26, 0.86);
+  -webkit-backdrop-filter: blur(34px) saturate(190%);
+  backdrop-filter: blur(34px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55),
+              inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+html.light-mode .nx-palette {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(15, 23, 42, 0.12);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.18),
+              inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.nx-palette .nx-champ {
+  font-size: 15.5px;
+  padding: 4px 0;
+}
+.nx-palette .nx-champ::placeholder { opacity: .85 }
+
 /* L'ENTREE. Tout ce qui apparait dans Nexus arrive de la meme facon : un peu
    plus bas, un peu plus petit, et ca se pose. C'est le geste de l'extension,
    celui qu'Aharon a aime — on le rend disponible partout. */

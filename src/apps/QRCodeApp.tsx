@@ -201,7 +201,7 @@ export default function QRCodeApp() {
             timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           });
         } else {
-          setScanError("Aucun QR code détecté dans cette image. Essayez une image plus nette.");
+          setScanError("Aucun QR code détecté dans cette image. Essaie une image plus nette.");
         }
       };
       img.src = evt.target?.result as string;
@@ -260,7 +260,7 @@ export default function QRCodeApp() {
       }
     } catch (err) {
       console.error(err);
-      setScanError("Impossible d'accéder à la caméra. Vérifiez vos autorisations.");
+      setScanError("Impossible d'accéder à la caméra. Vérifie vos autorisations.");
       setIsCameraActive(false);
     }
   };
@@ -597,7 +597,7 @@ export default function QRCodeApp() {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-white">Scanner avec la Caméra</h3>
-                  <p className="text-[11px] text-slate-400 mt-1">Utilisez la webcam pour viser le QR Code en direct</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Utilise la webcam pour viser le QR Code en direct</p>
                 </div>
 
                 {!isCameraActive ? (
@@ -624,7 +624,7 @@ export default function QRCodeApp() {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-white">Importer une Image</h3>
-                  <p className="text-[11px] text-slate-400 mt-1">Sélectionnez une photo ou capture d'écran contenant un QR</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Sélectionne une photo ou capture d'écran contenant un QR</p>
                 </div>
 
                 <label className="w-full py-2.5 px-4 bg-slate-950 border border-slate-800 hover:border-cyan-500/50 text-slate-200 rounded-xl font-bold text-xs cursor-pointer transition-all flex items-center justify-center gap-2">

@@ -327,7 +327,7 @@ export default function Mail() {
             setShowAccountModal(true);
           }}
           className="nx-btn nx-btn-icon flex items-center gap-2.5 text-left"
-          title="Cliquez pour changer votre adresse email"
+          title="Clique pour changer votre adresse email"
         >
           <img
             src={googleUser?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentUserName)}`}
@@ -356,7 +356,7 @@ export default function Mail() {
             <button
               onClick={handleGoogleLoginClick}
               className="nx-btn nx-btn-danger flex items-center justify-center gap-2 text-xs"
-              title="Connecter votre compte Gmail réel"
+              title="Connecter ton compte Gmail réel"
             >
               <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
                 <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z" />
@@ -648,7 +648,7 @@ export default function Mail() {
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-slate-500">
                 <Inbox size={40} className="opacity-20 mb-2" />
-                <p className="text-xs">Sélectionnez un e-mail pour le lire.</p>
+                <p className="text-xs">Sélectionne un e-mail pour le lire.</p>
               </div>
             )}
           </div>
@@ -792,12 +792,12 @@ export default function Mail() {
             </div>
 
             <p className="text-xs text-slate-300">
-              Entrez votre propre adresse email Google. Chaque utilisateur retrouve ses propres e-mails, fichiers et notes synchronisés.
+              Entre votre propre adresse email Google. Chaque utilisateur retrouve ses propres e-mails, fichiers et notes synchronisés.
             </p>
 
             <form onSubmit={handleSaveAccount} className="flex flex-col gap-3">
               <div>
-                <label className="text-[11px] font-semibold text-slate-300">Votre E-mail Google</label>
+                <label className="text-[11px] font-semibold text-slate-300">Ton E-mail Google</label>
                 <input
                   type="email"
                   required
@@ -809,7 +809,7 @@ export default function Mail() {
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-slate-300">Votre Nom Complet</label>
+                <label className="text-[11px] font-semibold text-slate-300">Ton Nom Complet</label>
                 <input
                   type="text"
                   required

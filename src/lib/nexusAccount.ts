@@ -86,13 +86,13 @@ export function humanError(e: any): string {
     return "Mot de passe incorrect pour cette adresse.";
   if (c === "auth/invalid-email") return "Adresse e-mail invalide.";
   if (c === "auth/email-already-in-use")
-    return "Cette adresse a deja un compte Nexus. Entre avec Google, ou avec ton mot de passe : c'est le MEME compte.";
+    return "Cette adresse a déjà un compte Nexus. Entre avec Google, ou avec ton mot de passe : c'est le MEME compte.";
   if (c === COMPTE_INCONNU) return e.message;
   if (c === "auth/provider-already-linked" || c === "auth/credential-already-in-use")
-    return "Ce mot de passe est deja associe a ce compte.";
+    return "Ce mot de passe est déjà associé à ce compte.";
   if (c === "auth/requires-recent-login")
     return "Reconnecte-toi (Google) puis reessaie d'ajouter le mot de passe.";
-  if (c === "auth/popup-blocked") return "Le navigateur a bloque la fenetre. Autorise les pop-ups.";
+  if (c === "auth/popup-blocked") return "Le navigateur a bloqué la fenêtre. Autorise les fenêtres surgissantes.";
   if (c === "auth/popup-closed-by-user" || c === "auth/cancelled-popup-request") return "Connexion annulee.";
   if (c === "auth/network-request-failed") return "Pas de connexion internet.";
   return e?.message || "Une erreur est survenue.";

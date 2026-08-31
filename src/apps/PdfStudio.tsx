@@ -232,7 +232,7 @@ export default function PdfStudio() {
   // 2. Word / Texte vers PDF
   const handleWordToPdf = async () => {
     if (!customTextContent.trim() && files.length === 0) {
-      setStatusMessage({ type: "error", text: "Saisissez du texte ou importez un document à convertir." });
+      setStatusMessage({ type: "error", text: "Saisis du texte ou importez un document à convertir." });
       return;
     }
 
@@ -299,7 +299,7 @@ export default function PdfStudio() {
   // 3. Fusionner plusieurs PDF
   const handleMergePdfs = async () => {
     if (files.length < 2) {
-      setStatusMessage({ type: "error", text: "Sélectionnez au moins 2 fichiers PDF à fusionner." });
+      setStatusMessage({ type: "error", text: "Sélectionne au moins 2 fichiers PDF à fusionner." });
       return;
     }
 
@@ -441,7 +441,7 @@ export default function PdfStudio() {
   // 6. Pivoter / Filigrane
   const handleRotateAndWatermark = async () => {
     if (files.length === 0) {
-      setStatusMessage({ type: "error", text: "Sélectionnez un document PDF à modifier." });
+      setStatusMessage({ type: "error", text: "Sélectionne un document PDF à modifier." });
       return;
     }
 
@@ -679,7 +679,7 @@ export default function PdfStudio() {
               </div>
               <div>
                 <h3 className="text-sm font-bold text-nexus-text">
-                  Glissez-déposez vos fichiers ici ou{" "}
+                  Glisse-déposez tes fichiers ici ou{" "}
                   <span className="text-red-400 underline">Parcourir</span>
                 </h3>
                 <p className="text-xs text-nexus-muted mt-1">
@@ -717,7 +717,7 @@ export default function PdfStudio() {
                   rows={6}
                   value={customTextContent}
                   onChange={(e) => setCustomTextContent(e.target.value)}
-                  placeholder="Tapez ou collez votre texte ici..."
+                  placeholder="Tape ou collez votre texte ici..."
                   className="w-full bg-nexus-card border border-nexus-border rounded-xl p-3 text-xs text-nexus-text focus:outline-none focus:border-cyan-400 resize-none font-mono"
                 />
               </div>

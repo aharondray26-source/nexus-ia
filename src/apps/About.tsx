@@ -36,17 +36,17 @@ export default function About() {
         <Logo size={30} />
         <div>
           <h2 className="text-base font-medium text-nexus-text">Nexus OS</h2>
-          <p className="text-xs text-nexus-muted">Votre espace de travail universel tout-en-un</p>
+          <p className="text-xs text-nexus-muted">Ton espace de travail universel tout-en-un</p>
         </div>
       </div>
 
       <p className="text-sm leading-relaxed text-nexus-muted">
-        Nexus réunit au même endroit tout ce dont vous avez besoin pour travailler,
+        Nexus réunit au même endroit tout ce dont tu as besoin pour travailler,
         apprendre et vous concentrer : accès aux intelligences artificielles, notes,
         tâches, apprentissage, dictionnaire, traducteur, cartes, musique et plus encore.
         <br />
         <span className="text-nexus-text">Gratuit, utilisable sans compte</span> : tout
-        reste alors sur votre appareil. Si vous créez un compte Nexus, vos données vous
+        reste alors sur votre appareil. Si vous créez un compte Nexus, tes données vous
         suivent sur tous vos appareils — elles restent privées et ne sont ni vendues ni partagées.
       </p>
 

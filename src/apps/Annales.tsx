@@ -54,7 +54,7 @@ const DOCUMENTATION_SITE_PDF: DocumentPDF = {
         
         <div style="background: #f8fafc; p-3; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #e2e8f0;">
           <h3 style="margin: 0; color: #0f172a; font-size: 16px;">📁 Gestionnaire de Fichiers</h3>
-          <p style="margin: 5px 0 0 0; color: #475569; font-size: 13px;">Permet d'importer, classer, prévisualiser et télécharger vos documents (PDF, Word, Excel, PowerPoint, Images, Vidéos, Audios). Tout votre stockage reste privé dans votre navigateur.</p>
+          <p style="margin: 5px 0 0 0; color: #475569; font-size: 13px;">Permet d'importer, classer, prévisualiser et télécharger tes documents (PDF, Word, Excel, PowerPoint, Images, Vidéos, Audios). Tout votre stockage reste privé dans ton navigateur.</p>
         </div>
 
         <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #e2e8f0;">
@@ -69,16 +69,16 @@ const DOCUMENTATION_SITE_PDF: DocumentPDF = {
 
         <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #e2e8f0;">
           <h3 style="margin: 0; color: #0f172a; font-size: 16px;">🧠 Assistant Nexus AI Pro</h3>
-          <p style="margin: 5px 0 0 0; color: #475569; font-size: 13px;">IA conversationnelle avancée capable d'analyser vos fichiers, de rédiger des rapports, des lettres, de résoudre des problèmes et d'effectuer des recherches sur le Web.</p>
+          <p style="margin: 5px 0 0 0; color: #475569; font-size: 13px;">IA conversationnelle avancée capable d'analyser tes fichiers, de rédiger des rapports, des lettres, de résoudre des problèmes et d'effectuer des recherches sur le Web.</p>
         </div>
       </div>
 
       <div style="margin-bottom: 25px;">
         <h2 style="color: #0284c7; font-size: 20px; border-left: 4px solid #0284c7; padding-left: 10px;">3. Raccourcis & Astuces de Navigation</h2>
         <ul style="line-height: 1.8; color: #334155; font-size: 13px; padding-left: 20px;">
-          <li><b>Dynamic Control Pro :</b> Situé en haut au centre de l'écran, survollez-le pour accéder aux contrôles rapides.</li>
-          <li><b>Barre des Tâches & Dock :</b> Cliquez sur l'icône de l'application pour ouvrir ou réduire une fenêtre.</li>
-          <li><b>Glisser-Déposer :</b> Déposez directement des fichiers depuis votre ordinateur dans l'application Fichiers.</li>
+          <li><b>La pastille du haut :</b> au centre de la barre, elle indique l'espace au premier plan. Clique dessus pour voir tout ce qui est ouvert.</li>
+          <li><b>Barre des Tâches & Dock :</b> Clique sur l'icône de l'application pour ouvrir ou réduire une fenêtre.</li>
+          <li><b>Glisser-Déposer :</b> Dépose directement des fichiers depuis ton ordinateur dans l'application Fichiers.</li>
         </ul>
       </div>
 

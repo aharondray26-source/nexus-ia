@@ -134,7 +134,7 @@ export default function FileViewer() {
         <AlertCircle className="w-8 h-8 text-amber-400" />
         <span className="font-semibold text-white">{error || "Aucun fichier sélectionné."}</span>
         <span className="text-xs text-slate-400">
-          Ouvrez vos documents depuis l'application « Fichiers ».
+          Ouvrez tes documents depuis l'application « Fichiers ».
         </span>
       </div>
     );
@@ -246,7 +246,7 @@ export default function FileViewer() {
               <p className="text-xs text-slate-400 mt-1">Format audio ({ext})</p>
             </div>
             <audio controls src={url} className="w-full">
-              Votre navigateur ne supporte pas la lecture audio.
+              Ton navigateur ne supporte pas la lecture audio.
             </audio>
           </div>
         )}
@@ -254,7 +254,7 @@ export default function FileViewer() {
         {/* VIDEO PLAYER */}
         {isVideo && (
           <video controls src={url} className="m-auto max-h-full max-w-full rounded-xl shadow-2xl">
-            Votre navigateur ne supporte pas la lecture vidéo.
+            Ton navigateur ne supporte pas la lecture vidéo.
           </video>
         )}
 
@@ -270,7 +270,7 @@ export default function FileViewer() {
               <p className="text-[11px] text-slate-400">Taille: {formatFileSize(file.size)}</p>
             </div>
             <p className="text-xs text-slate-300 bg-black/40 p-3 rounded-xl border border-white/10">
-              Votre présentation est chargée dans Nexus OS. Vous pouvez la visualiser en plein écran ou la télécharger sur votre ordinateur.
+              Ton présentation est chargée dans Nexus OS. Tu peux la visualiser en plein écran ou la télécharger sur ton ordinateur.
             </p>
             <div className="flex gap-2 pt-1">
               <button

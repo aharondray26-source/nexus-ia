@@ -65,7 +65,7 @@ export default function DynamicIsland() {
                 <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse shrink-0" />
               )}
               <span className="text-[10px] sm:text-[11px] font-bold text-white truncate tracking-tight">
-                {focusedAppDef ? focusedAppDef.title : "Nexus Control Pro"}
+                {focusedAppDef ? focusedAppDef.title : "Nexus"}
               </span>
             </div>
 
@@ -75,8 +75,12 @@ export default function DynamicIsland() {
                   {pendingTasks}
                 </span>
               )}
+              {/* « 0 app » ne veut rien dire : quand rien n'est ouvert, on
+                  n'affiche pas un compteur a zero, on dit ce qu'on voit. */}
               <span className="bg-white/10 px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-semibold text-slate-200">
-                {activeWindowsCount} app{activeWindowsCount > 1 ? "s" : ""}
+                {activeWindowsCount === 0
+                  ? "Accueil"
+                  : `${activeWindowsCount} espace${activeWindowsCount > 1 ? "s" : ""}`}
               </span>
             </div>
           </motion.button>
@@ -94,7 +98,7 @@ export default function DynamicIsland() {
               <div className="flex items-center justify-between border-b border-white/10 pb-2">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-cyan-400 animate-ping" />
-                  <span className="text-xs font-extrabold text-white tracking-wide">Dynamic Control Pro</span>
+                  <span className="text-xs font-extrabold text-white tracking-wide">Espaces ouverts</span>
                 </div>
                 <button
                   onClick={() => setExpanded(false)}

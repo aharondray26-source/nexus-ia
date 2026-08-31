@@ -455,7 +455,7 @@ export default function VideoEditor() {
             <Film className="w-10 h-10 text-cyan-400/50 animate-bounce" />
             <p className="font-semibold text-slate-300">Aucun clip dans le montage</p>
             <p className="text-[11px] text-slate-500 max-w-xs">
-              Glissez des images, vidéos, ou cliquez sur <span className="text-purple-300 font-bold">Démo Pro</span> pour démarrer immédiatement.
+              Glisse des images, vidéos, ou cliquez sur <span className="text-purple-300 font-bold">Démo Pro</span> pour démarrer immédiatement.
             </p>
           </div>
         )}

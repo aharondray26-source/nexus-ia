@@ -206,7 +206,7 @@ export default function Recipes() {
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center text-nexus-muted text-xs">
-            Sélectionnez une recette pour afficher sa préparation.
+            Sélectionne une recette pour afficher sa préparation.
           </div>
         )}
       </div>
