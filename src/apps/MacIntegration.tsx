@@ -347,7 +347,7 @@ body.calme #lueur i{animation:none}
 main{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:26px;padding:0 26px;
   transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .35s}
-body.ouvert main{transform:translateY(-14vh)}
+body.ouvert main{transform:translateY(-9vh)}
 #tete{display:flex;flex-direction:column;align-items:center;gap:6px;
   transition:opacity .35s,transform .45s cubic-bezier(.22,1,.36,1)}
 body.ouvert #tete{opacity:0;transform:translateY(-30px) scale(.94);pointer-events:none}
@@ -356,23 +356,43 @@ body.ouvert #tete{opacity:0;transform:translateY(-30px) scale(.94);pointer-event
 #bonjour{font-size:16.5px;color:var(--doux,#a5a5b2);letter-spacing:-.01em}
 
 /* ---- la barre ---- */
-#zone{width:100%;max-width:680px;display:flex;flex-direction:column;align-items:center;gap:10px}
-form{width:100%;position:relative;display:flex;align-items:center}
-#q{width:100%;border:1px solid var(--bord,rgba(255,255,255,.13));border-radius:16px;
-  background:var(--verre,rgba(255,255,255,.07));color:inherit;font:inherit;font-size:16px;
-  padding:16px 116px 16px 48px;outline:none;
-  transition:border-color .18s,background .18s,box-shadow .18s}
+#zone{width:100%;max-width:720px;display:flex;flex-direction:column;align-items:center;gap:10px}
+
+/* LA BOITE. Fermee, c'est une barre. Ouverte, c'est un grand carre — le MEME
+   element, qui grandit et dont les coins s'arrondissent davantage. Meme
+   ressort que le panneau des reglages : c'est ce qui donne le geste. */
+#boite{position:relative;width:100%;max-width:600px;
+  border:1px solid var(--bord,rgba(255,255,255,.13));border-radius:16px;
+  background:var(--verre,rgba(255,255,255,.07));
+  -webkit-backdrop-filter:blur(22px) saturate(175%);backdrop-filter:blur(22px) saturate(175%);
+  box-shadow:0 8px 26px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.1);
+  display:flex;flex-direction:column;overflow:hidden;
+  transition:max-width .62s cubic-bezier(.16,1.02,.24,1),
+             border-radius .58s cubic-bezier(.3,.9,.2,1) .04s,
+             box-shadow .5s ease, background .3s ease, border-color .3s ease}
+body.ouvert #boite{max-width:720px;border-radius:26px;
+  background:var(--verre2,rgba(255,255,255,.1));
+  border-color:var(--vif,rgba(99,102,241,.5));
+  box-shadow:0 26px 70px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.14)}
+#boite:focus-within{border-color:var(--vif,rgba(99,102,241,.75));
+  box-shadow:0 8px 26px rgba(0,0,0,.26), 0 0 0 4px rgba(99,102,241,.16),
+             inset 0 1px 0 rgba(255,255,255,.12)}
+body.ouvert #boite:focus-within{box-shadow:0 26px 70px rgba(0,0,0,.45),
+  0 0 0 4px rgba(99,102,241,.16), inset 0 1px 0 rgba(255,255,255,.14)}
+
+form{width:100%;position:relative;display:flex;align-items:center;flex:0 0 auto}
+#q{width:100%;border:0;border-radius:0;background:transparent;color:inherit;
+  font:inherit;font-size:16px;padding:16px 116px 16px 48px;outline:none}
 #q::placeholder{color:var(--doux,#77777f)}
-#q:focus{border-color:var(--vif,rgba(99,102,241,.75));background:var(--verre2,rgba(255,255,255,.1));
-  box-shadow:0 0 0 4px rgba(99,102,241,.16)}
 .loupe{position:absolute;left:17px;width:17px;height:17px;opacity:.45;pointer-events:none}
 #ia{position:absolute;right:8px;border:0;border-radius:11px;padding:9px 14px;
   font:inherit;font-size:13px;font-weight:500;color:#fff;background:var(--acc,#6366f1);
-  cursor:pointer;transition:background .15s,transform .1s}
+  cursor:pointer;transition:background .15s,transform .12s cubic-bezier(.2,1.5,.4,1),filter .15s}
 #ia:hover{filter:brightness(1.12)}
-#ia:active{transform:scale(.96)}
-#astuce{font-size:12.5px;color:var(--faible,#6e6e78);height:16px;transition:opacity .3s}
-body.ouvert #astuce{opacity:0}
+#ia:active{transform:scale(.94)}
+#astuce{font-size:12.5px;color:var(--faible,#6e6e78);height:16px;
+  transition:opacity .3s ease,transform .4s cubic-bezier(.22,1,.36,1)}
+body.ouvert #astuce{opacity:0;transform:translateY(6px)}
 
 /* ---- les raccourcis ---- */
 #esp{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;
@@ -382,22 +402,42 @@ body.ouvert #esp{opacity:0;transform:translateY(18px);pointer-events:none}
   padding:10px 15px;font:inherit;font-size:13.5px;color:var(--doux,#c9c9d4);
   background:var(--verre,rgba(255,255,255,.05));cursor:pointer;display:flex;
   align-items:center;gap:7px;transition:background .16s,color .16s,transform .12s,border-color .16s}
+#esp button{transition:background .16s ease,color .16s ease,border-color .16s ease,
+  transform .26s cubic-bezier(.2,1.4,.4,1),box-shadow .22s ease}
 #esp button:hover{background:var(--accFaible,rgba(99,102,241,.26));
-  border-color:var(--vif,rgba(99,102,241,.5));color:#fff;transform:translateY(-2px)}
+  border-color:var(--vif,rgba(99,102,241,.5));color:#fff;transform:translateY(-3px);
+  box-shadow:0 8px 20px rgba(0,0,0,.24)}
+#esp button:active{transform:translateY(-1px) scale(.97)}
 #esp button b{font-size:15px;font-weight:400;line-height:1}
 
 /* ---- le panneau de resultats, deploye sous la barre ---- */
-#res{position:relative;z-index:2;width:100%;max-width:680px;margin-top:2px;
-  max-height:0;opacity:0;overflow:hidden;
-  transition:max-height .5s cubic-bezier(.22,1,.36,1),opacity .3s}
-body.ouvert #res{max-height:52vh;opacity:1;overflow-y:auto}
+/* Les reponses sont DANS la boite : elles poussent ses parois, elles ne
+   s'affichent pas dessous. C'est toute la difference entre « la barre grandit »
+   et « une deuxieme boite apparait ». */
+#res{width:100%;max-height:0;opacity:0;overflow:hidden;padding:0 16px;
+  border-top:1px solid transparent;
+  transition:max-height .62s cubic-bezier(.16,1.02,.24,1),
+             opacity .32s ease .12s,
+             padding .5s cubic-bezier(.22,1,.36,1),
+             border-color .4s ease}
+body.ouvert #res{max-height:min(58vh,520px);opacity:1;overflow-y:auto;
+  padding:14px 16px 16px;border-top-color:var(--bord,rgba(255,255,255,.11))}
 #res::-webkit-scrollbar{width:8px}
 #res::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:4px}
+/* Tout ce qui entre dans la boite arrive avec le MEME ressort que le panneau
+   des reglages. Un mouvement unique, reconnaissable, dans toute l'extension. */
+@keyframes entre{
+  from{opacity:0;transform:translateY(14px) scale(.965)}
+  to{opacity:1;transform:none}
+}
+#res > *{animation:entre .52s cubic-bezier(.16,1.02,.24,1) both}
 .moi{align-self:flex-end;max-width:82%;margin:2px 0 12px auto;padding:9px 14px;
-  border-radius:15px 15px 5px 15px;background:var(--acc,#6366f1);color:#fff;font-size:14px}
+  border-radius:15px 15px 5px 15px;background:var(--acc,#6366f1);color:#fff;font-size:14px;
+  box-shadow:0 4px 14px rgba(0,0,0,.2)}
 .rep{border:1px solid var(--bord,rgba(255,255,255,.1));border-radius:15px;
   background:var(--verre,rgba(255,255,255,.05));padding:13px 15px;font-size:14.5px;
-  line-height:1.6;margin-bottom:12px;white-space:pre-wrap}
+  line-height:1.6;margin-bottom:12px;white-space:pre-wrap;
+  animation-delay:.06s}
 .rep .sig{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:600;
   letter-spacing:.07em;text-transform:uppercase;color:var(--vifTxt,#a5aaff);margin-bottom:7px}
 .pense{display:inline-flex;gap:4px;align-items:center}
@@ -406,11 +446,24 @@ body.ouvert #res{max-height:52vh;opacity:1;overflow-y:auto}
 .pense i:nth-child(2){animation-delay:.15s}.pense i:nth-child(3){animation-delay:.3s}
 @keyframes bat{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
 .liens{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;
-  margin-bottom:14px}
+  margin-bottom:14px;animation-delay:.1s}
+/* Les cartes tombent l'une apres l'autre, pas toutes d'un bloc : l'oeil suit. */
+.liens .lien{animation:entre .5s cubic-bezier(.16,1.02,.24,1) both}
+.liens .lien:nth-child(1){animation-delay:.10s}
+.liens .lien:nth-child(2){animation-delay:.16s}
+.liens .lien:nth-child(3){animation-delay:.22s}
+.liens .lien:nth-child(4){animation-delay:.28s}
+.liens .lien:nth-child(5){animation-delay:.33s}
+.liens .lien:nth-child(6){animation-delay:.37s}
+.liens .lien:nth-child(n+7){animation-delay:.41s}
 .lien{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;
   border:1px solid var(--bord,rgba(255,255,255,.09));background:var(--verre,rgba(255,255,255,.04));
   cursor:pointer;text-align:left;font:inherit;color:inherit;transition:background .15s,transform .12s}
-.lien:hover{background:var(--accFaible,rgba(99,102,241,.2));transform:translateY(-1px)}
+.lien{transition:background .16s ease,transform .22s cubic-bezier(.2,1.4,.4,1),
+  border-color .16s ease,box-shadow .22s ease}
+.lien:hover{background:var(--accFaible,rgba(99,102,241,.2));transform:translateY(-2px);
+  border-color:var(--vif,rgba(99,102,241,.45));box-shadow:0 6px 16px rgba(0,0,0,.22)}
+.lien:active{transform:translateY(0) scale(.985)}
 .lien .p{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;
   justify-content:center;font-size:14px;background:rgba(255,255,255,.08);flex:0 0 auto}
 .lien .t{min-width:0}
@@ -419,7 +472,7 @@ body.ouvert #res{max-height:52vh;opacity:1;overflow-y:auto}
 .lien .t span{display:block;font-size:11.5px;color:var(--faible,#8a8a95)}
 .calc{font-size:26px;font-weight:300;letter-spacing:-.02em;padding:14px 16px;
   border-radius:15px;border:1px solid var(--bord,rgba(255,255,255,.1));
-  background:var(--verre,rgba(255,255,255,.05));margin-bottom:12px}
+  background:var(--verre,rgba(255,255,255,.05));margin-bottom:12px;animation-delay:.05s}
 .calc small{display:block;font-size:11.5px;color:var(--faible,#8a8a95);margin-top:3px}
 
 /* ---- coins ---- */
@@ -525,15 +578,20 @@ body.reglages #panneau > *{opacity:1}
     <div id="bonjour"></div>
   </div>
   <div id="zone">
-    <form id="f" autocomplete="off">
-      <svg class="loupe" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle>
-        <path d="M20 20l-3.6-3.6"></path></svg>
-      <input id="q" placeholder="Chercher sur le web, ou demander à Nexus…" autofocus>
-      <button type="button" id="ia">Nexus</button>
-    </form>
+    <!-- UNE seule boite : la barre EST le carre. Quand on demande quelque
+         chose, ce meme element grandit — il ne se dedouble pas en « barre en
+         haut + panneau en bas ». Tout se passe dedans. -->
+    <div id="boite">
+      <form id="f" autocomplete="off">
+        <svg class="loupe" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle>
+          <path d="M20 20l-3.6-3.6"></path></svg>
+        <input id="q" placeholder="Chercher sur le web, ou demander à Nexus…" autofocus>
+        <button type="button" id="ia">Nexus</button>
+      </form>
+      <div id="res"></div>
+    </div>
     <div id="astuce">Entrée pour chercher · le bouton Nexus pour demander</div>
-    <div id="res"></div>
   </div>
   <div id="esp"></div>
 </main>

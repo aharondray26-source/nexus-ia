@@ -53,6 +53,25 @@ body {
   transition: background-color 300ms ease, color 300ms ease;
 }
 
+/* ============================================================================
+   LE MOUVEMENT DE NEXUS
+   Un seul vocabulaire pour le site, l'application macOS et l'extension : c'est
+   ce qui fait qu'un ensemble semble d'une seule main. Le grand ressort est
+   celui du panneau des reglages de l'extension.
+     --ressort : le grand geste (une fenetre qui nait, un panneau qui grandit)
+     --appui   : le petit rebond (un bouton qu'on presse)
+     --doux    : les fondus et les glissements, sans rebond
+   Ne plus ecrire de courbe a la main : on perd l'unite.
+   ============================================================================ */
+:root {
+  --ressort: cubic-bezier(.16, 1.02, .24, 1);
+  --appui:   cubic-bezier(.2, 1.4, .4, 1);
+  --doux:    cubic-bezier(.22, 1, .36, 1);
+  --t-grand: .58s;
+  --t-moyen: .32s;
+  --t-petit: .17s;
+}
+
 /* Fluid transition on theme change */
 *, *::before, *::after {
   transition-property: background-color, border-color, color, fill, stroke, box-shadow;
@@ -121,27 +140,40 @@ html.light-mode [class*="backdrop-blur"] {
 }
 
 .nexus-fade-in {
-  animation: nexus-fade-in 420ms cubic-bezier(0.32, 0.72, 0, 1);
+  animation: nexus-fade-in 420ms var(--doux);
+}
+
+/* UNE FENETRE NAIT. Elle part petite et un peu ronde, puis grandit et ses
+   coins se carrent — exactement le geste du panneau des reglages de
+   l'extension, celui qu'Aharon a aime. */
+@keyframes nexus-naissance {
+  from { opacity: 0; transform: scale(.9) translateY(10px); border-radius: 30px; }
+  60%  { opacity: 1; }
+  to   { opacity: 1; transform: none; }
+}
+.nexus-naissance {
+  animation: nexus-naissance var(--t-grand) var(--ressort) both;
+  transform-origin: center center;
 }
 
 /* Tactile Liquid Button Physics */
 button {
-  transition: transform 220ms cubic-bezier(0.32, 0.72, 0, 1),
-              box-shadow 220ms ease,
-              background-color 180ms ease,
-              border-color 180ms ease,
-              opacity 180ms ease,
-              filter 180ms ease;
+  transition: transform var(--t-moyen) var(--appui),
+              box-shadow var(--t-moyen) var(--doux),
+              background-color var(--t-petit) var(--doux),
+              border-color var(--t-petit) var(--doux),
+              opacity var(--t-petit) var(--doux),
+              filter var(--t-petit) var(--doux);
   will-change: transform;
 }
 
 button:hover {
-  transform: translateY(-1px) scale(1.008);
+  transform: translateY(-2px) scale(1.012);
 }
 
 button:active {
-  transform: translateY(0.5px) scale(0.975) !important;
-  filter: brightness(1.04);
+  transform: translateY(0) scale(0.965) !important;
+  filter: brightness(1.05);
 }
 
 @keyframes nexus-pop {
@@ -160,7 +192,7 @@ button:active {
 }
 
 .nexus-pop {
-  animation: nexus-pop 320ms cubic-bezier(0.32, 0.72, 0, 1);
+  animation: nexus-pop 320ms var(--doux);
 }
 
 @keyframes liquid-ripple {
@@ -218,9 +250,9 @@ input[type="range"]::-webkit-slider-thumb {
     inset 0 1.5px 0 rgba(255,255,255,0.55),     /* reflet haut             */
     inset 0 -1px 0 rgba(255,255,255,0.18),
     0 2px 8px rgba(0,0,0,0.42);
-  transition: transform .24s cubic-bezier(.32,.72,0,1),
-              background .24s cubic-bezier(.32,.72,0,1),
-              box-shadow .24s cubic-bezier(.32,.72,0,1);
+  transition: transform .24s var(--doux),
+              background .24s var(--doux),
+              box-shadow .24s var(--doux);
 }
 input[type="range"]:hover::-webkit-slider-thumb { transform: scale(1.06); }
 input[type="range"]:active::-webkit-slider-thumb {
@@ -244,19 +276,19 @@ input[type="range"]::-moz-range-thumb {
   width: 30px; height: 18px; border: 0; border-radius: 999px;
   background: rgba(255,255,255,0.26); backdrop-filter: blur(10px) saturate(1.7);
   box-shadow: inset 1.5px 0 1px rgba(255,120,190,.6), inset -1.5px 0 1px rgba(120,205,255,.6), 0 2px 8px rgba(0,0,0,.42);
-  transition: transform .24s cubic-bezier(.32,.72,0,1), background .24s;
+  transition: transform .24s var(--doux), background .24s;
 }
 input[type="range"]:active::-moz-range-thumb { transform: scale(1.20); background: rgba(255,255,255,0.16); }
 
 /* ============ FINITIONS : mouvements plus fins et plus progressifs ============ */
 button, a, [role="button"], input, select, textarea {
-  transition-timing-function: cubic-bezier(.32,.72,0,1);
+  transition-timing-function: var(--doux);
   transition-duration: .22s;
 }
 button:active { transform: scale(.985); }   /* appui subtil, plus "cher" */
 
 /* Comportement verre au survol, partout ou il y a deja une surface vitree */
-[class~="backdrop-blur-[var(--glass-blur)]"] { transition: backdrop-filter .3s cubic-bezier(.32,.72,0,1), background-color .3s; }
+[class~="backdrop-blur-[var(--glass-blur)]"] { transition: backdrop-filter .3s var(--doux), background-color .3s; }
 
 /* ================== SYSTEME DE BOUTONS UNIFIE ==================
    Probleme corrige : plusieurs IA ont travaille sur ce site, chacune avec sa
@@ -277,9 +309,9 @@ button:active { transform: scale(.985); }   /* appui subtil, plus "cher" */
   overflow: hidden;             /* le texte ne sort plus du cadre */
   text-overflow: ellipsis;
   white-space: nowrap;
-  transition: background-color .2s cubic-bezier(.32,.72,0,1),
-              box-shadow .2s cubic-bezier(.32,.72,0,1),
-              transform .14s cubic-bezier(.32,.72,0,1),
+  transition: background-color .2s var(--doux),
+              box-shadow .2s var(--doux),
+              transform .14s var(--doux),
               opacity .2s;
 }
 .nx-btn:disabled { opacity: .4; cursor: not-allowed; }
@@ -331,7 +363,7 @@ button:active { transform: scale(.985); }   /* appui subtil, plus "cher" */
 .nx-item {
   border-radius: 11px; border: 1px solid var(--nexus-border);
   background: rgba(255,255,255,.03);
-  transition: background-color .2s cubic-bezier(.32,.72,0,1), border-color .2s;
+  transition: background-color .2s var(--doux), border-color .2s;
 }
 .nx-item:hover { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.16); }
 .nx-item-active {
@@ -366,7 +398,7 @@ button:active { transform: scale(.985); }   /* appui subtil, plus "cher" */
   border: 1px solid var(--nexus-border);
   cursor: pointer; min-width: 0; max-width: 100%;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  transition: background-color .2s cubic-bezier(.32,.72,0,1), color .2s, border-color .2s, box-shadow .2s;
+  transition: background-color .2s var(--doux), color .2s, border-color .2s, box-shadow .2s;
 }
 .nx-chip:hover { background: rgba(255,255,255,.1); color: var(--nexus-text); }
 .nx-chip-active {
@@ -391,8 +423,8 @@ button:active { transform: scale(.985); }   /* appui subtil, plus "cher" */
   border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.75),
               inset 0 1px 0 rgba(255, 255, 255, 0.07);
-  transition: transform .28s cubic-bezier(.32,.72,0,1),
-              box-shadow .28s cubic-bezier(.32,.72,0,1),
+  transition: transform .28s var(--doux),
+              box-shadow .28s var(--doux),
               border-color .28s;
   overflow: hidden;
 }
@@ -545,8 +577,8 @@ html.light-mode .nx-widget {
 /* L'ecran d'accueil (salut + heure + recherche) se retire vers le haut
    pendant que les widgets prennent toute la place. */
 .nx-hero {
-  transition: opacity .45s cubic-bezier(.32,.72,0,1),
-              transform .55s cubic-bezier(.32,.72,0,1),
+  transition: opacity .45s var(--doux),
+              transform .55s var(--doux),
               filter .45s;
 }
 .nx-hero-away { opacity: 0; transform: translateY(-42px) scale(.94); filter: blur(4px); pointer-events: none; }
@@ -561,7 +593,7 @@ html.light-mode .nx-widget {
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background: url('/world.svg') center 45%/86% no-repeat;
   opacity: .30;
-  transition: opacity .6s cubic-bezier(.32,.72,0,1), transform .8s cubic-bezier(.32,.72,0,1);
+  transition: opacity .6s var(--doux), transform .8s var(--doux);
 }
 .nx-world-dim { opacity: .08; transform: scale(1.06); }
 
@@ -682,7 +714,7 @@ html.light-mode .nx-widget {
 
 /* Agrandissement des icones au survol (effet macOS) */
 .nx-dock-magnify > * {
-  transition: transform .22s cubic-bezier(.32,.72,0,1), margin .22s cubic-bezier(.32,.72,0,1);
+  transition: transform .22s var(--doux), margin .22s var(--doux);
   transform-origin: center;
 }
 .nx-dock-magnify > *:hover { transform: scale(1.42); z-index: 2; }

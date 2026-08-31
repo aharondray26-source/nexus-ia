@@ -68,7 +68,7 @@ export default function Window({ win, title, hue, children }: WindowProps) {
   // Fermeture animee : contraction + fondu, puis retrait reel.
   function animatedClose() {
     setClosing(true);
-    window.setTimeout(() => closeWindow(win.id), 200);
+    window.setTimeout(() => closeWindow(win.id), 260);
   }
 
   function onTitlePointerDown(e: React.PointerEvent) {
@@ -131,19 +131,23 @@ export default function Window({ win, title, hue, children }: WindowProps) {
   return (
     <div
       onMouseDown={() => focusWindow(win.id)}
-      className="nexus-fade-in absolute flex flex-col overflow-hidden rounded-xl border border-nexus-border bg-nexus-panel/95 shadow-2xl backdrop-blur-[var(--glass-blur)] transition-all duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)]"
+      className="nexus-naissance absolute flex flex-col overflow-hidden rounded-2xl border border-nexus-border bg-nexus-panel/95 shadow-2xl backdrop-blur-[var(--glass-blur)] transition-all duration-[320ms] [transition-timing-function:var(--ressort)]"
       style={{
         left: isMobile ? 0 : win.x,
         top: isMobile ? 0 : win.y,
         width: isMobile ? "100%" : win.width,
         height: isMobile ? "100%" : win.height,
-        borderRadius: isMobile ? 0 : undefined,
+        // En se fermant, la fenetre fait le chemin INVERSE de sa naissance :
+        // elle retrecit et ses coins s'arrondissent jusqu'a redevenir une
+        // bulle. Avant, elle se contentait de retrecir : on ne lisait pas le
+        // geste.
+        borderRadius: isMobile ? 0 : closing ? 30 : undefined,
         zIndex: win.z,
         transformOrigin: closing ? "center" : "bottom left",
         transform: win.minimized
           ? "scale(0.12) translateY(1400px)"
           : closing
-          ? "scale(0.9)"
+          ? "scale(0.86) translateY(8px)"
           : "none",
         opacity: win.minimized || closing ? 0 : 1,
         pointerEvents: win.minimized || closing ? "none" : "auto",
