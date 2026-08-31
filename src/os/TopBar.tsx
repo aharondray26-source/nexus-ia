@@ -51,61 +51,52 @@ export default function TopBar() {
       {/* Pas d'overflow ici : sinon les menus deroulants (Compte, capture rapide)
           se retrouvent COUPES par le bord de la barre. */}
       <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5">
-        <button
-          onClick={() => openApp("mail", { width: 840, height: 600 })}
-          title="Ouvrir Boîte Mail & Gmail"
-          className="nx-btn nx-btn-secondary flex items-center gap-1.5 text-xs"
-        >
-          <Mail size={14} className="text-amber-400" />
-          <span className="hidden xl:inline text-[11px] font-semibold">Mail</span>
-        </button>
+        {/* Les trois raccourcis vivent dans UN seul groupe segmente. En trois
+            pastilles separees avec leur libelle, ils prenaient a eux seuls la
+            moitie de la barre et noyaient le reste. */}
+        <div className="flex items-center gap-0.5 rounded-xl border border-nexus-border bg-nexus-card/60 p-0.5">
+          {([
+            ["mail", Mail, "text-amber-400", "Boîte Mail & Gmail", { width: 840, height: 600 }],
+            ["messages", MessageSquare, "text-cyan-400", "Messagerie instantanée", { width: 820, height: 580 }],
+            ["cloud", Cloud, "text-sky-400", "Nexus Cloud & Google Drive", { width: 780, height: 580 }],
+          ] as const).map(([id, Icone, couleur, titre, taille]) => (
+            <button
+              key={id}
+              onClick={() => openApp(id, taille)}
+              title={titre}
+              aria-label={titre}
+              className="flex h-7 w-7 items-center justify-center rounded-[9px] text-nexus-muted transition-colors hover:bg-nexus-panel hover:text-nexus-text"
+            >
+              <Icone size={14} className={couleur} />
+            </button>
+          ))}
+        </div>
 
-        <button
-          onClick={() => openApp("messages", { width: 820, height: 580 })}
-          title="Ouvrir la Messagerie Instantanée"
-          className="nx-btn nx-btn-secondary flex items-center gap-1.5 text-[11px]"
-        >
-          <MessageSquare size={14} className="text-cyan-400" />
-          <span className="hidden xl:inline text-[11px]">Message</span>
-        </button>
-
-        <button
-          onClick={() => openApp("cloud", { width: 780, height: 580 })}
-          title="Ouvrir Nexus Cloud & Google Drive"
-          className="nx-btn nx-btn-secondary flex items-center gap-1.5 text-[11px]"
-        >
-          <Cloud size={14} className="text-cyan-400" />
-          <span className="hidden xl:inline text-[11px] font-semibold">Cloud</span>
-        </button>
+        <span className="h-4 w-px bg-nexus-border" aria-hidden="true" />
 
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          title={theme === "dark" ? "Passer en Mode Clair (Lumineux)" : "Passer en Mode Sombre (Nuit)"}
-          className="nx-btn nx-btn-secondary flex items-center gap-1.5 text-[11px]"
+          title={theme === "dark" ? "Passer en clair" : "Passer en sombre"}
+          aria-label={theme === "dark" ? "Passer en clair" : "Passer en sombre"}
+          className="flex h-7 w-7 items-center justify-center rounded-[9px] text-nexus-muted transition-colors hover:bg-nexus-card hover:text-nexus-text"
         >
-          {theme === "dark" ? (
-            <>
-              <Sun className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden sm:inline">Clair</span>
-            </>
-          ) : (
-            <>
-              <Moon className="w-3.5 h-3.5 text-indigo-400" />
-              <span className="hidden sm:inline">Sombre</span>
-            </>
-          )}
+          {theme === "dark"
+            ? <Sun className="h-3.5 w-3.5 text-amber-400" />
+            : <Moon className="h-3.5 w-3.5 text-indigo-400" />}
         </button>
 
         <a
           href="https://github.com/aharondray26-source/nexus-ia"
           target="_blank"
           rel="noopener noreferrer"
-          className="nx-btn nx-btn-secondary flex items-center gap-1.5 text-[11px]"
-          title="Voir le code source du projet (open source)"
+          title="Voir le code source du projet"
+          aria-label="Voir le code source du projet"
+          className="hidden h-7 w-7 items-center justify-center rounded-[9px] text-nexus-muted transition-colors hover:bg-nexus-card hover:text-nexus-text sm:flex"
         >
-          <Package size={14} className="text-cyan-400" />
-          <span className="hidden md:inline">Code source</span>
+          <Package size={14} />
         </a>
+
+        <span className="h-4 w-px bg-nexus-border" aria-hidden="true" />
 
         <AccountMenu />
         <QuickCapture />

@@ -769,8 +769,8 @@ export default function ControlRoom() {
           <button onClick={() => setPaletteOpen(true)}
             className="mt-1 flex w-full max-w-md items-center gap-3 rounded-2xl border border-nexus-border bg-nexus-panel/70 px-5 py-3.5 text-left backdrop-blur-[var(--glass-blur)] transition-colors hover:bg-nexus-panel">
             <Sparkles size={17} style={{ color: "var(--accent)" }} />
-            <span className="flex-1 text-sm text-nexus-muted">
-              Rechercher un espace ou poser une question à l'IA…
+            <span className="flex-1 truncate text-sm text-nexus-muted">
+              Rechercher, ou demander à l'IA
             </span>
             <kbd className="nx-chip text-[10px] font-mono">{searchShortcutLabel()}</kbd>
           </button>

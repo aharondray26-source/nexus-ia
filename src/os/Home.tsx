@@ -183,7 +183,7 @@ export default function Home() {
               >
                 <span className="flex items-center gap-3">
                   <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse" />
-                  <span className="text-xs sm:text-sm font-medium">Lancer une recherche ou poser une question à l'IA...</span>
+                  <span className="text-xs sm:text-sm font-medium">Rechercher, ou demander à l'IA</span>
                 </span>
                 <kbd className="nx-chip text-[10px] font-mono">
                   {searchShortcutLabel()}

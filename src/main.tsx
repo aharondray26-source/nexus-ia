@@ -39,7 +39,13 @@ function demandesDeLExtension() {
     window.history.replaceState({}, "", window.location.pathname);
     const quoi = app || (tache ? "tasks" : "notes");
     window.setTimeout(() => {
-      try { useWindows.getState().openApp(quoi, { width: 620, height: 480 }); }
+      // Arrivee depuis l'extension : on ouvre EN GRAND. Une fenetre de
+      // 620x480 perdue au milieu de l'ecran donnait l'impression que le
+      // bouton n'avait rien fait.
+      const vw = window.innerWidth, vh = window.innerHeight;
+      const taille = { width: Math.min(1320, Math.round(vw * 0.88)),
+                       height: Math.min(900, Math.round(vh * 0.86)) };
+      try { useWindows.getState().openApp(quoi, taille); }
       catch { /* espace inconnu : on reste sur l'accueil */ }
     }, 700);
   } catch {

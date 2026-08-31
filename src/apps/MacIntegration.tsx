@@ -101,7 +101,7 @@ export default function MacIntegration() {
       const manifest = {
         manifest_version: 3,
         name: "Nexus",
-        version: "2.1.0",
+        version: "2.3.0",
         description:
           "Ton espace Nexus à chaque onglet. Enregistre une note, une tâche ou " +
           "un morceau de page choisie — tout rejoint ton compte.",
@@ -109,6 +109,10 @@ export default function MacIntegration() {
         permissions: ["contextMenus", "storage"],
         background: { service_worker: "fond.js" },
         chrome_url_overrides: { newtab: "onglet.html" },
+        // Rien n'est demande a l'installation : ces sites ne sont
+        // reclames que si une cle OpenAI/Groq/Mistral/OpenRouter est
+        // ajoutee, car eux seuls refusent les appels du navigateur.
+        optional_host_permissions: ["https://api.openai.com/*", "https://api.groq.com/*", "https://api.mistral.ai/*", "https://openrouter.ai/*"],
         action: {
           default_title: "Nexus",
           default_popup: "popup.html",
@@ -152,7 +156,44 @@ export default function MacIntegration() {
   .ok{color:#4ade80}`;
 
       const popup = `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">
-<style>${style}</style></head><body>
+<style>
+  *{box-sizing:border-box;margin:0}
+  body{width:296px;padding:0;background:#0b0b11;color:#f2f2f7;
+    font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+  .haut{display:flex;align-items:center;gap:9px;padding:14px 15px 11px}
+  .haut img{width:26px;height:26px;border-radius:7px}
+  .haut b{font-size:13.5px;font-weight:600;letter-spacing:-.01em;flex:1}
+  .haut span{font-size:10.5px;color:#8a8a95}
+  .corps{padding:0 15px 14px;display:flex;flex-direction:column;gap:10px}
+  .onglets{display:flex;gap:5px;background:rgba(255,255,255,.05);padding:3px;
+    border-radius:11px}
+  .onglets button{flex:1;border:0;border-radius:8px;padding:6px;font:inherit;
+    font-size:12px;color:#a9a9b4;background:transparent;cursor:pointer}
+  .onglets button.on{background:#6366f1;color:#fff;font-weight:500}
+  textarea{width:100%;height:78px;resize:none;border-radius:12px;padding:10px 12px;
+    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);
+    color:#f2f2f7;font:inherit;outline:none;transition:border-color .15s}
+  textarea:focus{border-color:#6366f1;background:rgba(255,255,255,.09)}
+  textarea::placeholder{color:#6f6f7a}
+  .r{display:flex;gap:7px}
+  .r button{flex:1;border:0;border-radius:10px;padding:9px;font:inherit;
+    font-weight:500;color:#f2f2f7;background:rgba(255,255,255,.08);cursor:pointer;
+    transition:background .15s}
+  .r button:hover{background:rgba(255,255,255,.16)}
+  .r button.p{background:#6366f1;color:#fff}
+  .r button.p:hover{background:#7679f5}
+  .esp{display:flex;flex-wrap:wrap;gap:5px;padding-top:2px}
+  .esp button{border:0;border-radius:20px;padding:5px 11px;font:inherit;font-size:11.5px;
+    color:#c9c9d4;background:rgba(255,255,255,.06);cursor:pointer}
+  .esp button:hover{background:rgba(99,102,241,.35);color:#fff}
+  .pied{border-top:1px solid rgba(255,255,255,.08);padding:9px 15px;
+    font-size:11px;color:#8a8a95;display:flex;align-items:center;gap:6px}
+  .pt{width:6px;height:6px;border-radius:50%;background:#4ade80}
+  .ok{color:#4ade80}
+  .pied{justify-content:space-between}
+  .minus{border:0;background:transparent;color:#7b7b86;font:inherit;font-size:11px;
+    padding:3px 6px;border-radius:7px;cursor:pointer;transition:color .15s,background .15s}
+  .minus:hover{color:#f2f2f7;background:rgba(255,255,255,.09)}</style></head><body>
   <div class="haut"><img src="icones/48.png" alt="">
     <b>Nexus</b><span id="etat"></span></div>
   <div class="corps">
@@ -168,17 +209,23 @@ export default function MacIntegration() {
     <div class="esp">
       <button data-app="notes">Notes</button>
       <button data-app="tasks">Tâches</button>
-      <button data-app="ai">Nexus IA</button>
+      <button data-app="nexus-chat">Nexus IA</button>
       <button data-app="files">Fichiers</button>
       <button data-app="calendar">Agenda</button>
+      <button data-neo="1">🎓 NeoSchool</button>
     </div>
   </div>
-  <div class="pied"><span class="pt"></span><span id="info">Tout rejoint ton compte Nexus</span></div>
+  <div class="pied">
+    <span class="pt"></span>
+    <span id="info">Enregistré dans Nexus sur ce navigateur</span>
+    <button id="compte" class="minus">Compte</button>
+    <button id="mac" class="minus" title="Télécharger Nexus pour macOS">macOS</button>
+  </div>
   <script src="popup.js"></script>
 </body></html>`;
 
       // Pas de code en ligne : les extensions modernes l'interdisent.
-      const popupJs = `const SITE = ${JSON.stringify(SITE)};
+      const popupJs = `const SITE = "https://nexus-espace.netlify.app/";
 let mode = "note";
 const $ = (id) => document.getElementById(id);
 
@@ -210,11 +257,30 @@ $("page").addEventListener("click", async () => {
   envoyer(onglet.title + "\\n" + onglet.url);
 });
 
+// Les raccourcis d'espace ouvrent le site EN DEMANDANT l'espace : il s'affiche
+// alors en grand, centre. Avant, on tombait sur l'accueil sans rien de plus.
 document.querySelectorAll(".esp button").forEach((b) => {
   b.addEventListener("click", () => {
-    chrome.tabs.create({ url: SITE + "?app=" + b.dataset.app });
+    // NeoSchool est un espace a part entiere : il a sa propre adresse.
+    const u = b.dataset.neo
+      ? "https://neo-school-nine.vercel.app/"
+      : SITE + "?app=" + b.dataset.app;
+    chrome.tabs.create({ url: u });
     window.close();
   });
+});
+
+// Le compte. On ne PRETEND pas que tout est synchronise : tant qu'Aharon ne
+// s'est pas connecte sur le site, ses notes ne vivent que dans ce navigateur.
+// Le pied de la fenetre le dit maintenant honnetement, et ce bouton mene la ou
+// on se connecte.
+$("compte").addEventListener("click", () => {
+  chrome.tabs.create({ url: SITE + "?app=settings" });
+  window.close();
+});
+$("mac").addEventListener("click", () => {
+  chrome.tabs.create({ url: SITE + "Nexus-macOS.zip" });
+  window.close();
 });
 
 // On garde le brouillon : fermer la fenêtre ne doit pas effacer ce qu'on écrit.
@@ -254,165 +320,937 @@ chrome.contextMenus.onClicked.addListener((info, onglet) => {
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
-body{background:#07070b;color:#f2f2f7;overflow:hidden;
+body{background:#07070b;color:var(--txt,#f2f2f7);overflow:hidden;
   font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
   -webkit-font-smoothing:antialiased}
+
+/* ---- le fond, remplace par les reglages ---- */
+#fond{position:fixed;inset:0;z-index:0;background:#07070b;
+  background-size:cover;background-position:center;transition:opacity .5s}
+#voile{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:rgba(6,6,10,var(--voile,0));transition:background .35s}
 #lueur{position:fixed;inset:-30%;z-index:0;pointer-events:none;filter:blur(90px);opacity:.5}
 #lueur i{position:absolute;border-radius:50%;display:block}
-#lueur i:nth-child(1){width:46vw;height:46vw;left:8%;top:6%;background:#4f46e5;
+#lueur i:nth-child(1){width:46vw;height:46vw;left:8%;top:6%;background:var(--l1,#4f46e5);
   animation:d1 26s ease-in-out infinite}
-#lueur i:nth-child(2){width:38vw;height:38vw;right:6%;top:22%;background:#7c3aed;
+#lueur i:nth-child(2){width:38vw;height:38vw;right:6%;top:22%;background:var(--l2,#7c3aed);
   animation:d2 31s ease-in-out infinite}
-#lueur i:nth-child(3){width:34vw;height:34vw;left:34%;bottom:2%;background:#0ea5e9;
+#lueur i:nth-child(3){width:34vw;height:34vw;left:34%;bottom:2%;background:var(--l3,#0ea5e9);
   animation:d3 37s ease-in-out infinite;opacity:.65}
 @keyframes d1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(9vw,6vh) scale(1.12)}}
 @keyframes d2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-8vw,9vh) scale(.9)}}
 @keyframes d3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(6vw,-7vh) scale(1.1)}}
-main{position:relative;z-index:1;width:100%;max-width:660px;padding:0 26px;
-  display:flex;flex-direction:column;align-items:center;gap:26px}
+body.calme #lueur{animation:none}
+body.calme #lueur i{animation:none}
+
+/* ---- la scene centrale ---- */
+main{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:26px;padding:0 26px;
+  transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .35s}
+body.ouvert main{transform:translateY(-14vh)}
+#tete{display:flex;flex-direction:column;align-items:center;gap:6px;
+  transition:opacity .35s,transform .45s cubic-bezier(.22,1,.36,1)}
+body.ouvert #tete{opacity:0;transform:translateY(-30px) scale(.94);pointer-events:none}
 #heure{font-size:78px;font-weight:200;letter-spacing:-.045em;line-height:1;
   font-variant-numeric:tabular-nums}
-#bonjour{font-size:16.5px;color:#a5a5b2;letter-spacing:-.01em;margin-top:-14px}
+#bonjour{font-size:16.5px;color:var(--doux,#a5a5b2);letter-spacing:-.01em}
+
+/* ---- la barre ---- */
+#zone{width:100%;max-width:680px;display:flex;flex-direction:column;align-items:center;gap:10px}
 form{width:100%;position:relative;display:flex;align-items:center}
-#q{width:100%;border:1px solid rgba(255,255,255,.13);border-radius:16px;
-  background:rgba(255,255,255,.07);color:#f2f2f7;font:inherit;font-size:16px;
+#q{width:100%;border:1px solid var(--bord,rgba(255,255,255,.13));border-radius:16px;
+  background:var(--verre,rgba(255,255,255,.07));color:inherit;font:inherit;font-size:16px;
   padding:16px 116px 16px 48px;outline:none;
   transition:border-color .18s,background .18s,box-shadow .18s}
-#q::placeholder{color:#77777f}
-#q:focus{border-color:rgba(99,102,241,.75);background:rgba(255,255,255,.1);
+#q::placeholder{color:var(--doux,#77777f)}
+#q:focus{border-color:var(--vif,rgba(99,102,241,.75));background:var(--verre2,rgba(255,255,255,.1));
   box-shadow:0 0 0 4px rgba(99,102,241,.16)}
 .loupe{position:absolute;left:17px;width:17px;height:17px;opacity:.45;pointer-events:none}
 #ia{position:absolute;right:8px;border:0;border-radius:11px;padding:9px 14px;
-  font:inherit;font-size:13px;font-weight:500;color:#fff;background:#6366f1;
+  font:inherit;font-size:13px;font-weight:500;color:#fff;background:var(--acc,#6366f1);
   cursor:pointer;transition:background .15s,transform .1s}
-#ia:hover{background:#7679f5}
+#ia:hover{filter:brightness(1.12)}
 #ia:active{transform:scale(.96)}
-#astuce{font-size:12.5px;color:#6e6e78;margin-top:-16px;height:16px}
-#esp{display:flex;flex-wrap:wrap;gap:9px;justify-content:center}
-#esp button{border:1px solid rgba(255,255,255,.09);border-radius:13px;
-  padding:10px 15px;font:inherit;font-size:13.5px;color:#c9c9d4;
-  background:rgba(255,255,255,.05);cursor:pointer;display:flex;align-items:center;
-  gap:7px;transition:background .16s,color .16s,transform .12s,border-color .16s}
-#esp button:hover{background:rgba(99,102,241,.26);border-color:rgba(99,102,241,.5);
-  color:#fff;transform:translateY(-2px)}
+#astuce{font-size:12.5px;color:var(--faible,#6e6e78);height:16px;transition:opacity .3s}
+body.ouvert #astuce{opacity:0}
+
+/* ---- les raccourcis ---- */
+#esp{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;
+  transition:opacity .35s,transform .45s cubic-bezier(.22,1,.36,1)}
+body.ouvert #esp{opacity:0;transform:translateY(18px);pointer-events:none}
+#esp button{border:1px solid var(--bord,rgba(255,255,255,.09));border-radius:13px;
+  padding:10px 15px;font:inherit;font-size:13.5px;color:var(--doux,#c9c9d4);
+  background:var(--verre,rgba(255,255,255,.05));cursor:pointer;display:flex;
+  align-items:center;gap:7px;transition:background .16s,color .16s,transform .12s,border-color .16s}
+#esp button:hover{background:var(--accFaible,rgba(99,102,241,.26));
+  border-color:var(--vif,rgba(99,102,241,.5));color:#fff;transform:translateY(-2px)}
 #esp button b{font-size:15px;font-weight:400;line-height:1}
-#bas{position:fixed;bottom:22px;z-index:1;font-size:12px;color:#55555e;
-  display:flex;align-items:center;gap:7px}
-#bas span{width:5px;height:5px;border-radius:50%;background:#4ade80}
+
+/* ---- le panneau de resultats, deploye sous la barre ---- */
+#res{position:relative;z-index:2;width:100%;max-width:680px;margin-top:2px;
+  max-height:0;opacity:0;overflow:hidden;
+  transition:max-height .5s cubic-bezier(.22,1,.36,1),opacity .3s}
+body.ouvert #res{max-height:52vh;opacity:1;overflow-y:auto}
+#res::-webkit-scrollbar{width:8px}
+#res::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:4px}
+.moi{align-self:flex-end;max-width:82%;margin:2px 0 12px auto;padding:9px 14px;
+  border-radius:15px 15px 5px 15px;background:var(--acc,#6366f1);color:#fff;font-size:14px}
+.rep{border:1px solid var(--bord,rgba(255,255,255,.1));border-radius:15px;
+  background:var(--verre,rgba(255,255,255,.05));padding:13px 15px;font-size:14.5px;
+  line-height:1.6;margin-bottom:12px;white-space:pre-wrap}
+.rep .sig{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:600;
+  letter-spacing:.07em;text-transform:uppercase;color:var(--vifTxt,#a5aaff);margin-bottom:7px}
+.pense{display:inline-flex;gap:4px;align-items:center}
+.pense i{width:5px;height:5px;border-radius:50%;background:var(--vifTxt,#a5aaff);
+  animation:bat 1.1s ease-in-out infinite}
+.pense i:nth-child(2){animation-delay:.15s}.pense i:nth-child(3){animation-delay:.3s}
+@keyframes bat{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+.liens{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;
+  margin-bottom:14px}
+.lien{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;
+  border:1px solid var(--bord,rgba(255,255,255,.09));background:var(--verre,rgba(255,255,255,.04));
+  cursor:pointer;text-align:left;font:inherit;color:inherit;transition:background .15s,transform .12s}
+.lien:hover{background:var(--accFaible,rgba(99,102,241,.2));transform:translateY(-1px)}
+.lien .p{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-size:14px;background:rgba(255,255,255,.08);flex:0 0 auto}
+.lien .t{min-width:0}
+.lien .t b{display:block;font-size:13px;font-weight:550;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.lien .t span{display:block;font-size:11.5px;color:var(--faible,#8a8a95)}
+.calc{font-size:26px;font-weight:300;letter-spacing:-.02em;padding:14px 16px;
+  border-radius:15px;border:1px solid var(--bord,rgba(255,255,255,.1));
+  background:var(--verre,rgba(255,255,255,.05));margin-bottom:12px}
+.calc small{display:block;font-size:11.5px;color:var(--faible,#8a8a95);margin-top:3px}
+
+/* ---- coins ---- */
+#mac{position:fixed;left:20px;bottom:18px;z-index:3;display:flex;align-items:center;gap:7px;
+  padding:7px 12px;border-radius:11px;border:1px solid transparent;background:transparent;
+  color:var(--faible,#6a6a74);font:inherit;font-size:12px;cursor:pointer;
+  transition:color .18s,background .18s,border-color .18s}
+#mac:hover{color:var(--txt,#f2f2f7);background:var(--verre,rgba(255,255,255,.06));
+  border-color:var(--bord,rgba(255,255,255,.1))}
+#mac svg{width:13px;height:13px;fill:currentColor}
+/* La roue ROULE : un tour complet a l'ouverture. Le mouvement dit ce qui se
+   passe avant meme qu'on ait vu le panneau. */
+#roue{position:fixed;right:22px;bottom:22px;z-index:12;width:40px;height:40px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.16);color:var(--doux,#a5a5b2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);
+  -webkit-backdrop-filter:blur(18px) saturate(170%);backdrop-filter:blur(18px) saturate(170%);
+  box-shadow:0 6px 18px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.18);
+  transition:transform .72s cubic-bezier(.22,1,.36,1),background .2s,color .2s,box-shadow .2s}
+#roue:hover{background:rgba(255,255,255,.15);color:#fff;
+  box-shadow:0 8px 24px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.26)}
+#roue:active{transform:scale(.92) rotate(40deg)}
+#roue svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7}
+body.reglages #roue{transform:rotate(360deg);color:#fff;
+  background:var(--accFaible,rgba(99,102,241,.34))}
+
+/* ---- le panneau lateral ---- */
+#ombre{position:fixed;inset:0;z-index:8;background:rgba(0,0,0,.34);opacity:0;
+  pointer-events:none;transition:opacity .4s,backdrop-filter .4s;
+  -webkit-backdrop-filter:blur(0px);backdrop-filter:blur(0px)}
+body.reglages #ombre{opacity:1;pointer-events:auto;
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+
+/* Le panneau NAIT DE LA ROUE : il part en bulle ronde, minuscule, posee sur
+   elle, puis il gonfle et ses coins se carrent. Il ne touche AUCUN bord — il
+   flotte. C'est la barre laterale du site prise pour modele : transparente,
+   liquide, bien arrondie, detachee. */
+#panneau{position:fixed;top:22px;right:22px;bottom:22px;z-index:10;
+  width:344px;max-width:calc(100vw - 44px);
+  background:rgba(20,20,26,.62);border:1px solid rgba(255,255,255,.14);
+  -webkit-backdrop-filter:blur(34px) saturate(190%);backdrop-filter:blur(34px) saturate(190%);
+  box-shadow:0 26px 70px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.16);
+  display:flex;flex-direction:column;color:#f2f2f7;overflow:hidden;
+  transform-origin:calc(100% - 18px) calc(100% - 18px);
+  transform:scale(.055);border-radius:50%;opacity:0;pointer-events:none;
+  transition:transform .62s cubic-bezier(.16,1.02,.24,1),
+             border-radius .58s cubic-bezier(.3,.9,.2,1) .06s,
+             opacity .3s ease}
+body.reglages #panneau{transform:scale(1);border-radius:26px;opacity:1;pointer-events:auto}
+/* Le contenu n'apparait qu'une fois la bulle devenue carre : sinon on voit le
+   texte s'etirer pendant la deformation, et c'est laid. */
+#panneau > *{opacity:0;transition:opacity .28s ease .3s}
+body.reglages #panneau > *{opacity:1}
+#panneau header{padding:19px 20px 13px;display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.09);flex:0 0 auto}
+#panneau header b{font-size:15px;font-weight:600;flex:1;letter-spacing:-.01em}
+#fermer{width:27px;height:27px;border-radius:50%;border:0;background:rgba(255,255,255,.08);
+  color:#c9c9d4;font-size:15px;cursor:pointer;line-height:1}
+#fermer:hover{background:rgba(255,255,255,.16);color:#fff}
+#corps{flex:1;overflow-y:auto;padding:6px 20px 24px}
+#corps::-webkit-scrollbar{width:8px}
+#corps::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:4px}
+.sec{padding:16px 0 4px;font-size:10.5px;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;color:#7d7d88}
+.grille{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pastille{aspect-ratio:1;border-radius:11px;border:2px solid transparent;cursor:pointer;
+  padding:0;transition:transform .14s,border-color .14s;background-size:cover;background-position:center}
+.pastille:hover{transform:scale(1.07)}
+.pastille.on{border-color:#fff}
+.rangee{display:flex;gap:7px;flex-wrap:wrap}
+.opt{border:1px solid rgba(255,255,255,.11);border-radius:10px;padding:7px 12px;
+  font:inherit;font-size:12.5px;color:#c9c9d4;background:rgba(255,255,255,.05);cursor:pointer;
+  transition:background .15s,color .15s,border-color .15s}
+.opt:hover{background:rgba(255,255,255,.11)}
+.opt.on{background:var(--acc,#6366f1);border-color:transparent;color:#fff;font-weight:500}
+.champ{width:100%;border:1px solid rgba(255,255,255,.12);border-radius:11px;
+  background:rgba(255,255,255,.06);color:#f2f2f7;font:inherit;font-size:13px;
+  padding:10px 12px;outline:none;margin-top:4px}
+.champ:focus{border-color:rgba(99,102,241,.7);background:rgba(255,255,255,.09)}
+.note{font-size:11.5px;line-height:1.5;color:#82828d;margin-top:7px}
+.note a{color:#a5aaff}
+.bascule{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13.5px}
+.bascule:last-child{border-bottom:0}
+.inter{width:40px;height:23px;border-radius:12px;border:0;background:rgba(255,255,255,.14);
+  position:relative;cursor:pointer;flex:0 0 auto;transition:background .2s}
+.inter i{position:absolute;top:2.5px;left:2.5px;width:18px;height:18px;border-radius:50%;
+  background:#fff;transition:transform .22s cubic-bezier(.3,1.4,.5,1)}
+.inter.on{background:var(--acc,#6366f1)}
+.inter.on i{transform:translateX(17px)}
+#etatCle{font-size:11.5px;margin-top:6px;min-height:15px}
+.ok{color:#4ade80}.ko{color:#f87171}
+#pied{padding:14px 20px;border-top:1px solid rgba(255,255,255,.07);
+  font-size:11px;color:#5c5c66;display:flex;align-items:center;gap:6px}
+#pied span{width:5px;height:5px;border-radius:50%;background:#4ade80}
 </style></head><body>
+<div id="fond"></div>
 <div id="lueur"><i></i><i></i><i></i></div>
+<div id="voile"></div>
+
 <main>
-  <div id="heure">--:--</div>
-  <div id="bonjour"></div>
-  <form id="f" autocomplete="off">
-    <svg class="loupe" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle>
-      <path d="M20 20l-3.6-3.6"></path></svg>
-    <input id="q" placeholder="Chercher sur le web, ou demander à Nexus…" autofocus>
-    <button type="button" id="ia">Nexus</button>
-  </form>
-  <div id="astuce">Entrée pour chercher · le bouton Nexus pour demander à l’IA</div>
+  <div id="tete">
+    <div id="heure">--:--</div>
+    <div id="bonjour"></div>
+  </div>
+  <div id="zone">
+    <form id="f" autocomplete="off">
+      <svg class="loupe" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle>
+        <path d="M20 20l-3.6-3.6"></path></svg>
+      <input id="q" placeholder="Chercher sur le web, ou demander à Nexus…" autofocus>
+      <button type="button" id="ia">Nexus</button>
+    </form>
+    <div id="astuce">Entrée pour chercher · le bouton Nexus pour demander</div>
+    <div id="res"></div>
+  </div>
   <div id="esp"></div>
 </main>
-<div id="bas"><span></span>Nexus — conçu par Aharon Dray</div>
+
+<button id="mac" title="Nexus pour macOS">
+  <svg viewBox="0 0 24 24"><path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.2-2.8.8-3.5.8-.7 0-1.8-.8-3-.8-1.5 0-2.9.9-3.7 2.3-1.6 2.7-.4 6.8 1.1 9 .8 1.1 1.6 2.3 2.8 2.2 1.1 0 1.6-.7 2.9-.7 1.3 0 1.7.7 2.9.7 1.2 0 2-1.1 2.7-2.2.9-1.3 1.2-2.5 1.2-2.6 0 0-2.3-.9-2.3-3.4zM14.2 5.6c.6-.8 1-1.8.9-2.9-.9 0-2 .6-2.6 1.4-.6.7-1.1 1.7-.9 2.8 1 0 2-.5 2.6-1.3z"/></svg>
+  Nexus pour macOS
+</button>
+
+<button id="roue" title="Réglages">
+  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.1"/>
+    <path d="M19.4 14.5a1.6 1.6 0 0 0 .3 1.8l.1.1a1.9 1.9 0 1 1-2.7 2.7l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5v.2a1.9 1.9 0 1 1-3.8 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a1.9 1.9 0 1 1-2.7-2.7l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3.4a1.9 1.9 0 1 1 0-3.8h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a1.9 1.9 0 1 1 2.7-2.7l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5V3.4a1.9 1.9 0 1 1 3.8 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a1.9 1.9 0 1 1 2.7 2.7l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1h.2a1.9 1.9 0 1 1 0 3.8h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>
+</button>
+
+<div id="ombre"></div>
+<aside id="panneau" aria-label="Réglages Nexus">
+  <header><b>Réglages</b><button id="fermer" title="Fermer">×</button></header>
+  <div id="corps">
+    <div class="sec">Fond d'écran</div>
+    <div class="grille" id="fonds"></div>
+    <div class="rangee" style="margin-top:9px">
+      <button class="opt" id="fondPerso">Image de mon choix…</button>
+    </div>
+    <input class="champ" id="fondURL" placeholder="…ou colle l'adresse d'une image"
+      style="display:none">
+
+    <div class="sec">Ambiance</div>
+    <div class="rangee" id="themes"></div>
+
+    <div class="sec">Assombrir le fond</div>
+    <div class="rangee" id="voiles"></div>
+
+    <div class="sec">Affichage</div>
+    <div class="bascule">Horloge<button class="inter" id="tHeure"><i></i></button></div>
+    <div class="bascule">Raccourcis des espaces<button class="inter" id="tEsp"><i></i></button></div>
+    <div class="bascule">Halos animés<button class="inter" id="tHalo"><i></i></button></div>
+    <div class="bascule">Bouton macOS<button class="inter" id="tMac"><i></i></button></div>
+    <div class="bascule">Format 24 h<button class="inter" id="t24"><i></i></button></div>
+
+    <div class="sec">École</div>
+    <div class="rangee" id="ecole"></div>
+    <div class="note">NeoSchool est l'espace scolaire de Nexus, côté navigateur :
+      notes, devoirs et emploi du temps, branché sur École Directe. Ton mot de
+      passe ne quitte jamais ta machine.</div>
+    <div class="bascule" style="margin-top:6px">Raccourci École sur l'accueil<button class="inter" id="tEcole"><i></i></button></div>
+
+    <div class="sec">Moteur de recherche</div>
+    <div class="rangee" id="moteurs"></div>
+
+    <div class="sec">Ton prénom</div>
+    <input class="champ" id="prenom" placeholder="Aharon" maxlength="24">
+
+    <div class="sec">Clé d'intelligence artificielle</div>
+    <input class="champ" id="cle" type="password" placeholder="Colle ta clé — elle reste ici">
+    <div id="etatCle"></div>
+    <div class="rangee" style="margin-top:8px">
+      <button class="opt" id="testerCle">Tester</button>
+      <button class="opt" id="voirCle">Afficher</button>
+      <button class="opt" id="viderCle">Effacer</button>
+    </div>
+    <div class="note">Reconnue toute seule : Google Gemini, OpenAI, Anthropic, Groq,
+      Mistral, OpenRouter. Elle est enregistrée dans ce navigateur uniquement, jamais
+      envoyée ailleurs qu'au fournisseur. Sans clé, Nexus répond quand même — avec des
+      résultats ciblés au lieu d'une réponse rédigée.
+      <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Clé Gemini gratuite</a></div>
+
+    <div class="sec">Économie</div>
+    <div class="bascule">Réponses courtes<button class="inter" id="tCourt"><i></i></button></div>
+    <div class="note">Limite chaque réponse au strict nécessaire. Recommandé si tu
+      partages la même clé avec l'application macOS.</div>
+  </div>
+  <div id="pied"><span></span>Nexus 2.2 — conçu par Aharon Dray</div>
+</aside>
+
 <script src="onglet.js"></script>
 </body></html>
 `;
 
-      const ongletJs = `// Page d'accueil Nexus — entierement locale : elle ne depend d'aucun site.
+      const ongletJs = `// ============================================================================
+//  La page d'accueil Nexus, dans le navigateur.
+//
+//  Elle est ENTIEREMENT locale : aucune page distante, aucun cadre. C'est ce
+//  qui lui permet de s'afficher instantanement, meme sans connexion, et de ne
+//  plus dependre de la mise en ligne du site.
+//
+//  Trois principes :
+//   · rien ne part d'ici sauf ce que tu demandes explicitement ;
+//   · la cle d'IA reste dans ce navigateur, et ne sert qu'au fournisseur ;
+//   · sans cle, la recherche marche quand meme — elle repond en resultats
+//     cibles plutot qu'en phrases.
+// ============================================================================
+
 const SITE = "https://nexus-espace.netlify.app";
+// NeoSchool : l'espace scolaire de Nexus cote navigateur.
+const NEO = "https://neo-school-nine.vercel.app/";
+const NEO_EXT = "https://chromewebstore.google.com/detail/ldkggbhackdddfbmoanfhbhglfdgfbkj";
 
-const deuxChiffres = (n) => (n < 10 ? "0" + n : "" + n);
+// -- Rangement ---------------------------------------------------------------
+// chrome.storage quand on est bien dans l'extension, sinon le rangement du
+// navigateur : la page reste testable telle quelle dans un onglet normal.
+const Rangement = {
+  lire(cles) {
+    return new Promise((res) => {
+      try {
+        if (chrome?.storage?.local) return chrome.storage.local.get(cles, (v) => res(v || {}));
+      } catch (_) {}
+      const out = {};
+      for (const k of cles) {
+        try { const v = localStorage.getItem("nx." + k); if (v != null) out[k] = JSON.parse(v); }
+        catch (_) {}
+      }
+      res(out);
+    });
+  },
+  ecrire(obj) {
+    return new Promise((res) => {
+      try {
+        if (chrome?.storage?.local) return chrome.storage.local.set(obj, () => res());
+      } catch (_) {}
+      for (const k in obj) {
+        try { localStorage.setItem("nx." + k, JSON.stringify(obj[k])); } catch (_) {}
+      }
+      res();
+    });
+  },
+};
 
+// -- Reglages ----------------------------------------------------------------
+const PAR_DEFAUT = {
+  fond: "nuit", fondImage: "", theme: "indigo", voile: 0,
+  heure: true, espaces: true, halos: true, boutonMac: true, format24: true,
+  moteur: "google", prenom: "", cle: "", court: true, ecole: true,
+};
+let R = { ...PAR_DEFAUT };
+
+// Les fonds : dessines en CSS, donc instantanes, sans reseau et sans pistage.
+const FONDS = {
+  nuit:     "linear-gradient(160deg,#07070b 0%,#0d0d16 55%,#111122 100%)",
+  aurore:   "linear-gradient(150deg,#0b1026 0%,#16264d 40%,#2b6f6f 75%,#0e2a2a 100%)",
+  crepuscule:"linear-gradient(155deg,#1a0b2e 0%,#3b1053 45%,#7b2d5e 80%,#c05e4a 100%)",
+  ocean:    "linear-gradient(160deg,#02111f 0%,#063456 45%,#0a5f83 78%,#0d8a9c 100%)",
+  foret:    "linear-gradient(155deg,#04140d 0%,#0b2f1e 45%,#155e3a 80%,#2c8a55 100%)",
+  braise:   "linear-gradient(155deg,#180605 0%,#3d0f0a 45%,#7a2211 78%,#c2521f 100%)",
+  brume:    "linear-gradient(160deg,#101318 0%,#1d232c 50%,#2c3540 100%)",
+  lavande:  "linear-gradient(150deg,#120e26 0%,#2a1f5c 45%,#4b3a92 78%,#7b6bd6 100%)",
+  sable:    "linear-gradient(155deg,#1a1410 0%,#3a2b1e 45%,#6b4f34 80%,#a37a4e 100%)",
+  encre:    "radial-gradient(120% 90% at 20% 10%,#1b2340 0%,#0a0d1a 55%,#05060c 100%)",
+  neige:    "linear-gradient(160deg,#eceef4 0%,#dfe3ee 50%,#c9d1e4 100%)",
+  papier:   "linear-gradient(160deg,#f7f4ee 0%,#efe9dd 55%,#e2d9c7 100%)",
+};
+const FONDS_CLAIRS = ["neige", "papier"];
+
+const THEMES = {
+  indigo:   { acc: "#6366f1", l1: "#4f46e5", l2: "#7c3aed", l3: "#0ea5e9" },
+  emeraude: { acc: "#10b981", l1: "#0d9488", l2: "#10b981", l3: "#0ea5e9" },
+  rubis:    { acc: "#e11d48", l1: "#be123c", l2: "#9f1239", l3: "#f97316" },
+  ambre:    { acc: "#f59e0b", l1: "#d97706", l2: "#f59e0b", l3: "#ef4444" },
+  ciel:     { acc: "#0ea5e9", l1: "#0284c7", l2: "#06b6d4", l3: "#6366f1" },
+  violet:   { acc: "#a855f7", l1: "#7e22ce", l2: "#a855f7", l3: "#ec4899" },
+  graphite: { acc: "#64748b", l1: "#334155", l2: "#475569", l3: "#0f172a" },
+};
+
+const MOTEURS = {
+  google:     { nom: "Google",     url: (q) => "https://www.google.com/search?q=" + q },
+  duckduckgo: { nom: "DuckDuckGo", url: (q) => "https://duckduckgo.com/?q=" + q },
+  bing:       { nom: "Bing",       url: (q) => "https://www.bing.com/search?q=" + q },
+  ecosia:     { nom: "Ecosia",     url: (q) => "https://www.ecosia.org/search?q=" + q },
+  qwant:      { nom: "Qwant",      url: (q) => "https://www.qwant.com/?q=" + q },
+};
+
+// -- Petites aides -----------------------------------------------------------
+const $ = (id) => document.getElementById(id);
+const deux = (n) => (n < 10 ? "0" + n : "" + n);
+const ech = (t) => (t == null ? "" : String(t))
+  .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+function appliquer() {
+  const clair = FONDS_CLAIRS.includes(R.fond) && !R.fondImage;
+  const f = $("fond");
+  if (R.fondImage) {
+    f.style.backgroundImage = \`url("\${R.fondImage}")\`;
+    f.style.background = \`#07070b url("\${R.fondImage}") center/cover no-repeat\`;
+  } else {
+    f.style.background = FONDS[R.fond] || FONDS.nuit;
+  }
+  const t = THEMES[R.theme] || THEMES.indigo;
+  const s = document.documentElement.style;
+  s.setProperty("--acc", t.acc);
+  s.setProperty("--l1", t.l1); s.setProperty("--l2", t.l2); s.setProperty("--l3", t.l3);
+  s.setProperty("--vif", t.acc + "bf");
+  s.setProperty("--accFaible", t.acc + "44");
+  s.setProperty("--vifTxt", clair ? t.acc : "#a5aaff");
+  s.setProperty("--voile", String(R.voile));
+  // Sur fond clair, on inverse l'encre : sinon le texte blanc disparait.
+  s.setProperty("--txt", clair ? "#15151b" : "#f2f2f7");
+  s.setProperty("--doux", clair ? "#4a4a56" : "#a5a5b2");
+  s.setProperty("--faible", clair ? "#6c6c78" : "#6e6e78");
+  s.setProperty("--bord", clair ? "rgba(0,0,0,.12)" : "rgba(255,255,255,.13)");
+  s.setProperty("--verre", clair ? "rgba(255,255,255,.55)" : "rgba(255,255,255,.07)");
+  s.setProperty("--verre2", clair ? "rgba(255,255,255,.75)" : "rgba(255,255,255,.1)");
+
+  $("tete").style.display = R.heure ? "" : "none";
+  $("esp").style.display = R.espaces ? "" : "none";
+  $("mac").style.display = R.boutonMac ? "" : "none";
+  const ce = $("chipEcole");
+  if (ce) ce.style.display = R.ecole ? "" : "none";
+  document.body.classList.toggle("calme", !R.halos);
+  $("lueur").style.display = R.halos && !R.fondImage ? "" : "none";
+  battre();
+}
+
+// -- L'heure -----------------------------------------------------------------
+const JOURS = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août",
+              "septembre","octobre","novembre","décembre"];
 function salut(h) {
   if (h < 5) return "Bonne nuit";
   if (h < 12) return "Bonjour";
   if (h < 18) return "Bon après-midi";
   return "Bonsoir";
 }
-
-const JOURS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
-const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
-  "août", "septembre", "octobre", "novembre", "décembre"];
-
-let prenom = "";
-
 function battre() {
   const d = new Date();
-  document.getElementById("heure").textContent =
-    deuxChiffres(d.getHours()) + ":" + deuxChiffres(d.getMinutes());
-  const date = JOURS[d.getDay()] + " " + d.getDate() + " " + MOIS[d.getMonth()];
-  document.getElementById("bonjour").textContent =
-    salut(d.getHours()) + (prenom ? " " + prenom : "") + " · " + date;
+  $("heure").textContent = R.format24
+    ? deux(d.getHours()) + ":" + deux(d.getMinutes())
+    : d.toLocaleTimeString("fr-FR", { hour: "numeric", minute: "2-digit", hour12: true });
+  $("bonjour").textContent = salut(d.getHours()) + (R.prenom ? " " + R.prenom : "")
+    + " · " + JOURS[d.getDay()] + " " + d.getDate() + " " + MOIS[d.getMonth()];
 }
-
-// Le prenom vient du compte Nexus s'il a ete enregistre par le popup.
-try {
-  chrome.storage?.local.get(["nexusPrenom"], (r) => {
-    if (r && r.nexusPrenom) { prenom = r.nexusPrenom; battre(); }
-  });
-} catch (_) {}
-
-battre();
 setInterval(battre, 1000);
 
-// Une chaine est-elle une adresse plutot qu'une recherche ?
+// -- Les espaces -------------------------------------------------------------
+const ESPACES = [
+  ["Chat", "💬", "nexus-chat"], ["Notes", "📝", "notes"], ["Tâches", "✓", "tasks"],
+  ["Calendrier", "📅", "calendar"], ["Fichiers", "📁", "files"],
+];
+// NeoSchool a son propre raccourci : c'est un espace a part entiere de Nexus,
+// pas une page du site. Il s'affiche en dernier et se debranche depuis les
+// reglages si Aharon n'en veut pas.
+const ECOLE = ["NeoSchool", "🎓", NEO];
+function ouvrirEspace(app) {
+  // On ouvre le site EN DEMANDANT l'espace : il s'ouvre alors en grand,
+  // centre. Avant, le bouton menait a l'accueil et semblait ne rien faire.
+  window.location.href = SITE + "/?app=" + encodeURIComponent(app);
+}
+{
+  const esp = $("esp");
+  for (const [nom, glyphe, app] of ESPACES) {
+    const b = document.createElement("button");
+    const g = document.createElement("b"); g.textContent = glyphe;
+    b.append(g, document.createTextNode(nom));
+    b.title = "Ouvrir « " + nom + " » en grand sur Nexus";
+    b.addEventListener("click", () => ouvrirEspace(app));
+    esp.appendChild(b);
+  }
+  const [nomE, glypheE, urlE] = ECOLE;
+  const e = document.createElement("button");
+  e.id = "chipEcole";
+  const ge = document.createElement("b"); ge.textContent = glypheE;
+  e.append(ge, document.createTextNode(nomE));
+  e.title = "NeoSchool — notes, devoirs et emploi du temps";
+  e.addEventListener("click", () => { window.location.href = urlE; });
+  esp.appendChild(e);
+}
+
+// -- Recherche ---------------------------------------------------------------
 function estUneAdresse(t) {
   if (/\\s/.test(t)) return false;
   if (/^https?:\\/\\//i.test(t)) return true;
   return /^[\\w-]+(\\.[\\w-]+)+(\\/.*)?$/.test(t);
 }
-
-function allerA(url) { window.location.href = url; }
-
-document.getElementById("f").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const t = document.getElementById("q").value.trim();
-  if (!t) return;
+function chercher(t) {
   if (estUneAdresse(t)) {
-    allerA(/^https?:\\/\\//i.test(t) ? t : "https://" + t);
-  } else {
-    allerA("https://www.google.com/search?q=" + encodeURIComponent(t));
+    window.location.href = /^https?:\\/\\//i.test(t) ? t : "https://" + t;
+    return;
   }
-});
-
-document.getElementById("ia").addEventListener("click", () => {
-  const t = document.getElementById("q").value.trim();
-  allerA(SITE + (t ? "?ia=" + encodeURIComponent(t) : ""));
-});
-
-// Les espaces Nexus, en raccourcis.
-const ESPACES = [
-  ["Chat", "💬", "chat"],
-  ["Notes", "📝", "notes"],
-  ["Tâches", "✓", "tasks"],
-  ["Calendrier", "📅", "calendar"],
-  ["Fichiers", "📁", "files"],
-  ["École", "🎓", "school"],
-];
-
-const esp = document.getElementById("esp");
-for (const [nom, glyphe, app] of ESPACES) {
-  const b = document.createElement("button");
-  const g = document.createElement("b");
-  g.textContent = glyphe;
-  b.appendChild(g);
-  b.appendChild(document.createTextNode(nom));
-  b.addEventListener("click", () => allerA(SITE + "?app=" + app));
-  esp.appendChild(b);
+  const m = MOTEURS[R.moteur] || MOTEURS.google;
+  window.location.href = m.url(encodeURIComponent(t));
 }
 
-// « / » remet le curseur dans la recherche, comme partout ailleurs.
-document.addEventListener("keydown", (e) => {
-  if (e.key === "/" && document.activeElement !== document.getElementById("q")) {
-    e.preventDefault();
-    document.getElementById("q").focus();
+// -- L'intelligence sans intelligence ---------------------------------------
+// Sans cle, on ne rédige pas : on vise juste. Le but est qu'un lycéen tombe en
+// UN clic sur la bonne source, au lieu d'une page de résultats à trier.
+function calculer(t) {
+  const propre = t.replace(/[^0-9+\\-*/().,%^ ]/g, "").replace(/,/g, ".").trim();
+  if (!propre || !/[0-9]/.test(propre) || !/[+\\-*/^%]/.test(propre)) return null;
+  if (propre.length > 80) return null;
+  try {
+    const v = Function('"use strict";return (' + propre.replace(/\\^/g, "**") + ")")();
+    if (typeof v !== "number" || !isFinite(v)) return null;
+    return { calcul: propre, valeur: Math.round(v * 1e10) / 1e10 };
+  } catch (_) { return null; }
+}
+
+function cibler(q) {
+  const e = encodeURIComponent(q);
+  const bas = q.toLowerCase();
+  const mots = q.trim().split(/\\s+/).length;
+  const L = [];
+  const A = (icone, titre, sous, url) => L.push({ icone, titre, sous, url });
+
+  const trad = bas.match(/^(?:traduis|traduire|traduction de)\\s+(.+)$/);
+  if (trad) {
+    const x = encodeURIComponent(trad[1]);
+    A("🌍", "DeepL", "La meilleure traduction", "https://www.deepl.com/translator#fr/en/" + x);
+    A("🔤", "Google Traduction", "Rapide, 100 langues",
+      "https://translate.google.com/?sl=auto&tl=en&text=" + x);
+  }
+  if (/^(definition|définition|sens|que veut dire|c'est quoi)\\b/.test(bas) || mots === 1) {
+    A("📖", "Larousse", "Définition en français",
+      "https://www.larousse.fr/dictionnaires/francais/" + e);
+    A("📚", "Wiktionnaire", "Étymologie et emplois",
+      "https://fr.wiktionary.org/wiki/" + e);
+  }
+  if (/\\b(cours|exercice|revision|révision|bac|brevet|dissertation|theoreme|théorème|formule|demonstration|démonstration)\\b/.test(bas)
+      || /^(explique|comment marche|pourquoi)\\b/.test(bas)) {
+    A("🎓", "NeoSchool", "Tes notes et tes devoirs", NEO);
+    A("📓", "Nexus École", "Tes cours et tes fiches", SITE + "/?app=learn");
+    A("▶️", "YouTube", "Explications en vidéo",
+      "https://www.youtube.com/results?search_query=" + e);
+    A("🧮", "Wikipédia", "L'article de fond", "https://fr.wikipedia.org/w/index.php?search=" + e);
+  }
+  if (/^(comment|tuto|apprendre a|apprendre à)\\b/.test(bas)) {
+    A("▶️", "YouTube", "Le geste en vidéo",
+      "https://www.youtube.com/results?search_query=" + e);
+  }
+  if (/\\b(meteo|météo|temperature|température|pluie|demain)\\b/.test(bas)) {
+    A("🌤", "Météo-France", "Prévisions officielles",
+      "https://meteofrance.com/recherche/resultats?query=" + e);
+  }
+  if (/\\b(acheter|prix|pas cher|promo|avis)\\b/.test(bas)) {
+    A("🛒", "Google Shopping", "Comparer les prix",
+      "https://www.google.com/search?tbm=shop&q=" + e);
+  }
+  if (/\\b(itineraire|itinéraire|adresse|ou est|où est|restaurant|gare|horaires)\\b/.test(bas)) {
+    A("📍", "Google Maps", "Sur la carte", "https://www.google.com/maps/search/" + e);
+  }
+  if (/\\b(article|etude|étude|recherche scientifique|these|thèse|source)\\b/.test(bas)) {
+    A("🔬", "Google Scholar", "Sources universitaires",
+      "https://scholar.google.com/scholar?q=" + e);
+  }
+  // Toujours proposer la sortie large, en dernier.
+  const m = MOTEURS[R.moteur] || MOTEURS.google;
+  A("🔎", m.nom, "Tous les résultats", m.url(e));
+  if (R.moteur !== "google") A("🔎", "Google", "Deuxième avis", "https://www.google.com/search?q=" + e);
+  A("📚", "Wikipédia", "L'encyclopédie", "https://fr.wikipedia.org/w/index.php?search=" + e);
+  A("▶️", "YouTube", "En vidéo", "https://www.youtube.com/results?search_query=" + e);
+  // On enleve les doublons de titre, en gardant le premier (le plus cible).
+  const vus = new Set();
+  return L.filter((x) => (vus.has(x.titre) ? false : (vus.add(x.titre), true))).slice(0, 8);
+}
+
+// -- L'affichage des reponses ------------------------------------------------
+const res = $("res");
+function ouvrirPanneau() { document.body.classList.add("ouvert"); }
+function poserQuestion(t) {
+  const d = document.createElement("div");
+  d.className = "moi"; d.textContent = t;
+  res.appendChild(d); res.scrollTop = res.scrollHeight;
+}
+function poserLiens(liste) {
+  const g = document.createElement("div");
+  g.className = "liens";
+  for (const x of liste) {
+    const b = document.createElement("button");
+    b.className = "lien";
+    b.innerHTML = '<span class="p">' + ech(x.icone) + '</span><span class="t"><b>'
+      + ech(x.titre) + '</b><span>' + ech(x.sous) + '</span></span>';
+    b.addEventListener("click", () => window.open(x.url, "_blank", "noopener"));
+    g.appendChild(b);
+  }
+  res.appendChild(g); res.scrollTop = res.scrollHeight;
+}
+function poserCalcul(c) {
+  const d = document.createElement("div");
+  d.className = "calc";
+  d.innerHTML = ech(c.valeur) + "<small>" + ech(c.calcul) + "</small>";
+  res.appendChild(d);
+}
+function poserReponse() {
+  const d = document.createElement("div");
+  d.className = "rep";
+  d.innerHTML = '<div class="sig">✦ Nexus</div><div class="c">'
+    + '<span class="pense"><i></i><i></i><i></i></span></div>';
+  res.appendChild(d); res.scrollTop = res.scrollHeight;
+  return d.querySelector(".c");
+}
+
+// -- Les fournisseurs d'IA ---------------------------------------------------
+// Meme reconnaissance que l'application macOS : on devine au prefixe.
+function devinerFournisseur(cle) {
+  const c = (cle || "").trim();
+  if (!c) return null;
+  if (/^AIza|^AQ\\./.test(c)) return { nom: "Google Gemini", genre: "google" };
+  if (/^sk-ant-/.test(c)) return { nom: "Anthropic", genre: "anthropic" };
+  if (/^sk-or-/.test(c)) return { nom: "OpenRouter", genre: "openai",
+    base: "https://openrouter.ai/api/v1", modele: "google/gemini-2.0-flash-exp:free" };
+  if (/^gsk_/.test(c)) return { nom: "Groq", genre: "openai",
+    base: "https://api.groq.com/openai/v1", modele: "llama-3.3-70b-versatile" };
+  if (/^sk-/.test(c)) return { nom: "OpenAI", genre: "openai",
+    base: "https://api.openai.com/v1", modele: "gpt-4o-mini" };
+  if (/^[0-9a-f]{32}$/i.test(c)) return { nom: "Mistral", genre: "openai",
+    base: "https://api.mistral.ai/v1", modele: "mistral-small-latest" };
+  return { nom: "fournisseur inconnu", genre: "openai",
+    base: "https://api.openai.com/v1", modele: "gpt-4o-mini" };
+}
+
+const CONSIGNE = "Tu es Nexus, l'assistant d'Aharon Dray, qui t'a conçu. "
+  + "Réponds en français, directement, sans formule de politesse ni introduction. "
+  + "Sois exact ; si tu ignores quelque chose, dis-le en une ligne.";
+
+// Certains fournisseurs (OpenAI, Groq, Mistral, OpenRouter) refusent les appels
+// venus directement d'une page : le navigateur les bloque. Une permission
+// facultative leve le blocage — on ne la demande QUE si la cle en a besoin, et
+// jamais a l'installation.
+async function permissionSiBesoin(f) {
+  if (!f || f.genre !== "openai" || !f.base) return true;
+  const motif = f.base.replace(/^(https:\\/\\/[^/]+).*$/, "$1") + "/*";
+  try {
+    if (!chrome?.permissions) return true;
+    const deja = await new Promise((r) =>
+      chrome.permissions.contains({ origins: [motif] }, r));
+    if (deja) return true;
+    return await new Promise((r) => chrome.permissions.request({ origins: [motif] }, r));
+  } catch (_) { return true; }
+}
+
+async function demanderALIA(question, court) {
+  const f = devinerFournisseur(R.cle);
+  if (!f) throw new Error("aucune clé");
+  if (!(await permissionSiBesoin(f))) {
+    throw new Error("ce fournisseur exige une autorisation que tu viens de refuser");
+  }
+  const limite = court ? 500 : 1600;
+  if (f.genre === "google") {
+    // Les modeles recents reflechissent AVANT d'ecrire, et cette reflexion se
+    // paie sur le meme budget : trop serrer coupe la phrase en deux.
+    const modeles = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-flash-latest"];
+    let derniere = "";
+    for (const m of modeles) {
+      try {
+        const r = await fetch(
+          "https://generativelanguage.googleapis.com/v1beta/models/" + m
+          + ":generateContent?key=" + encodeURIComponent(R.cle),
+          { method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: CONSIGNE }] },
+              contents: [{ role: "user", parts: [{ text: question }] }],
+              generationConfig: { temperature: 0.5, maxOutputTokens: limite + 900 },
+            }) });
+        const d = await r.json();
+        if (d.error) { derniere = d.error.message || "refus"; continue; }
+        const c = (d.candidates || [])[0] || {};
+        if (c.finishReason === "MAX_TOKENS") { derniere = "réponse coupée"; continue; }
+        const t = ((c.content || {}).parts || []).map((p) => p.text || "").join("").trim();
+        if (t) return t;
+        derniere = "réponse vide";
+      } catch (e) { derniere = e.message; }
+    }
+    throw new Error(derniere || "aucun modèle n'a répondu");
+  }
+  if (f.genre === "anthropic") {
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": R.cle,
+                 "anthropic-version": "2023-06-01",
+                 "anthropic-dangerous-direct-browser-access": "true" },
+      body: JSON.stringify({ model: "claude-3-5-haiku-latest", max_tokens: limite,
+                             system: CONSIGNE,
+                             messages: [{ role: "user", content: question }] }) });
+    const d = await r.json();
+    if (d.error) throw new Error(d.error.message || "refus");
+    return (d.content || []).map((x) => x.text || "").join("").trim();
+  }
+  const r = await fetch(f.base + "/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: "Bearer " + R.cle },
+    body: JSON.stringify({ model: f.modele, max_tokens: limite,
+      messages: [{ role: "system", content: CONSIGNE },
+                 { role: "user", content: question }] }) });
+  const d = await r.json();
+  if (d.error) throw new Error(d.error.message || "refus");
+  return ((d.choices || [])[0]?.message?.content || "").trim();
+}
+
+// -- Le bouton Nexus ---------------------------------------------------------
+let enCours = false;
+async function demander() {
+  const t = $("q").value.trim();
+  if (!t || enCours) return;
+  $("q").value = "";
+  ouvrirPanneau();
+  poserQuestion(t);
+
+  const c = calculer(t);
+  if (c) poserCalcul(c);
+
+  if (!R.cle) {
+    // Sans cle : on ne rédige pas, on vise. Et on dit ou trouver mieux.
+    poserLiens(cibler(t));
+    const d = document.createElement("div");
+    d.className = "rep";
+    d.innerHTML = '<div class="sig">✦ Nexus</div>Voilà les sources les plus '
+      + 'directes pour ça. Pour une vraie réponse rédigée, ajoute une clé dans '
+      + 'les réglages (la roue, en bas à droite) — ou ouvre le chat du site.';
+    const b = document.createElement("button");
+    b.className = "opt"; b.textContent = "Ouvrir le chat Nexus";
+    b.style.cssText = "margin-top:11px;display:block";
+    b.addEventListener("click", () =>
+      window.open(SITE + "/?app=nexus-chat", "_blank", "noopener"));
+    d.appendChild(b);
+    res.appendChild(d); res.scrollTop = res.scrollHeight;
+    return;
+  }
+
+  enCours = true;
+  const boite = poserReponse();
+  try {
+    const rep = await demanderALIA(t, R.court);
+    boite.textContent = rep || "Je n'ai rien à ajouter.";
+  } catch (e) {
+    boite.innerHTML = "Je n'ai pas pu répondre : " + ech(e.message)
+      + "<br><span style='opacity:.7;font-size:12.5px'>Vérifie ta clé dans les réglages.</span>";
+  } finally {
+    enCours = false;
+    poserLiens(cibler(t));
+    res.scrollTop = res.scrollHeight;
+  }
+}
+
+$("f").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const t = $("q").value.trim();
+  if (t) chercher(t);
+});
+$("ia").addEventListener("click", demander);
+$("q").addEventListener("keydown", (e) => {
+  // Cmd/Ctrl + Entree : demander a Nexus sans lacher le clavier.
+  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); demander(); }
+  if (e.key === "Escape") {
+    if (document.body.classList.contains("ouvert")) {
+      document.body.classList.remove("ouvert"); res.innerHTML = "";
+    } else { $("q").value = ""; }
   }
 });
+document.addEventListener("keydown", (e) => {
+  if (e.key === "/" && document.activeElement !== $("q")) { e.preventDefault(); $("q").focus(); }
+});
+
+// -- Les coins ---------------------------------------------------------------
+$("mac").addEventListener("click", () =>
+  window.open(SITE + "/Nexus-macOS.zip", "_blank", "noopener"));
+
+// -- Le panneau de reglages --------------------------------------------------
+const ouvrirReglages = () => document.body.classList.add("reglages");
+const fermerReglages = () => document.body.classList.remove("reglages");
+$("roue").addEventListener("click", () =>
+  document.body.classList.contains("reglages") ? fermerReglages() : ouvrirReglages());
+$("fermer").addEventListener("click", fermerReglages);
+$("ombre").addEventListener("click", fermerReglages);
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && document.body.classList.contains("reglages")) fermerReglages();
+});
+
+function garder(champ, valeur) {
+  R[champ] = valeur;
+  Rangement.ecrire({ [champ]: valeur });
+  appliquer();
+}
+
+function construireReglages() {
+  // Les fonds
+  const g = $("fonds"); g.innerHTML = "";
+  for (const nom in FONDS) {
+    const b = document.createElement("button");
+    b.className = "pastille" + (!R.fondImage && R.fond === nom ? " on" : "");
+    b.style.background = FONDS[nom];
+    b.title = nom.charAt(0).toUpperCase() + nom.slice(1);
+    b.addEventListener("click", () => {
+      R.fondImage = ""; Rangement.ecrire({ fondImage: "" });
+      garder("fond", nom); construireReglages();
+    });
+    g.appendChild(b);
+  }
+  // Les ambiances
+  const th = $("themes"); th.innerHTML = "";
+  for (const nom in THEMES) {
+    const b = document.createElement("button");
+    b.className = "opt" + (R.theme === nom ? " on" : "");
+    b.textContent = nom.charAt(0).toUpperCase() + nom.slice(1);
+    b.addEventListener("click", () => { garder("theme", nom); construireReglages(); });
+    th.appendChild(b);
+  }
+  // Le voile
+  const v = $("voiles"); v.innerHTML = "";
+  for (const [nom, val] of [["Aucun",0],["Léger",.22],["Moyen",.42],["Fort",.62]]) {
+    const b = document.createElement("button");
+    b.className = "opt" + (Math.abs(R.voile - val) < .01 ? " on" : "");
+    b.textContent = nom;
+    b.addEventListener("click", () => { garder("voile", val); construireReglages(); });
+    v.appendChild(b);
+  }
+  // L'ecole
+  const ec = $("ecole"); ec.innerHTML = "";
+  for (const [nom, url] of [["Ouvrir NeoSchool", NEO],
+                            ["Son extension", NEO_EXT],
+                            ["École Directe", "https://www.ecoledirecte.com"]]) {
+    const b = document.createElement("button");
+    b.className = "opt"; b.textContent = nom;
+    b.addEventListener("click", () => window.open(url, "_blank", "noopener"));
+    ec.appendChild(b);
+  }
+  // Les moteurs
+  const m = $("moteurs"); m.innerHTML = "";
+  for (const nom in MOTEURS) {
+    const b = document.createElement("button");
+    b.className = "opt" + (R.moteur === nom ? " on" : "");
+    b.textContent = MOTEURS[nom].nom;
+    b.addEventListener("click", () => { garder("moteur", nom); construireReglages(); });
+    m.appendChild(b);
+  }
+  // Les bascules
+  const bascules = [["tHeure","heure"],["tEsp","espaces"],["tHalo","halos"],
+                    ["tMac","boutonMac"],["t24","format24"],["tCourt","court"],
+                    ["tEcole","ecole"]];
+  for (const [id, champ] of bascules) {
+    const b = $(id);
+    b.classList.toggle("on", !!R[champ]);
+    b.onclick = () => { garder(champ, !R[champ]); b.classList.toggle("on", !!R[champ]); };
+  }
+  $("prenom").value = R.prenom || "";
+  $("cle").value = R.cle || "";
+  montrerEtatCle();
+}
+
+$("prenom").addEventListener("input", (e) => garder("prenom", e.target.value.trim().slice(0, 24)));
+
+// Fond personnel : par fichier (garde ici, jamais envoye) ou par adresse.
+$("fondPerso").addEventListener("click", () => {
+  const f = document.createElement("input");
+  f.type = "file"; f.accept = "image/*";
+  f.addEventListener("change", () => {
+    const fichier = f.files && f.files[0];
+    if (!fichier) return;
+    const lect = new FileReader();
+    lect.onload = () => {
+      // On redimensionne : une photo de 8 Mo ne rentre pas dans le rangement
+      // du navigateur, et l'affichage n'y gagnerait rien.
+      const img = new Image();
+      img.onload = () => {
+        const max = 2200;
+        const e = Math.min(1, max / Math.max(img.width, img.height));
+        const c = document.createElement("canvas");
+        c.width = Math.round(img.width * e); c.height = Math.round(img.height * e);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        const url = c.toDataURL("image/jpeg", 0.82);
+        R.fondImage = url;
+        Rangement.ecrire({ fondImage: url });
+        appliquer(); construireReglages();
+      };
+      img.src = lect.result;
+    };
+    lect.readAsDataURL(fichier);
+  });
+  f.click();
+  $("fondURL").style.display = "block";
+});
+$("fondURL").addEventListener("change", (e) => {
+  const u = e.target.value.trim();
+  R.fondImage = u; Rangement.ecrire({ fondImage: u });
+  appliquer(); construireReglages();
+});
+
+// La cle
+function montrerEtatCle() {
+  const e = $("etatCle");
+  if (!R.cle) { e.textContent = "Aucune clé — Nexus répond en résultats ciblés."; e.className = ""; return; }
+  const f = devinerFournisseur(R.cle);
+  e.textContent = "Clé reconnue : " + f.nom + " · enregistrée dans ce navigateur.";
+  e.className = "ok";
+}
+$("cle").addEventListener("change", (e) => {
+  garder("cle", e.target.value.trim());
+  montrerEtatCle();
+});
+$("voirCle").addEventListener("click", () => {
+  const c = $("cle");
+  c.type = c.type === "password" ? "text" : "password";
+});
+$("viderCle").addEventListener("click", () => {
+  garder("cle", ""); $("cle").value = ""; montrerEtatCle();
+});
+$("testerCle").addEventListener("click", async () => {
+  const e = $("etatCle");
+  garder("cle", $("cle").value.trim());
+  if (!R.cle) { montrerEtatCle(); return; }
+  e.textContent = "Essai en cours…"; e.className = "";
+  try {
+    const r = await demanderALIA("Réponds juste : ok", true);
+    e.textContent = r ? "La clé fonctionne ✓" : "Réponse vide.";
+    e.className = r ? "ok" : "ko";
+  } catch (err) {
+    e.textContent = "Refusée : " + err.message; e.className = "ko";
+  }
+});
+
+// -- Demarrage ---------------------------------------------------------------
+(async function () {
+  const v = await Rangement.lire(Object.keys(PAR_DEFAUT));
+  R = { ...PAR_DEFAUT, ...v };
+  appliquer();
+  construireReglages();
+  $("q").focus();
+})();
 `;
 
-      const lisezMoi = `EXTENSION NEXUS 2.1 — installation gratuite, 4 clics
+      const lisezMoi = `EXTENSION NEXUS 2.2 — installation gratuite, 4 clics
 
 SI TU AVAIS DEJA UNE VERSION DE NEXUS : supprime-la d'abord.
 Sur chrome://extensions, sur la carte « Nexus », clique « Supprimer ».
@@ -423,34 +1261,61 @@ Recharger par-dessus ne remplace pas les anciens fichiers.
 3. Active « Mode developpeur » (interrupteur en haut a droite).
 4. Clique « Charger l'extension non empaquetee » et choisis le dossier.
 
-CE QUE TU OBTIENS
+LA PAGE D'ACCUEIL (chaque nouvel onglet)
 
-  · Chaque nouvel onglet devient ta page d'accueil Nexus : l'heure,
-    la date, et une seule barre au centre.
-      - Entree        -> cherche sur le web (ou ouvre l'adresse tapee).
-      - bouton Nexus  -> pose la question a l'IA dans ton espace.
-      - « / »         -> remet le curseur dans la barre.
-    En dessous, un raccourci vers chacun de tes espaces.
+  · L'heure, la date, et une seule barre au centre.
+      - Entree             -> cherche sur le web (ou ouvre l'adresse tapee).
+      - bouton Nexus       -> la barre monte et se deplie en reponses.
+      - Cmd/Ctrl + Entree  -> pareil, sans lacher le clavier.
+      - « / »              -> remet le curseur dans la barre.
+      - Echap              -> referme les reponses.
 
-  · Le bouton Nexus dans la barre d'outils : une note ou une tache en
-    deux secondes. « Cette page » enregistre le titre et l'adresse.
+  · Les raccourcis en dessous ouvrent l'espace demande EN GRAND sur le site,
+    pas seulement la page d'accueil.
 
-  · Clic droit sur du texte selectionne n'importe ou sur le web :
-    « Enregistrer dans Nexus » ou « Ajouter aux taches Nexus ».
+  · La roue en bas a droite ouvre les reglages, en panneau lateral :
+      - 12 fonds d'ecran, ou ta propre image (fichier ou adresse) ;
+      - 7 ambiances de couleur ;
+      - assombrissement du fond ;
+      - ce qu'on affiche : horloge, raccourcis, halos, bouton macOS, 24 h ;
+      - moteur de recherche : Google, DuckDuckGo, Bing, Ecosia, Qwant ;
+      - ton prenom ;
+      - ta cle d'intelligence artificielle ;
+      - « reponses courtes », pour menager ton credit.
 
-Tout ce qu'elle enregistre passe par ton compte Nexus : tu le retrouves
-sur le site, sur ton Mac et sur tes autres appareils.
+  · En bas a gauche, un bouton discret telecharge Nexus pour macOS.
 
-NOUVEAU EN 2.1 — la page d'accueil est desormais construite dans
-l'extension elle-meme. Avant, elle affichait le site a l'interieur d'un
-cadre : tant que le site n'etait pas remis en ligne, tu voyais l'ancienne
-version. Maintenant elle s'affiche instantanement, meme sans connexion.
+AVEC OU SANS CLE
+
+  Sans cle, Nexus ne fait pas semblant de rediger : il vise. Il lit ta
+  question et propose les sources les plus DIRECTES — Larousse pour un mot,
+  DeepL pour une traduction, YouTube et Wikipedia pour une notion de cours,
+  Maps pour une adresse, Scholar pour une source. Il calcule aussi.
+
+  Avec une cle, il rédige la réponse, puis affiche quand meme ces sources.
+  Sont reconnues toutes seules : Google Gemini, OpenAI, Anthropic, Groq,
+  Mistral, OpenRouter. La cle reste dans CE navigateur.
+
+  L'extension ne demande AUCUNE autorisation de site a l'installation.
+  Google Gemini et Anthropic repondent directement au navigateur. Si tu
+  ajoutes une cle OpenAI, Groq, Mistral ou OpenRouter, Chrome te demandera
+  l'autorisation a ce moment-la, et pour ce site-la uniquement.
+
+LE BOUTON DANS LA BARRE D'OUTILS
+
+  Une note ou une tache en deux secondes. « Cette page » enregistre le titre
+  et l'adresse. Clic droit sur du texte selectionne n'importe ou sur le web :
+  « Enregistrer dans Nexus » ou « Ajouter aux taches Nexus ».
+
+  Ce que tu ecris est enregistre dans Nexus sur ce navigateur. Pour le
+  retrouver sur ton Mac et tes autres appareils, connecte-toi au site : le
+  bouton « Compte », en bas de la petite fenetre, y mene directement.
+
+NOUVEAU EN 2.2 — reglages complets en panneau lateral, fonds et ambiances,
+recherche ciblee avec ou sans cle, ouverture des espaces en grand, bouton
+macOS, et un pied de fenetre qui dit la verite sur ton compte.
 
 Marche aussi sur Edge, Brave, Opera et Vivaldi (meme procedure).
-
-A savoir : publier une extension sur le Chrome Web Store demande une
-inscription payante unique de 5 $ chez Google. L'installation ci-dessus
-n'en depend pas et donne exactement la meme extension.
 `;
 
       const [i16, i48, i128] = await Promise.all([

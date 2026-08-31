@@ -78,21 +78,42 @@ export const useWindows = create<WindowsState>((set, get) => ({
       const now = Date.now();
       const existing = state.windows.find((w) => w.appId === appId);
       const z = state.zCounter + 1;
+      const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
+      const vh = typeof window !== "undefined" ? window.innerHeight : 800;
       if (existing) {
+        // Deja ouvert : on le remonte, et s'il nous demande explicitement une
+        // grande taille (arrivee depuis l'extension) on la lui applique aussi,
+        // sinon rouvrir depuis l'extension laissait une fenetre minuscule.
+        const g = size
+          ? { width: Math.min(size.width, vw - 88), height: Math.min(size.height, vh - 96) }
+          : null;
         return {
           zCounter: z,
           windows: state.windows.map((w) =>
-            w.id === existing.id ? { ...w, z, minimized: false, lastActive: now } : w
+            w.id === existing.id
+              ? {
+                  ...w, z, minimized: false, lastActive: now,
+                  ...(g ? { width: g.width, height: g.height,
+                            x: Math.max(8, Math.round((vw - g.width) / 2)),
+                            y: Math.max(8, Math.round((vh - g.height) / 2)) } : {}),
+                }
+              : w
           ),
         };
       }
-      const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
-      const vh = typeof window !== "undefined" ? window.innerHeight : 800;
       const width = Math.min(size?.width ?? 520, vw - 88);
       const height = Math.min(size?.height ?? 460, vh - 96);
+      // Une fenetre presque aussi large que l'ecran est une ouverture « en
+      // grand » : on la centre au lieu de l'empiler en escalier, sinon elle
+      // deborde par le bas. C'est le cas quand l'extension ouvre un espace.
+      const enGrand = width > vw * 0.7 || height > vh * 0.7;
       const offset = nextOffset(state.windows.length);
-      const x = Math.max(8, Math.min(offset + 90, vw - width - 8));
-      const y = Math.max(8, Math.min(offset, vh - height - 8));
+      const x = enGrand
+        ? Math.max(8, Math.round((vw - width) / 2))
+        : Math.max(8, Math.min(offset + 90, vw - width - 8));
+      const y = enGrand
+        ? Math.max(8, Math.round((vh - height) / 2))
+        : Math.max(8, Math.min(offset, vh - height - 8));
       const win: OpenWindow = {
         id: `${appId}-${now}`,
         appId,
