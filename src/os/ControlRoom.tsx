@@ -47,7 +47,7 @@ function Widget({ title, icon, hue, onOpen, span = 1, tall = false, children, fo
     <div className={`nx-widget group ${span === 2 ? "sm:col-span-2" : ""}`}>
       <div className="flex items-center gap-2">
         <span className="nx-widget-icon" style={{ backgroundColor: hue + "26", color: hue }}>{icon}</span>
-        <span className="nx-widget-title min-w-0 flex-1 truncate">{title}</span>
+        <span className="nx-widget-title nx-titre-texte min-w-0 flex-1">{title}</span>
         <button onClick={onOpen} title={`Ouvrir ${title}`}
           className="shrink-0 rounded-lg p-1.5 text-nexus-muted opacity-0 transition-opacity hover:bg-white/10 hover:text-nexus-text group-hover:opacity-100">
           <ArrowUpRight size={15} />
@@ -122,7 +122,7 @@ function TasksWidget({ onOpen }: { onOpen: () => void }) {
         <form onSubmit={(e) => { e.preventDefault(); const t = draft.trim(); if (!t) return;
           write("nexus.tasks", [{ id: `task-${Date.now()}`, text: t, done: false }, ...tasks]); setDraft(""); }}
           className="flex gap-2">
-          <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Nouvelle tâche"
+          <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Une tâche…"
             className="nx-input min-w-0 flex-1" />
           <button type="submit" className="nx-btn nx-btn-primary shrink-0"><Plus size={14} /></button>
         </form>}
@@ -162,7 +162,7 @@ function NotesWidget({ onOpen }: { onOpen: () => void }) {
         <form onSubmit={(e) => { e.preventDefault(); const t = draft.trim(); if (!t) return;
           write("nexus.notes", [{ id: `note-${Date.now()}`, title: t.slice(0, 40), body: t }, ...notes]); setDraft(""); }}
           className="flex gap-2">
-          <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Écrire une idée"
+          <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Une idée…"
             className="nx-input min-w-0 flex-1" />
           <button type="submit" className="nx-btn nx-btn-primary shrink-0"><Plus size={14} /></button>
         </form>}
@@ -397,7 +397,7 @@ function HistoryWidget({ onOpen }: { onOpen: () => void }) {
     return () => { alive = false; };
   }, []);
   return (
-    <Widget title="Ce jour dans l'histoire" icon={<History size={15} />} hue="#fb923c" onOpen={onOpen} span={2}>
+    <Widget title="Ce jour-là" icon={<History size={15} />} hue="#fb923c" onOpen={onOpen} span={2}>
       {item ? (
         <p><span className="text-lg font-semibold" style={{ color: "var(--accent)" }}>{item.year}</span>
           <span className="mx-2 opacity-40">·</span>{item.text}</p>
@@ -409,7 +409,7 @@ function HistoryWidget({ onOpen }: { onOpen: () => void }) {
 // ------------------------------ IA ------------------------------
 function AiWidget({ onOpen }: { onOpen: () => void }) {
   return (
-    <Widget title="Intelligence artificielle" icon={<Sparkles size={15} />} hue="#906cf9" onOpen={onOpen}
+    <Widget title="Intelligence" icon={<Sparkles size={15} />} hue="#906cf9" onOpen={onOpen}
       footer={<button onClick={onOpen} className="nx-btn nx-btn-primary w-full">Poser une question</button>}>
       <p>Rédiger, expliquer, résumer, résoudre un exercice — dans ton espace.</p>
     </Widget>

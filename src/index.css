@@ -550,6 +550,20 @@ html.light-mode .nx-widget {
   display: flex; align-items: center; gap: 8px;
   font-size: 13px; font-weight: 600; letter-spacing: -0.01em;
   color: var(--nexus-text);
+  min-width: 0;
+}
+/* Le titre s'ADAPTE au lieu d'etre tranche. Un titre coupe au milieu d'un mot
+   (« Nexus Clou… », « Tableur (Exc… ») donne l'impression d'un travail
+   bacle — c'est exactement ce qu'Aharon voit. Sur un widget etroit, le texte
+   retrecit un peu plutot que de disparaitre. */
+.nx-widget-title > span:not(.nx-widget-icon),
+.nx-widget-title { overflow: hidden; }
+.nx-widget-title { font-size: clamp(11.5px, 1.05vw, 13px); }
+.nx-widget-title .nx-titre-texte {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .nx-widget-icon {
   display: flex; align-items: center; justify-content: center;
