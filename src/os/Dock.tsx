@@ -55,8 +55,12 @@ export default function Dock({ horizontal = false, pos = "left" }: { horizontal?
             <Logo size={22} />
           </div>
           <div className={`flex-col whitespace-nowrap transition-opacity duration-[320ms] [transition-timing-function:var(--doux)] pointer-events-none ${isHovered ? 'flex opacity-100' : 'hidden'}`}>
-            <span className="text-xs font-bold text-nexus-text tracking-wider">NEXUS PRO OS</span>
-            <span className="text-[10px] text-cyan-400 font-semibold">Workspace Pro</span>
+            {/* « NEXUS PRO OS / Workspace Pro » : du jargon anglais au milieu
+                d'un produit entierement en francais. On dit ce que c'est. */}
+            <span className="text-xs font-bold text-nexus-text tracking-wide">Nexus</span>
+            <span className="text-[10px] font-semibold" style={{ color: "var(--accent)" }}>
+              Tes espaces
+            </span>
           </div>
         </div>
 
