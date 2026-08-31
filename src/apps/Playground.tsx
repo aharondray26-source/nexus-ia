@@ -318,7 +318,7 @@ ${codeToSet}
                 srcDoc={renderedCode}
                 title="Nexus Code Sandbox Preview"
                 sandbox="allow-scripts allow-modals allow-forms allow-popups allow-same-origin"
-                className={`h-full transition-all duration-300 rounded-lg bg-slate-950 ${
+                className={`h-full transition-all duration-[320ms] [transition-timing-function:var(--ressort)] rounded-lg bg-slate-950 ${
                   previewDevice === "mobile" ? "w-[360px] max-w-full border-x border-white/20 shadow-2xl" : "w-full"
                 }`}
               />

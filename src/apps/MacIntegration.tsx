@@ -156,73 +156,152 @@ export default function MacIntegration() {
   .ok{color:#4ade80}`;
 
       const popup = `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">
+<meta name="color-scheme" content="dark light">
 <style>
-  *{box-sizing:border-box;margin:0}
-  body{width:296px;padding:0;background:#0b0b11;color:#f2f2f7;
-    font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
-  .haut{display:flex;align-items:center;gap:9px;padding:14px 15px 11px}
-  .haut img{width:26px;height:26px;border-radius:7px}
-  .haut b{font-size:13.5px;font-weight:600;letter-spacing:-.01em;flex:1}
-  .haut span{font-size:10.5px;color:#8a8a95}
-  .corps{padding:0 15px 14px;display:flex;flex-direction:column;gap:10px}
-  .onglets{display:flex;gap:5px;background:rgba(255,255,255,.05);padding:3px;
-    border-radius:11px}
-  .onglets button{flex:1;border:0;border-radius:8px;padding:6px;font:inherit;
-    font-size:12px;color:#a9a9b4;background:transparent;cursor:pointer}
-  .onglets button.on{background:#6366f1;color:#fff;font-weight:500}
-  textarea{width:100%;height:78px;resize:none;border-radius:12px;padding:10px 12px;
-    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);
-    color:#f2f2f7;font:inherit;outline:none;transition:border-color .15s}
-  textarea:focus{border-color:#6366f1;background:rgba(255,255,255,.09)}
-  textarea::placeholder{color:#6f6f7a}
-  .r{display:flex;gap:7px}
-  .r button{flex:1;border:0;border-radius:10px;padding:9px;font:inherit;
-    font-weight:500;color:#f2f2f7;background:rgba(255,255,255,.08);cursor:pointer;
-    transition:background .15s}
-  .r button:hover{background:rgba(255,255,255,.16)}
-  .r button.p{background:#6366f1;color:#fff}
-  .r button.p:hover{background:#7679f5}
-  .esp{display:flex;flex-wrap:wrap;gap:5px;padding-top:2px}
-  .esp button{border:0;border-radius:20px;padding:5px 11px;font:inherit;font-size:11.5px;
-    color:#c9c9d4;background:rgba(255,255,255,.06);cursor:pointer}
-  .esp button:hover{background:rgba(99,102,241,.35);color:#fff}
-  .pied{border-top:1px solid rgba(255,255,255,.08);padding:9px 15px;
-    font-size:11px;color:#8a8a95;display:flex;align-items:center;gap:6px}
-  .pt{width:6px;height:6px;border-radius:50%;background:#4ade80}
-  .ok{color:#4ade80}
-  .pied{justify-content:space-between}
-  .minus{border:0;background:transparent;color:#7b7b86;font:inherit;font-size:11px;
-    padding:3px 6px;border-radius:7px;cursor:pointer;transition:color .15s,background .15s}
-  .minus:hover{color:#f2f2f7;background:rgba(255,255,255,.09)}</style></head><body>
-  <div class="haut"><img src="icones/48.png" alt="">
-    <b>Nexus</b><span id="etat"></span></div>
-  <div class="corps">
-    <div class="onglets">
-      <button id="tNote" class="on">Note</button>
-      <button id="tTache">Tâche</button>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:312px;background:transparent}
+body{font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  color:#f2f2f7;-webkit-font-smoothing:antialiased;padding:8px}
+
+/* LA CARTE. Elle flotte : une marge tout autour, des coins bien ronds, du
+   verre. Elle ne remplit pas la fenetre du navigateur jusqu'aux bords —
+   c'est ce qui la fait paraitre posee DANS le navigateur plutot que collee
+   dessus. */
+#carte{position:relative;border-radius:20px;overflow:hidden;
+  background:rgba(20,20,26,.72);
+  -webkit-backdrop-filter:blur(34px) saturate(190%);
+  backdrop-filter:blur(34px) saturate(190%);
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 18px 44px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.16);
+  /* Elle NAIT : petite, tres ronde, puis elle se pose. Le geste du panneau
+     des reglages, en plus court. */
+  animation:naitre .46s cubic-bezier(.16,1.02,.24,1) backwards}
+@keyframes naitre{
+  from{opacity:0;transform:scale(.9) translateY(-8px);border-radius:32px}
+  to{opacity:1;transform:none;border-radius:20px}}
+#lueur{position:absolute;inset:-40%;z-index:0;pointer-events:none;filter:blur(46px);opacity:.4}
+#lueur i{position:absolute;border-radius:50%;display:block}
+#lueur i:nth-child(1){width:150px;height:150px;left:-10%;top:-20%;background:#4f46e5}
+#lueur i:nth-child(2){width:130px;height:130px;right:-12%;bottom:-18%;background:#0ea5e9}
+#dedans{position:relative;z-index:1}
+
+/* Tout ce qui est dedans arrive l'un apres l'autre. */
+@keyframes entre{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#dedans > *{animation:entre .42s cubic-bezier(.16,1.02,.24,1) backwards}
+#dedans > *:nth-child(1){animation-delay:.06s}
+#dedans > *:nth-child(2){animation-delay:.11s}
+#dedans > *:nth-child(3){animation-delay:.16s}
+
+.haut{display:flex;align-items:center;gap:9px;padding:14px 15px 11px}
+.haut img{width:26px;height:26px;border-radius:8px}
+.haut b{font-size:13.5px;font-weight:600;letter-spacing:-.01em;flex:1}
+.haut span{font-size:10.5px;color:#8a8a95}
+.corps{padding:0 15px 14px;display:flex;flex-direction:column;gap:10px}
+.onglets{display:flex;gap:4px;background:rgba(255,255,255,.06);padding:3px;border-radius:12px}
+.onglets button{flex:1;border:0;border-radius:9px;padding:6px;font:inherit;font-size:12px;
+  color:#a9a9b4;background:transparent;cursor:pointer;
+  transition:background .2s cubic-bezier(.22,1,.36,1),color .2s,transform .26s cubic-bezier(.2,1.4,.4,1)}
+.onglets button:hover{color:#e6e6ee}
+.onglets button:active{transform:scale(.95)}
+.onglets button.on{background:#6366f1;color:#fff;font-weight:500;
+  box-shadow:0 3px 10px rgba(99,102,241,.4)}
+textarea{width:100%;height:78px;resize:none;border-radius:14px;padding:10px 12px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+  color:#f2f2f7;font:inherit;outline:none;
+  transition:border-color .2s cubic-bezier(.22,1,.36,1),background .2s,box-shadow .2s}
+textarea:focus{border-color:rgba(99,102,241,.75);background:rgba(255,255,255,.1);
+  box-shadow:0 0 0 3.5px rgba(99,102,241,.16)}
+textarea::placeholder{color:#6f6f7a}
+.r{display:flex;gap:7px}
+.r button{flex:1;border:0;border-radius:12px;padding:9px;font:inherit;font-weight:500;
+  color:#f2f2f7;background:rgba(255,255,255,.08);cursor:pointer;
+  transition:background .2s cubic-bezier(.22,1,.36,1),
+             transform .26s cubic-bezier(.2,1.4,.4,1),box-shadow .2s}
+.r button:hover{background:rgba(255,255,255,.16);transform:translateY(-2px);
+  box-shadow:0 6px 14px rgba(0,0,0,.25)}
+.r button:active{transform:translateY(0) scale(.96);box-shadow:none}
+.r button.p{background:#6366f1;color:#fff;box-shadow:0 4px 12px rgba(99,102,241,.34)}
+.r button.p:hover{background:#7679f5;box-shadow:0 8px 20px rgba(99,102,241,.44)}
+.esp{display:flex;flex-wrap:wrap;gap:5px;padding-top:2px}
+.esp button{border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:5px 11px;
+  font:inherit;font-size:11.5px;color:#c9c9d4;background:rgba(255,255,255,.06);cursor:pointer;
+  transition:background .18s cubic-bezier(.22,1,.36,1),color .18s,border-color .18s,
+             transform .26s cubic-bezier(.2,1.4,.4,1)}
+.esp button:hover{background:rgba(99,102,241,.32);color:#fff;
+  border-color:rgba(99,102,241,.5);transform:translateY(-2px)}
+.esp button:active{transform:translateY(0) scale(.95)}
+.pied{border-top:1px solid rgba(255,255,255,.09);padding:9px 12px 9px 15px;
+  font-size:11px;color:#8a8a95;display:flex;align-items:center;gap:6px;
+  justify-content:space-between}
+.pt{width:6px;height:6px;border-radius:50%;background:#4ade80;flex:0 0 auto;
+  box-shadow:0 0 8px rgba(74,222,128,.6)}
+#info{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.minus{border:0;background:transparent;color:#7b7b86;font:inherit;font-size:11px;
+  padding:4px 7px;border-radius:8px;cursor:pointer;flex:0 0 auto;
+  transition:color .18s,background .18s,transform .26s cubic-bezier(.2,1.4,.4,1)}
+.minus:hover{color:#f2f2f7;background:rgba(255,255,255,.1)}
+.minus:active{transform:scale(.93)}
+.ok{color:#4ade80}
+
+/* Si le navigateur est en clair, la carte s'eclaircit avec lui : elle doit
+   s'integrer, pas trancher. */
+@media (prefers-color-scheme: light){
+  body{color:#15151b}
+  #carte{background:rgba(255,255,255,.74);border-color:rgba(0,0,0,.1);
+    box-shadow:0 18px 44px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.9)}
+  #lueur{opacity:.22}
+  .haut span,.pied,#info{color:#6c6c78}
+  .onglets{background:rgba(0,0,0,.05)}
+  .onglets button{color:#5a5a66}
+  .onglets button:hover{color:#15151b}
+  textarea{background:rgba(255,255,255,.7);border-color:rgba(0,0,0,.12);color:#15151b}
+  textarea::placeholder{color:#8b8b96}
+  .r button{background:rgba(0,0,0,.06);color:#15151b}
+  .r button:hover{background:rgba(0,0,0,.1)}
+  .esp button{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.08);color:#4a4a56}
+  .pied{border-top-color:rgba(0,0,0,.08)}
+  .minus{color:#7b7b86}
+  .minus:hover{color:#15151b;background:rgba(0,0,0,.07)}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+</style></head><body>
+<div id="carte">
+  <div id="lueur"><i></i><i></i></div>
+  <div id="dedans">
+    <div class="haut"><img src="icones/48.png" alt="">
+      <b>Nexus</b><span id="etat"></span></div>
+    <div class="corps">
+      <div class="onglets">
+        <button id="tNote" class="on">Note</button>
+        <button id="tTache">Tâche</button>
+      </div>
+      <textarea id="texte" placeholder="Une idée, un rappel…" autofocus></textarea>
+      <div class="r">
+        <button class="p" id="ok">Enregistrer</button>
+        <button id="page">Cette page</button>
+      </div>
+      <div class="esp">
+        <button data-app="notes">Notes</button>
+        <button data-app="tasks">Tâches</button>
+        <button data-app="nexus-chat">Nexus IA</button>
+        <button data-app="files">Fichiers</button>
+        <button data-app="calendar">Agenda</button>
+        <button data-neo="1">🎓 NeoSchool</button>
+      </div>
     </div>
-    <textarea id="texte" placeholder="Une idée, un rappel…" autofocus></textarea>
-    <div class="r">
-      <button class="p" id="ok">Enregistrer</button>
-      <button id="page">Cette page</button>
-    </div>
-    <div class="esp">
-      <button data-app="notes">Notes</button>
-      <button data-app="tasks">Tâches</button>
-      <button data-app="nexus-chat">Nexus IA</button>
-      <button data-app="files">Fichiers</button>
-      <button data-app="calendar">Agenda</button>
-      <button data-neo="1">🎓 NeoSchool</button>
+    <div class="pied">
+      <span class="pt"></span>
+      <span id="info" title="Enregistré dans Nexus sur ce navigateur. Connecte-toi pour retrouver tout partout.">Enregistré dans Nexus</span>
+      <button id="compte" class="minus">Compte</button>
+      <button id="mac" class="minus" title="Télécharger Nexus pour macOS">macOS</button>
     </div>
   </div>
-  <div class="pied">
-    <span class="pt"></span>
-    <span id="info">Enregistré dans Nexus sur ce navigateur</span>
-    <button id="compte" class="minus">Compte</button>
-    <button id="mac" class="minus" title="Télécharger Nexus pour macOS">macOS</button>
-  </div>
-  <script src="popup.js"></script>
-</body></html>`;
+</div>
+<script src="popup.js"></script>
+</body></html>
+`;
 
       // Pas de code en ligne : les extensions modernes l'interdisent.
       const popupJs = `const SITE = "https://nexus-espace.netlify.app/";
@@ -430,7 +509,9 @@ body.ouvert #res{max-height:min(58vh,520px);opacity:1;overflow-y:auto;
   from{opacity:0;transform:translateY(14px) scale(.965)}
   to{opacity:1;transform:none}
 }
-#res > *{animation:entre .52s cubic-bezier(.16,1.02,.24,1) both}
+/* « backwards », pas « both » : « both » figerait l'etat final et empecherait
+   ensuite tout survol ou toute transition sur ces elements. */
+#res > *{animation:entre .52s cubic-bezier(.16,1.02,.24,1) backwards}
 .moi{align-self:flex-end;max-width:82%;margin:2px 0 12px auto;padding:9px 14px;
   border-radius:15px 15px 5px 15px;background:var(--acc,#6366f1);color:#fff;font-size:14px;
   box-shadow:0 4px 14px rgba(0,0,0,.2)}
@@ -448,7 +529,7 @@ body.ouvert #res{max-height:min(58vh,520px);opacity:1;overflow-y:auto;
 .liens{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;
   margin-bottom:14px;animation-delay:.1s}
 /* Les cartes tombent l'une apres l'autre, pas toutes d'un bloc : l'oeil suit. */
-.liens .lien{animation:entre .5s cubic-bezier(.16,1.02,.24,1) both}
+.liens .lien{animation:entre .5s cubic-bezier(.16,1.02,.24,1) backwards}
 .liens .lien:nth-child(1){animation-delay:.10s}
 .liens .lien:nth-child(2){animation-delay:.16s}
 .liens .lien:nth-child(3){animation-delay:.22s}
@@ -1421,7 +1502,7 @@ Marche aussi sur Edge, Brave, Opera et Vivaldi (meme procedure).
       </div>
 
       {/* ---------- L'APPLICATION NATIVE ---------- */}
-      <div className="nx-widget !gap-3 !p-4">
+      <div className="nx-widget !gap-3 !p-4 shrink-0">
         <div className="nx-widget-title">
           <span className="nx-widget-icon" style={{ backgroundColor: accent + "26", color: accent }}>
             <Monitor size={15} />
@@ -1462,7 +1543,7 @@ Marche aussi sur Edge, Brave, Opera et Vivaldi (meme procedure).
       </div>
 
       {/* ---------- FOND D'ECRAN EN IMAGE ---------- */}
-      <div className="nx-widget !gap-3 !p-4">
+      <div className="nx-widget !gap-3 !p-4 shrink-0">
         <div className="nx-widget-title">
           <span className="nx-widget-icon" style={{ backgroundColor: accent + "26", color: accent }}>
             <ImageIcon size={15} />
@@ -1495,7 +1576,7 @@ Marche aussi sur Edge, Brave, Opera et Vivaldi (meme procedure).
       </div>
 
       {/* ---------- EXTENSION ---------- */}
-      <div className="nx-widget !gap-3 !p-4">
+      <div className="nx-widget !gap-3 !p-4 shrink-0">
         <div className="nx-widget-title">
           <span className="nx-widget-icon" style={{ backgroundColor: accent + "26", color: accent }}>
             <Puzzle size={15} />

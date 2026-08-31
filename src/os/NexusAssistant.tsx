@@ -466,7 +466,7 @@ export default function NexusAssistant() {
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
-              className={`bg-nexus-panel text-nexus-text backdrop-blur-3xl border border-nexus-border p-3 sm:p-4 shadow-[0_0_60px_rgba(56,189,248,0.25)] flex flex-col justify-between relative overflow-hidden transition-all duration-300 ${
+              className={`bg-nexus-panel text-nexus-text backdrop-blur-3xl border border-nexus-border p-3 sm:p-4 shadow-[0_0_60px_rgba(56,189,248,0.25)] flex flex-col justify-between relative overflow-hidden transition-all duration-[320ms] [transition-timing-function:var(--ressort)] ${
                 isDocked
                   ? "h-full w-full rounded-none sm:rounded-l-3xl border-y-0 border-r-0 sm:border-l"
                   : "mb-2 sm:mb-3 w-full sm:w-[420px] h-[calc(100vh-80px)] sm:h-[520px] rounded-2xl sm:rounded-3xl"

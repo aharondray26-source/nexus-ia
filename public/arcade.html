@@ -53,7 +53,7 @@ kbd{border:1px solid #27272a;border-radius:4px;padding:1px 6px;font-size:10px;co
 
 <div id="menu" class="screen">
   <h1>NEXUS <b>ARCADE</b></h1>
-  <div class="sub">Trois jeux, zero prise de tete</div>
+  <div class="sub">Quatre jeux, zero prise de tete</div>
   <div class="cards">
     <div class="card" id="playArena">
       <div class="ico">◉</div>
@@ -72,6 +72,13 @@ kbd{border:1px solid #27272a;border-radius:4px;padding:1px 6px;font-size:10px;co
       <div class="name">2048</div>
       <div class="desc">Fusionne les tuiles pour atteindre 2048. Simple, hypnotique.</div>
       <div class="best" id="best2048"></div>
+    </div>
+    <div class="card" id="playUltra">
+      <div class="ico">⚔</div>
+      <div class="name">Neon Arena Ultra</div>
+      <div class="desc">3 contre 3, brawl ball, survivant, combat de geant. Brawlers,
+        boutique, coffres et pass de combat.</div>
+      <div class="best">Le grand jeu — s'ouvre a part</div>
     </div>
   </div>
   <div class="hint">Deplacement : <kbd>fleches</kbd> ou <kbd>ZQSD</kbd> &nbsp;·&nbsp; Dash : <kbd>espace</kbd> &nbsp;·&nbsp; Pause : <kbd>P</kbd> &nbsp;·&nbsp; Menu : <kbd>Echap</kbd><br>A la souris : glisse dans une direction pour jouer (2048 et Serpent) · clique pour le dash<br>Sur mobile : glisse pour bouger · double-tape pour le dash · balaye pour tourner</div>
@@ -143,6 +150,16 @@ $("btnRetry").onclick = () => { show($("over"), false); (mode === "arena" ? star
 $("playArena").onclick = () => startArena();
 $("playSnake").onclick = () => startSnake();
 $("play2048").onclick = () => start2048();
+// Neon Arena Ultra vit dans sa propre fenetre : c'est un jeu complet, avec ses
+// menus, sa boutique et ses coffres. Il serait a l'etroit dans celle-ci.
+$("playUltra").onclick = () => {
+  // Dans l'application Mac, Nexus lui ouvre sa propre fenetre. Sur le site, il
+  // n'y a pas de pont : on ouvre simplement la page du jeu. Avant, la carte ne
+  // faisait RIEN sur le site — un bouton mort.
+  const pont = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.nx;
+  if (pont) { try { pont.postMessage({ k: "ultra" }); return; } catch (e) {} }
+  window.location.href = "neon-arena.html";
+};
 
 function onKey(k){
   if(k === "escape"){ if(mode !== "menu") toMenu(); return; }

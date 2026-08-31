@@ -188,7 +188,7 @@ export default function Window({ win, title, hue, children }: WindowProps) {
             type="button"
             onClick={handleOrganizeClick}
             title={isAutoOrganized ? "Mode organisation intelligente actif (cliquer pour désactiver)" : "Activer l'organisation intelligente automatique des fenêtres"}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all duration-300 text-[10px] font-bold ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all duration-[320ms] [transition-timing-function:var(--ressort)] text-[10px] font-bold ${
               isAutoOrganized
                 ? "bg-cyan-500/25 border-cyan-400 text-cyan-300 shadow-[0_0_14px_rgba(56,189,248,0.45)] ring-1 ring-cyan-400/30"
                 : "bg-nexus-card border-nexus-border text-nexus-muted hover:border-cyan-500/50 hover:text-nexus-text"
@@ -197,12 +197,12 @@ export default function Window({ win, title, hue, children }: WindowProps) {
             <span className={`text-[11px] transition-transform ${isAutoOrganized ? "text-cyan-300 animate-spin" : "text-cyan-400"}`}>✦</span>
             <span className="hidden sm:inline">Organisé</span>
             <div
-              className={`w-5 h-3 rounded-full p-0.5 transition-colors duration-200 ${
+              className={`w-5 h-3 rounded-full p-0.5 transition-colors duration-[200ms] [transition-timing-function:var(--doux)] ${
                 isAutoOrganized ? "bg-cyan-400 shadow-inner" : "bg-slate-700/80"
               }`}
             >
               <div
-                className={`w-2 h-2 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                className={`w-2 h-2 rounded-full bg-white shadow-sm transition-transform duration-[260ms] [transition-timing-function:var(--appui)] ${
                   isAutoOrganized ? "translate-x-2 bg-slate-950" : "translate-x-0"
                 }`}
               />

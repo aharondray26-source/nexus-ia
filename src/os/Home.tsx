@@ -10,6 +10,7 @@ import { estModeOnglet, chercherSurLeWeb } from "../lib/ongletMode";
 import HomeWidgets from "./HomeWidgets";
 import Icon from "./Icons";
 import Logo from "./Logo";
+import { vientDUnLien } from "../lib/arrivee";
 
 const QUOTES = [
   "La constance vaut mieux que l'intensité.",
@@ -40,6 +41,12 @@ export default function Home() {
   const [welcomed, setWelcomed] = useState<boolean>(() => {
     // Un nouvel onglet ne fait pas la lecon : pas de carte de bienvenue.
     if (estModeOnglet()) return true;
+    try {
+      // Ni quand on arrive depuis l'extension pour ouvrir un espace precis :
+      // la carte se posait devant et donnait l'impression que le bouton
+      // n'avait rien fait.
+      if (vientDUnLien()) return true;
+    } catch { /* rien a lire */ }
     try {
       return localStorage.getItem("nexus.welcomed") === "1";
     } catch {
@@ -179,7 +186,7 @@ export default function Home() {
             ) : (
               <button
                 onClick={() => setPaletteOpen(true)}
-                className="relative flex w-full items-center justify-between gap-3 rounded-2xl border border-nexus-border bg-nexus-panel px-5 py-3.5 text-sm text-nexus-text backdrop-blur-2xl transition-all duration-300 hover:bg-nexus-card shadow-2xl"
+                className="relative flex w-full items-center justify-between gap-3 rounded-2xl border border-nexus-border bg-nexus-panel px-5 py-3.5 text-sm text-nexus-text backdrop-blur-2xl transition-all duration-[320ms] [transition-timing-function:var(--ressort)] hover:bg-nexus-card shadow-2xl"
               >
                 <span className="flex items-center gap-3">
                   <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse" />
@@ -291,18 +298,18 @@ export default function Home() {
           </div>
 
           {/* Apps Cards Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 pt-2">
+          <div className="nx-entre-liste grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 pt-2">
             {currentApps.map((app) => (
               <motion.button
                 key={app.id}
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.96 }}
                 onClick={() => openApp(app.id, { width: app.width, height: app.height })}
-                className="group flex flex-col items-center gap-2 rounded-2xl border border-nexus-border bg-nexus-card p-3.5 backdrop-blur-xl transition-all duration-300 hover:border-cyan-400/50 hover:bg-nexus-card-hover shadow-lg relative overflow-hidden text-center"
+                className="group flex flex-col items-center gap-2 rounded-2xl border border-nexus-border bg-nexus-card p-3.5 backdrop-blur-xl transition-all duration-[320ms] [transition-timing-function:var(--ressort)] hover:border-cyan-400/50 hover:bg-nexus-card-hover shadow-lg relative overflow-hidden text-center"
               >
                 {/* Subtle Glow on Hover */}
                 <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-15 transition-opacity duration-300 pointer-events-none"
+                  className="absolute inset-0 opacity-0 group-hover:opacity-15 transition-opacity duration-[320ms] [transition-timing-function:var(--doux)] pointer-events-none"
                   style={{ backgroundColor: app.hue }}
                 />
 

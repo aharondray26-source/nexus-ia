@@ -143,6 +143,50 @@ html.light-mode [class*="backdrop-blur"] {
   animation: nexus-fade-in 420ms var(--doux);
 }
 
+/* L'ENTREE. Tout ce qui apparait dans Nexus arrive de la meme facon : un peu
+   plus bas, un peu plus petit, et ca se pose. C'est le geste de l'extension,
+   celui qu'Aharon a aime — on le rend disponible partout. */
+@keyframes nexus-entre {
+  from { opacity: 0; transform: translateY(14px) scale(.965); }
+  to   { opacity: 1; transform: none; }
+}
+.nx-entre { animation: nexus-entre var(--t-moyen) var(--ressort) backwards; }
+
+/* Une liste qui arrive : les elements tombent l'un APRES l'autre, jamais d'un
+   bloc. L'oeil suit, et l'ecran ne saute pas. */
+.nx-entre-liste > * { animation: nexus-entre .5s var(--ressort) backwards; }
+.nx-entre-liste > *:nth-child(1)  { animation-delay: .02s }
+.nx-entre-liste > *:nth-child(2)  { animation-delay: .05s }
+.nx-entre-liste > *:nth-child(3)  { animation-delay: .08s }
+.nx-entre-liste > *:nth-child(4)  { animation-delay: .11s }
+.nx-entre-liste > *:nth-child(5)  { animation-delay: .14s }
+.nx-entre-liste > *:nth-child(6)  { animation-delay: .17s }
+.nx-entre-liste > *:nth-child(7)  { animation-delay: .19s }
+.nx-entre-liste > *:nth-child(8)  { animation-delay: .21s }
+.nx-entre-liste > *:nth-child(9)  { animation-delay: .23s }
+.nx-entre-liste > *:nth-child(10) { animation-delay: .25s }
+.nx-entre-liste > *:nth-child(n+11) { animation-delay: .27s }
+
+/* UNE BULLE QUI DEVIENT UN CARRE : le geste exact du panneau des reglages de
+   l'extension. A poser sur tout panneau qui s'ouvre depuis un bouton. */
+.nx-bulle {
+  transform: scale(.055);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform .62s var(--ressort),
+              border-radius .58s var(--doux) .06s,
+              opacity .3s ease;
+}
+.nx-bulle.nx-ouvert {
+  transform: scale(1);
+  border-radius: 26px;
+  opacity: 1;
+  pointer-events: auto;
+}
+.nx-bulle > * { opacity: 0; transition: opacity .28s ease .3s; }
+.nx-bulle.nx-ouvert > * { opacity: 1; }
+
 /* UNE FENETRE NAIT. Elle part petite et un peu ronde, puis grandit et ses
    coins se carrent — exactement le geste du panneau des reglages de
    l'extension, celui qu'Aharon a aime. */
@@ -152,7 +196,13 @@ html.light-mode [class*="backdrop-blur"] {
   to   { opacity: 1; transform: none; }
 }
 .nexus-naissance {
-  animation: nexus-naissance var(--t-grand) var(--ressort) both;
+  /* « backwards » et surtout PAS « both ». Avec « both », l'etat final de
+     l'animation (opacity:1 ; transform:none) reste applique POUR TOUJOURS et
+     ecrase les styles en ligne — la fenetre refusait alors de se reduire ou
+     de se fermer : on la voyait encore, mais elle etait morte. « backwards »
+     ne remplit qu'AVANT le depart, ce qui evite le clignotement sans figer
+     quoi que ce soit. */
+  animation: nexus-naissance var(--t-grand) var(--ressort) backwards;
   transform-origin: center center;
 }
 
@@ -545,8 +595,16 @@ html.light-mode .nx-widget {
 }
 /* Le changement de taille se fait en douceur */
 [class*="nx-w-"] { transition: grid-column .01s; }
-/* Les widgets remplissent toute la hauteur de leur ligne : plus de decalage. */
-.nx-widget { height: 100%; min-width: 0; max-width: 100%; }
+/* Les widgets DE LA SALLE DE CONTROLE remplissent toute la hauteur de leur
+   ligne : plus de decalage dans la grille.
+   ATTENTION — cette regle ne doit PAS toucher les cartes ordinaires. Elle
+   s'appliquait a tout « .nx-widget », donc aussi aux cartes de la page
+   « Nexus sur ton Mac » : combinees a « overflow:hidden », elles etaient
+   forcees a la hauteur du conteneur et leur contenu se retrouvait COUPE —
+   des listes tronquees en plein milieu et des boutons illisibles. */
+[class*="nx-w-"] > .nx-widget,
+[class*="nx-w-"] .nx-widget { height: 100%; }
+.nx-widget { min-width: 0; max-width: 100%; }
 
 /* Widget en cours de deplacement */
 .nx-dragging { opacity: .35; transform: scale(.97); }

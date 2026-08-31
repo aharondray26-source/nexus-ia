@@ -6,6 +6,7 @@ import { initSliderFill } from "./lib/sliderFill";
 import { runMigrations } from "./lib/migrations";
 import { initNexusSync } from "./lib/nexusAccount";
 import { useWindows } from "./os/useWindows";
+import { arrivee, vientDUnLien } from "./lib/arrivee";
 
 // Ce que l'extension du navigateur peut demander au site, par l'adresse :
 //   ?note=…   ajoute une note        ?tache=…  ajoute une tache
@@ -14,11 +15,10 @@ import { useWindows } from "./os/useWindows";
 // partout : sur le site, sur le Mac, sur tes autres appareils.
 function demandesDeLExtension() {
   try {
-    const p = new URLSearchParams(window.location.search);
-    const note = (p.get("note") || "").trim();
-    const tache = (p.get("tache") || "").trim();
-    const app = (p.get("app") || "").trim();
-    if (!note && !tache && !app) return;
+    // On lit la capture faite au chargement, pas l'adresse : elle a peut-etre
+    // deja ete nettoyee.
+    const { note, tache, app } = arrivee;
+    if (!vientDUnLien()) return;
 
     const prevenir = (cle: string) =>
       window.dispatchEvent(new CustomEvent("nexus:persist-update", { detail: { key: cle } }));
@@ -45,7 +45,13 @@ function demandesDeLExtension() {
       const vw = window.innerWidth, vh = window.innerHeight;
       const taille = { width: Math.min(1320, Math.round(vw * 0.88)),
                        height: Math.min(900, Math.round(vh * 0.86)) };
-      try { useWindows.getState().openApp(quoi, taille); }
+      try {
+        // On ecarte ce qui trainait de la session precedente : arriver par
+        // « ouvre-moi les Notes » et tomber sur une pile de quatre fenetres
+        // d'hier, ce n'est pas ce qu'on a demande.
+        useWindows.getState().minimizeAll();
+        useWindows.getState().openApp(quoi, taille);
+      }
       catch { /* espace inconnu : on reste sur l'accueil */ }
     }, 700);
   } catch {

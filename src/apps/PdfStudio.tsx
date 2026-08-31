@@ -672,7 +672,7 @@ export default function PdfStudio() {
             {/* Dropzone & Upload Action */}
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-nexus-border hover:border-red-500/50 rounded-3xl p-8 bg-nexus-card hover:bg-nexus-card-hover transition-all duration-300 cursor-pointer flex flex-col items-center justify-center text-center space-y-3 group shadow-xl"
+              className="border-2 border-dashed border-nexus-border hover:border-red-500/50 rounded-3xl p-8 bg-nexus-card hover:bg-nexus-card-hover transition-all duration-[320ms] [transition-timing-function:var(--ressort)] cursor-pointer flex flex-col items-center justify-center text-center space-y-3 group shadow-xl"
             >
               <div className="p-4 rounded-full bg-red-500/15 text-red-400 border border-red-500/30 group-hover:scale-110 transition-transform">
                 <Upload className="w-8 h-8" />

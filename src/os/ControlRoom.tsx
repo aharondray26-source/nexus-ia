@@ -1,15 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Check, Plus, Play, Music, CloudSun, MessageSquare, StickyNote, Mail,
-  Gamepad2, History, ArrowUpRight, Sparkles, CalendarDays, BookOpen,
-  Eye, EyeOff, RotateCcw, LayoutGrid, Maximize2, Minimize2, GripVertical,
-  Palette, Image as ImageIcon, Settings2, Search, Moon, Sun, Waves, ChevronDown, Download,
-} from "lucide-react";
+import { ArrowUpRight, BookOpen, CalendarDays, Check, ChevronDown, Chrome, CloudSun, Download, Eye, EyeOff, Gamepad2, GraduationCap, GripVertical, History, Image as ImageIcon, LayoutGrid, Mail, Maximize2, MessageSquare, Minimize2, Monitor, Moon, Music, Palette, Play, Plus, RotateCcw, Search, Settings2, Sparkles, StickyNote, Sun, Waves } from "lucide-react";
 import { useWindows } from "./useWindows";
 import { useSettings } from "./useSettings";
 import { searchShortcutLabel } from "../lib/platform";
 import Icon from "./Icons";
 import { APPS } from "./appsRegistry";
+import { vientDUnLien } from "../lib/arrivee";
 import {
   MiniCalc, MiniConvert, MiniTranslate, MiniQr, MiniSearch,
   MiniChess, MiniSpectre, MiniTimer, MiniLinks, MiniTerminal,
@@ -659,6 +655,12 @@ export default function ControlRoom() {
   }
 
   const [welcome, setWelcome] = useState<boolean>(() => {
+    try {
+      // Quand on arrive DEPUIS l'extension (« ouvre-moi les Notes »), la carte
+      // de bienvenue se posait devant et cachait l'espace demande : Aharon
+      // cliquait sur Notes et croyait que le bouton ne servait a rien.
+      if (vientDUnLien()) return false;
+    } catch { /* rien a lire */ }
     try { return localStorage.getItem("nexus.welcomed") !== "1"; } catch { return false; }
   });
   function dismissWelcome() {
@@ -774,21 +776,39 @@ export default function ControlRoom() {
             </span>
             <kbd className="nx-chip text-[10px] font-mono">{searchShortcutLabel()}</kbd>
           </button>
-          {/* Telechargement de l'application macOS : visible par tous, des l'accueil */}
-          <a
-            href="/Nexus-macOS.zip" download
-            className="mt-4 flex items-center gap-2.5 rounded-2xl border border-nexus-border bg-nexus-panel/70 px-4 py-2.5 text-left backdrop-blur-[var(--glass-blur)] transition-colors hover:bg-nexus-panel"
-          >
-            <Download size={16} style={{ color: "var(--accent)" }} />
-            <span>
-              <span className="block text-xs font-semibold text-nexus-text">
-                Installer Nexus sur ton Mac
-              </span>
-              <span className="block text-[10px] text-nexus-muted">
-                Fond d'écran vivant · widgets · dock · compagnon
-              </span>
-            </span>
-          </a>
+          {/* NEXUS PARTOUT — les trois portes d'entree, des l'accueil.
+              Epurees pour ne pas encombrer, assez presentes pour donner envie.
+              Elles arrivent l'une apres l'autre, comme tout le reste. */}
+          <div className="nx-entre-liste mt-5 grid w-full max-w-md grid-cols-1 gap-2 sm:grid-cols-3">
+            {([
+              { href: "/Nexus-macOS.zip", telecharger: true, icone: <Monitor size={15} />,
+                titre: "Sur ton Mac", detail: "Barre des menus, widgets, dock" },
+              { href: "?app=mac", telecharger: false, icone: <Chrome size={15} />,
+                titre: "Dans ton navigateur", detail: "Chaque onglet devient Nexus" },
+              { href: "https://neo-school-nine.vercel.app/", telecharger: false, externe: true,
+                icone: <GraduationCap size={15} />,
+                titre: "NeoSchool", detail: "Notes, devoirs, emploi du temps" },
+            ] as const).map((x) => (
+              <a
+                key={x.titre}
+                href={x.href}
+                {...(x.telecharger ? { download: true } : {})}
+                {...("externe" in x && x.externe
+                  ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                className="group flex flex-col gap-1 rounded-2xl border border-nexus-border bg-nexus-panel/60 px-3.5 py-3 text-left backdrop-blur-[var(--glass-blur)] transition-all duration-[260ms] [transition-timing-function:var(--appui)] hover:-translate-y-1 hover:border-[color:var(--accent)] hover:bg-nexus-panel"
+              >
+                <span
+                  className="flex h-7 w-7 items-center justify-center rounded-xl transition-transform duration-[260ms] [transition-timing-function:var(--appui)] group-hover:scale-110"
+                  style={{ backgroundColor: "color-mix(in srgb, var(--accent) 18%, transparent)",
+                           color: "var(--accent)" }}
+                >
+                  {x.icone}
+                </span>
+                <span className="text-xs font-semibold text-nexus-text">{x.titre}</span>
+                <span className="text-[10px] leading-snug text-nexus-muted">{x.detail}</span>
+              </a>
+            ))}
+          </div>
 
           <button onClick={() => setRevealed(true)}
             className="nx-hint mt-4 flex flex-col items-center gap-1 text-[11px] text-nexus-muted">

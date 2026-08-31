@@ -151,7 +151,7 @@ export default function CommandPalette() {
       onClick={() => setOpen(false)}
     >
       <div
-        className="nexus-fade-in w-full max-w-xl overflow-hidden rounded-2xl border border-nexus-border bg-nexus-panel shadow-2xl backdrop-blur-xl"
+        className="nexus-naissance w-full max-w-xl overflow-hidden rounded-[26px] border border-nexus-border bg-nexus-panel/85 shadow-2xl backdrop-blur-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="relative flex items-center border-b border-nexus-border px-4 py-3">
@@ -174,7 +174,7 @@ export default function CommandPalette() {
           )}
         </div>
 
-        <ul className="max-h-80 overflow-y-auto p-2 space-y-1 [scrollbar-width:thin]">
+        <ul className="nx-entre-liste max-h-80 overflow-y-auto p-2 space-y-1 [scrollbar-width:thin]">
           {items.map((item, i) => {
             const isSelected = i === selectedIndex;
             return (
@@ -182,7 +182,7 @@ export default function CommandPalette() {
                 <button
                   onClick={() => executeItem(item)}
                   onMouseEnter={() => setSelectedIndex(i)}
-                  className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left transition-all ${
+                  className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-[220ms] [transition-timing-function:var(--appui)] ${
                     isSelected
                       ? "bg-cyan-500/15 border border-cyan-500/40 text-nexus-text"
                       : "text-nexus-muted hover:bg-nexus-card hover:text-nexus-text"
