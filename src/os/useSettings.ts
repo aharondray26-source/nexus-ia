@@ -22,6 +22,34 @@ export const BACKGROUNDS = [
 // Ce sont des degrades vectoriels : nets a toutes les tailles, jamais pixelises.
 // Ils s'adaptent a la couleur d'accent choisie.
 export const WALLPAPERS: { key: string; label: string; css: string }[] = [
+  // ---- LES DOUZE FONDS DE L'EXTENSION ----
+  // Ce sont ceux qu'Aharon prefere. Ils sont dessines en CSS : instantanes,
+  // sans reseau, sans pistage, et ils ne pesent rien. Ils viennent en tete
+  // parce que ce sont les plus beaux.
+  { key: "nuit", label: "Nuit",
+    css: "linear-gradient(160deg,#07070b 0%,#0d0d16 55%,#111122 100%)" },
+  { key: "aurore", label: "Aurore",
+    css: "linear-gradient(150deg,#0b1026 0%,#16264d 40%,#2b6f6f 75%,#0e2a2a 100%)" },
+  { key: "crepuscule", label: "Crépuscule",
+    css: "linear-gradient(155deg,#1a0b2e 0%,#3b1053 45%,#7b2d5e 80%,#c05e4a 100%)" },
+  { key: "ocean", label: "Océan",
+    css: "linear-gradient(160deg,#02111f 0%,#063456 45%,#0a5f83 78%,#0d8a9c 100%)" },
+  { key: "foret", label: "Forêt",
+    css: "linear-gradient(155deg,#04140d 0%,#0b2f1e 45%,#155e3a 80%,#2c8a55 100%)" },
+  { key: "braise", label: "Braise",
+    css: "linear-gradient(155deg,#180605 0%,#3d0f0a 45%,#7a2211 78%,#c2521f 100%)" },
+  { key: "brume", label: "Brume",
+    css: "linear-gradient(160deg,#101318 0%,#1d232c 50%,#2c3540 100%)" },
+  { key: "lavande", label: "Lavande",
+    css: "linear-gradient(150deg,#120e26 0%,#2a1f5c 45%,#4b3a92 78%,#7b6bd6 100%)" },
+  { key: "sable", label: "Sable",
+    css: "linear-gradient(155deg,#1a1410 0%,#3a2b1e 45%,#6b4f34 80%,#a37a4e 100%)" },
+  { key: "encre", label: "Encre",
+    css: "radial-gradient(120% 90% at 20% 10%,#1b2340 0%,#0a0d1a 55%,#05060c 100%)" },
+  { key: "neige", label: "Neige",
+    css: "linear-gradient(160deg,#eceef4 0%,#dfe3ee 50%,#c9d1e4 100%)" },
+  { key: "papier", label: "Papier",
+    css: "linear-gradient(160deg,#f7f4ee 0%,#efe9dd 55%,#e2d9c7 100%)" },
   {
     key: "monde",
     label: "Monde",

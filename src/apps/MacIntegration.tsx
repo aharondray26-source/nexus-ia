@@ -101,7 +101,7 @@ export default function MacIntegration() {
       const manifest = {
         manifest_version: 3,
         name: "Nexus",
-        version: "2.3.0",
+        version: "2.4.0",
         description:
           "Ton espace Nexus à chaque onglet. Enregistre une note, une tâche ou " +
           "un morceau de page choisie — tout rejoint ton compte.",
@@ -473,21 +473,43 @@ form{width:100%;position:relative;display:flex;align-items:center;flex:0 0 auto}
   transition:opacity .3s ease,transform .4s cubic-bezier(.22,1,.36,1)}
 body.ouvert #astuce{opacity:0;transform:translateY(6px)}
 
-/* ---- les raccourcis ---- */
-#esp{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;
-  transition:opacity .35s,transform .45s cubic-bezier(.22,1,.36,1)}
+/* ---- LES RACCOURCIS, comme la page d'accueil d'un navigateur ----
+   Des tuiles carrees avec la vraie vignette du site. Les deux premieres —
+   Nexus et NeoSchool — sont FIXES : elles ne se deplacent ni ne s'effacent.
+   Les autres sont a lui : il en ajoute, il en retire. */
+#esp{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;max-width:660px;
+  transition:opacity .35s ease,transform .45s cubic-bezier(.22,1,.36,1)}
 body.ouvert #esp{opacity:0;transform:translateY(18px);pointer-events:none}
-#esp button{border:1px solid var(--bord,rgba(255,255,255,.09));border-radius:13px;
-  padding:10px 15px;font:inherit;font-size:13.5px;color:var(--doux,#c9c9d4);
-  background:var(--verre,rgba(255,255,255,.05));cursor:pointer;display:flex;
-  align-items:center;gap:7px;transition:background .16s,color .16s,transform .12s,border-color .16s}
-#esp button{transition:background .16s ease,color .16s ease,border-color .16s ease,
-  transform .26s cubic-bezier(.2,1.4,.4,1),box-shadow .22s ease}
-#esp button:hover{background:var(--accFaible,rgba(99,102,241,.26));
-  border-color:var(--vif,rgba(99,102,241,.5));color:#fff;transform:translateY(-3px);
-  box-shadow:0 8px 20px rgba(0,0,0,.24)}
-#esp button:active{transform:translateY(-1px) scale(.97)}
-#esp button b{font-size:15px;font-weight:400;line-height:1}
+.tuile{position:relative;width:74px;display:flex;flex-direction:column;
+  align-items:center;gap:7px;border:0;background:transparent;padding:0;
+  font:inherit;color:var(--doux,#c9c9d4);cursor:pointer;
+  animation:entre .5s cubic-bezier(.16,1.02,.24,1) backwards}
+.tuile .p{width:52px;height:52px;border-radius:17px;display:flex;align-items:center;
+  justify-content:center;overflow:hidden;
+  background:var(--verre,rgba(255,255,255,.07));
+  border:1px solid var(--bord,rgba(255,255,255,.11));
+  box-shadow:0 4px 14px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.12);
+  transition:transform .3s cubic-bezier(.2,1.4,.4,1),box-shadow .26s ease,
+             border-color .2s ease,background .2s ease}
+.tuile .p img{width:28px;height:28px;border-radius:6px;display:block}
+.tuile .p span{font-size:21px;font-weight:500;line-height:1;color:#fff}
+.tuile:hover .p{transform:translateY(-4px) scale(1.06);
+  border-color:var(--vif,rgba(99,102,241,.55));
+  box-shadow:0 12px 26px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.18)}
+.tuile:active .p{transform:translateY(-1px) scale(.96)}
+.tuile em{font-style:normal;font-size:11.5px;max-width:74px;text-align:center;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color .18s ease}
+.tuile:hover em{color:var(--txt,#f2f2f7)}
+.tuile .x{position:absolute;top:-5px;right:4px;width:19px;height:19px;border-radius:50%;
+  border:0;background:rgba(20,20,26,.92);color:#c9c9d4;font-size:12px;line-height:1;
+  cursor:pointer;opacity:0;transform:scale(.6);display:flex;align-items:center;
+  justify-content:center;
+  transition:opacity .18s ease,transform .26s cubic-bezier(.2,1.4,.4,1),background .16s}
+.tuile:hover .x{opacity:1;transform:scale(1)}
+.tuile .x:hover{background:#e11d48;color:#fff}
+.tuile.fixe .x{display:none}
+.tuile.plus .p{border-style:dashed;background:transparent}
+.tuile.plus em{color:var(--faible,#6e6e78)}
 
 /* ---- le panneau de resultats, deploye sous la barre ---- */
 /* Les reponses sont DANS la boite : elles poussent ses parois, elles ne
@@ -707,7 +729,7 @@ body.reglages #panneau > *{opacity:1}
 
     <div class="sec">Affichage</div>
     <div class="bascule">Horloge<button class="inter" id="tHeure"><i></i></button></div>
-    <div class="bascule">Raccourcis des espaces<button class="inter" id="tEsp"><i></i></button></div>
+    <div class="bascule">Raccourcis de sites<button class="inter" id="tEsp"><i></i></button></div>
     <div class="bascule">Halos animés<button class="inter" id="tHalo"><i></i></button></div>
     <div class="bascule">Bouton macOS<button class="inter" id="tMac"><i></i></button></div>
     <div class="bascule">Format 24 h<button class="inter" id="t24"><i></i></button></div>
@@ -717,7 +739,11 @@ body.reglages #panneau > *{opacity:1}
     <div class="note">NeoSchool est l'espace scolaire de Nexus, côté navigateur :
       notes, devoirs et emploi du temps, branché sur École Directe. Ton mot de
       passe ne quitte jamais ta machine.</div>
-    <div class="bascule" style="margin-top:6px">Raccourci École sur l'accueil<button class="inter" id="tEcole"><i></i></button></div>
+    <div class="bascule" style="margin-top:6px">Vignettes des sites<button class="inter" id="tVign"><i></i></button></div>
+    <div class="note">Les vraies icônes des sites, comme sur la page d'accueil de
+      ton navigateur. Elles sont demandées à Google au moment de l'affichage —
+      désactive-les et Nexus dessine une pastille à la place, sans rien
+      demander à personne.</div>
 
     <div class="sec">Moteur de recherche</div>
     <div class="rangee" id="moteurs"></div>
@@ -805,6 +831,13 @@ const PAR_DEFAUT = {
   fond: "nuit", fondImage: "", theme: "indigo", voile: 0,
   heure: true, espaces: true, halos: true, boutonMac: true, format24: true,
   moteur: "google", prenom: "", cle: "", court: true, ecole: true,
+  vignettes: true,
+  // Quelques raccourcis pour demarrer. Il les change comme il veut.
+  raccourcis: [
+    { nom: "École Directe", url: "https://www.ecoledirecte.com" },
+    { nom: "YouTube", url: "https://www.youtube.com" },
+    { nom: "Gmail", url: "https://mail.google.com" },
+  ],
 };
 let R = { ...PAR_DEFAUT };
 
@@ -877,11 +910,11 @@ function appliquer() {
   $("tete").style.display = R.heure ? "" : "none";
   $("esp").style.display = R.espaces ? "" : "none";
   $("mac").style.display = R.boutonMac ? "" : "none";
-  const ce = $("chipEcole");
-  if (ce) ce.style.display = R.ecole ? "" : "none";
+
   document.body.classList.toggle("calme", !R.halos);
   $("lueur").style.display = R.halos && !R.fondImage ? "" : "none";
   battre();
+  dessinerRaccourcis();
 }
 
 // -- L'heure -----------------------------------------------------------------
@@ -904,38 +937,119 @@ function battre() {
 }
 setInterval(battre, 1000);
 
-// -- Les espaces -------------------------------------------------------------
-const ESPACES = [
-  ["Chat", "💬", "nexus-chat"], ["Notes", "📝", "notes"], ["Tâches", "✓", "tasks"],
-  ["Calendrier", "📅", "calendar"], ["Fichiers", "📁", "files"],
+// -- Les raccourcis ----------------------------------------------------------
+// Comme la page d'accueil d'un navigateur : des tuiles vers des sites.
+// Les deux premieres sont FIXES et ne s'effacent pas — Nexus et NeoSchool sont
+// chez nous. Les suivantes appartiennent a Aharon.
+//
+// Avant, ces boutons ouvraient « le site avec telle application » : ils se
+// ressemblaient tous et donnaient l'impression de ne rien faire. Un raccourci
+// doit mener quelque part, franchement.
+const FIXES = [
+  // Nos deux maisons : on leur donne NOS icones, pas la vignette generique
+  // qu'un service tiers rend pour un site qu'il ne connait pas.
+  { nom: "Nexus", url: SITE + "/", icone: "icones/48.png" },
+  { nom: "NeoSchool", url: NEO, glyphe: "🎓" },
 ];
-// NeoSchool a son propre raccourci : c'est un espace a part entiere de Nexus,
-// pas une page du site. Il s'affiche en dernier et se debranche depuis les
-// reglages si Aharon n'en veut pas.
-const ECOLE = ["NeoSchool", "🎓", NEO];
-function ouvrirEspace(app) {
-  // On ouvre le site EN DEMANDANT l'espace : il s'ouvre alors en grand,
-  // centre. Avant, le bouton menait a l'accueil et semblait ne rien faire.
-  window.location.href = SITE + "/?app=" + encodeURIComponent(app);
-}
-{
-  const esp = $("esp");
-  for (const [nom, glyphe, app] of ESPACES) {
-    const b = document.createElement("button");
-    const g = document.createElement("b"); g.textContent = glyphe;
-    b.append(g, document.createTextNode(nom));
-    b.title = "Ouvrir « " + nom + " » en grand sur Nexus";
-    b.addEventListener("click", () => ouvrirEspace(app));
-    esp.appendChild(b);
+
+/// La vignette d'un site. On tente celle du site lui-meme ; si elle ne vient
+/// pas, on dessine une pastille avec son initiale. Rien ne casse jamais.
+function vignette(url, nom, r) {
+  const p = document.createElement("span");
+  p.className = "p";
+  // Une icone a nous : on s'arrete la.
+  if (r && r.icone) {
+    const i = new Image(); i.width = 30; i.height = 30; i.alt = "";
+    i.src = r.icone; p.appendChild(i); return p;
   }
-  const [nomE, glypheE, urlE] = ECOLE;
-  const e = document.createElement("button");
-  e.id = "chipEcole";
-  const ge = document.createElement("b"); ge.textContent = glypheE;
-  e.append(ge, document.createTextNode(nomE));
-  e.title = "NeoSchool — notes, devoirs et emploi du temps";
-  e.addEventListener("click", () => { window.location.href = urlE; });
-  esp.appendChild(e);
+  if (r && r.glyphe) {
+    const g = document.createElement("span");
+    g.textContent = r.glyphe; g.style.fontSize = "24px";
+    p.style.background = "linear-gradient(150deg,#5b8def,#3457a8)";
+    p.appendChild(g); return p;
+  }
+  let hote = "";
+  try { hote = new URL(url).hostname; } catch (_) {}
+  const lettre = document.createElement("span");
+  lettre.textContent = (nom || hote || "?").trim().charAt(0).toUpperCase();
+  // Une couleur stable, tiree du nom : deux sites differents ne se ressemblent
+  // jamais, et la meme tuile garde toujours la meme couleur.
+  let h = 0;
+  for (const c of (hote || nom || "?")) h = (h * 31 + c.charCodeAt(0)) % 360;
+  p.style.background = \`linear-gradient(150deg,hsl(\${h} 62% 52%),hsl(\${(h + 38) % 360} 58% 38%))\`;
+  p.appendChild(lettre);
+  if (hote && R.vignettes) {
+    const img = new Image();
+    img.width = 28; img.height = 28; img.alt = "";
+    img.onload = () => { p.style.background = ""; p.replaceChildren(img); };
+    img.onerror = () => {};
+    img.src = "https://www.google.com/s2/favicons?domain=" +
+              encodeURIComponent(hote) + "&sz=64";
+  }
+  return p;
+}
+
+function tuile(r, i) {
+  const { nom, url, fixe } = r;
+  const b = document.createElement("button");
+  b.className = "tuile" + (fixe ? " fixe" : "");
+  b.title = url;
+  b.style.animationDelay = (0.03 + i * 0.03).toFixed(2) + "s";
+  b.appendChild(vignette(url, nom, r));
+  const e = document.createElement("em");
+  e.textContent = nom;
+  b.appendChild(e);
+  b.addEventListener("click", (ev) => {
+    if (ev.target.closest(".x")) return;
+    window.location.href = url;
+  });
+  if (!fixe) {
+    const x = document.createElement("button");
+    x.className = "x"; x.textContent = "×"; x.title = "Retirer ce raccourci";
+    x.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      R.raccourcis = R.raccourcis.filter((r) => r.url !== url);
+      Rangement.ecrire({ raccourcis: R.raccourcis });
+      dessinerRaccourcis();
+    });
+    b.appendChild(x);
+  }
+  return b;
+}
+
+function dessinerRaccourcis() {
+  const esp = $("esp");
+  if (!esp) return;
+  esp.replaceChildren();
+  const liste = [...FIXES.map((f) => ({ ...f, fixe: true })), ...(R.raccourcis || [])];
+  liste.forEach((r, i) => esp.appendChild(tuile(r, i)));
+
+  // La tuile « + » : on ajoute un site a soi.
+  const plus = document.createElement("button");
+  plus.className = "tuile plus";
+  plus.style.animationDelay = (0.03 + liste.length * 0.03).toFixed(2) + "s";
+  const p = document.createElement("span");
+  p.className = "p";
+  const s = document.createElement("span"); s.textContent = "+";
+  p.appendChild(s); plus.appendChild(p);
+  const e = document.createElement("em"); e.textContent = "Ajouter";
+  plus.appendChild(e);
+  plus.addEventListener("click", ajouterRaccourci);
+  esp.appendChild(plus);
+}
+
+function ajouterRaccourci() {
+  const brut = window.prompt("Adresse du site (ex. ecoledirecte.com)");
+  if (!brut) return;
+  let url = brut.trim();
+  if (!/^https?:\\/\\//i.test(url)) url = "https://" + url;
+  let hote = "";
+  try { hote = new URL(url).hostname.replace(/^www\\./, ""); }
+  catch (_) { return; }
+  const nom = (window.prompt("Nom du raccourci", hote) || hote).trim().slice(0, 18);
+  R.raccourcis = [...(R.raccourcis || []).filter((r) => r.url !== url), { nom, url }];
+  Rangement.ecrire({ raccourcis: R.raccourcis });
+  dessinerRaccourcis();
 }
 
 // -- Recherche ---------------------------------------------------------------
@@ -1297,11 +1411,15 @@ function construireReglages() {
   // Les bascules
   const bascules = [["tHeure","heure"],["tEsp","espaces"],["tHalo","halos"],
                     ["tMac","boutonMac"],["t24","format24"],["tCourt","court"],
-                    ["tEcole","ecole"]];
+                    ["tVign","vignettes"]];
   for (const [id, champ] of bascules) {
     const b = $(id);
     b.classList.toggle("on", !!R[champ]);
-    b.onclick = () => { garder(champ, !R[champ]); b.classList.toggle("on", !!R[champ]); };
+    b.onclick = () => {
+      garder(champ, !R[champ]);
+      b.classList.toggle("on", !!R[champ]);
+      if (champ === "vignettes") dessinerRaccourcis();
+    };
   }
   $("prenom").value = R.prenom || "";
   $("cle").value = R.cle || "";
@@ -1384,12 +1502,13 @@ $("testerCle").addEventListener("click", async () => {
   const v = await Rangement.lire(Object.keys(PAR_DEFAUT));
   R = { ...PAR_DEFAUT, ...v };
   appliquer();
+  dessinerRaccourcis();
   construireReglages();
   $("q").focus();
 })();
 `;
 
-      const lisezMoi = `EXTENSION NEXUS 2.2 — installation gratuite, 4 clics
+      const lisezMoi = `EXTENSION NEXUS 2.4 — installation gratuite, 4 clics
 
 SI TU AVAIS DEJA UNE VERSION DE NEXUS : supprime-la d'abord.
 Sur chrome://extensions, sur la carte « Nexus », clique « Supprimer ».
@@ -1409,8 +1528,10 @@ LA PAGE D'ACCUEIL (chaque nouvel onglet)
       - « / »              -> remet le curseur dans la barre.
       - Echap              -> referme les reponses.
 
-  · Les raccourcis en dessous ouvrent l'espace demande EN GRAND sur le site,
-    pas seulement la page d'accueil.
+  · En dessous, des RACCOURCIS DE SITES, comme sur la page d'accueil d'un
+    navigateur : la vraie vignette de chaque site, un clic pour y aller.
+    Nexus et NeoSchool sont fixes — ils ne s'effacent pas. Les autres sont a
+    toi : la tuile « + » en ajoute un, la croix au survol en retire un.
 
   · La roue en bas a droite ouvre les reglages, en panneau lateral :
       - 12 fonds d'ecran, ou ta propre image (fichier ou adresse) ;
@@ -1450,7 +1571,11 @@ LE BOUTON DANS LA BARRE D'OUTILS
   retrouver sur ton Mac et tes autres appareils, connecte-toi au site : le
   bouton « Compte », en bas de la petite fenetre, y mene directement.
 
-NOUVEAU EN 2.2 — reglages complets en panneau lateral, fonds et ambiances,
+NOUVEAU EN 2.4 — raccourcis de sites a la place des anciens
+boutons (qui menaient tous au meme endroit), petite fenetre redessinee en
+carte flottante qui suit le theme clair ou sombre du navigateur.
+
+RAPPEL 2.2 — reglages complets en panneau lateral, fonds et ambiances,
 recherche ciblee avec ou sans cle, ouverture des espaces en grand, bouton
 macOS, et un pied de fenetre qui dit la verite sur ton compte.
 
