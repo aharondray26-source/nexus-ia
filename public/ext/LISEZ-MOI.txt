@@ -1,0 +1,85 @@
+EXTENSION NEXUS 2.6 — installation gratuite, 4 clics
+
+SI TU AVAIS DEJA UNE VERSION DE NEXUS : supprime-la d'abord.
+Sur chrome://extensions, sur la carte « Nexus », clique « Supprimer ».
+Recharger par-dessus ne remplace pas les anciens fichiers.
+
+1. Decompresse ce fichier : tu obtiens un dossier « nexus-extension ».
+2. Ouvre ton navigateur sur  chrome://extensions
+3. Active « Mode developpeur » (interrupteur en haut a droite).
+4. Clique « Charger l'extension non empaquetee » et choisis le dossier.
+
+LA PAGE D'ACCUEIL (chaque nouvel onglet)
+
+  · L'heure, la date, et une seule barre au centre.
+      - Entree             -> cherche sur le web (ou ouvre l'adresse tapee).
+      - bouton Nexus       -> la barre monte et se deplie en reponses.
+      - Cmd/Ctrl + Entree  -> pareil, sans lacher le clavier.
+      - « / »              -> remet le curseur dans la barre.
+      - Echap              -> referme les reponses.
+
+  · En dessous, des RACCOURCIS DE SITES, comme sur la page d'accueil d'un
+    navigateur : la vraie vignette de chaque site, un clic pour y aller.
+    Nexus et NeoSchool sont fixes — ils ne s'effacent pas. Les autres sont a
+    toi : la tuile « + » en ajoute un, la croix au survol en retire un.
+
+  · La roue en bas a droite ouvre les reglages, en panneau lateral :
+      - 12 fonds d'ecran, ou ta propre image (fichier ou adresse) ;
+      - 7 ambiances de couleur ;
+      - assombrissement du fond ;
+      - ce qu'on affiche : horloge, raccourcis, halos, bouton macOS, 24 h ;
+      - moteur de recherche : Google, DuckDuckGo, Bing, Ecosia, Qwant ;
+      - ton prenom ;
+      - ta cle d'intelligence artificielle ;
+      - « reponses courtes », pour menager ton credit.
+
+  · En bas a gauche, un bouton discret telecharge Nexus pour macOS.
+
+AVEC OU SANS CLE
+
+  Sans cle, Nexus ne fait pas semblant de rediger : il vise. Il lit ta
+  question et propose les sources les plus DIRECTES — Larousse pour un mot,
+  DeepL pour une traduction, YouTube et Wikipedia pour une notion de cours,
+  Maps pour une adresse, Scholar pour une source. Il calcule aussi.
+
+  Avec une cle, il rédige la réponse, puis affiche quand meme ces sources.
+  Sont reconnues toutes seules : Google Gemini, OpenAI, Anthropic, Groq,
+  Mistral, OpenRouter. La cle reste dans CE navigateur.
+
+  L'extension ne demande AUCUNE autorisation de site a l'installation.
+  Google Gemini et Anthropic repondent directement au navigateur. Si tu
+  ajoutes une cle OpenAI, Groq, Mistral ou OpenRouter, Chrome te demandera
+  l'autorisation a ce moment-la, et pour ce site-la uniquement.
+
+LE BOUTON DANS LA BARRE D'OUTILS
+
+  Une note ou une tache en deux secondes. « Cette page » enregistre le titre
+  et l'adresse. Clic droit sur du texte selectionne n'importe ou sur le web :
+  « Enregistrer dans Nexus » ou « Ajouter aux taches Nexus ».
+
+  Ce que tu ecris est enregistre dans Nexus sur ce navigateur. Pour le
+  retrouver sur ton Mac et tes autres appareils, connecte-toi au site : le
+  bouton « Compte », en bas de la petite fenetre, y mene directement.
+
+NOUVEAU EN 2.6 — le panneau des reglages ne se coupe plus en bas : quand il
+reste des reglages a voir, le contenu s'efface en douceur au lieu d'etre
+tranche net, et le voile disparait des qu'on est arrive au bout.
+Sous le capot, toutes les animations passent enfin par le meme vocabulaire que
+le site et que l'application Mac — dont la courbe qui carre les coins. Six
+transitions etaient silencieusement tombees a plat : une couleur portait le
+meme nom qu'une courbe et l'ecrasait.
+
+RAPPEL 2.5 — sur un fond clair (Neige, Papier ou ta propre
+image claire), les reglages, la roue et les cartes passent au verre CLAIR :
+avant, un panneau sombre a moitie transparent devenait un rectangle gris
+delave, et les boutons actifs perdaient leur couleur.
+
+RAPPEL 2.4 — raccourcis de sites a la place des anciens
+boutons (qui menaient tous au meme endroit), petite fenetre redessinee en
+carte flottante qui suit le theme clair ou sombre du navigateur.
+
+RAPPEL 2.2 — reglages complets en panneau lateral, fonds et ambiances,
+recherche ciblee avec ou sans cle, ouverture des espaces en grand, bouton
+macOS, et un pied de fenetre qui dit la verite sur ton compte.
+
+Marche aussi sur Edge, Brave, Opera et Vivaldi (meme procedure).

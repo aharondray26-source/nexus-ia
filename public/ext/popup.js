@@ -1,0 +1,66 @@
+const SITE = "https://nexus-espace.netlify.app/";
+let mode = "note";
+const $ = (id) => document.getElementById(id);
+
+function basculer(m) {
+  mode = m;
+  $("tNote").classList.toggle("on", m === "note");
+  $("tTache").classList.toggle("on", m === "tache");
+  $("texte").placeholder = m === "note" ? "Une idée, un rappel…" : "À faire…";
+  $("texte").focus();
+}
+$("tNote").addEventListener("click", () => basculer("note"));
+$("tTache").addEventListener("click", () => basculer("tache"));
+
+function envoyer(contenu) {
+  const t = (contenu || "").trim();
+  if (!t) { $("texte").focus(); return; }
+  chrome.tabs.create({ url: SITE + "?" + mode + "=" + encodeURIComponent(t) });
+  window.close();
+}
+$("ok").addEventListener("click", () => envoyer($("texte").value));
+$("texte").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) envoyer($("texte").value);
+});
+
+// « Cette page » : le titre et l'adresse de l'onglet en cours.
+$("page").addEventListener("click", async () => {
+  const [onglet] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!onglet) return;
+  envoyer(onglet.title + "\n" + onglet.url);
+});
+
+// Les raccourcis d'espace ouvrent le site EN DEMANDANT l'espace : il s'affiche
+// alors en grand, centre. Avant, on tombait sur l'accueil sans rien de plus.
+document.querySelectorAll(".esp button").forEach((b) => {
+  b.addEventListener("click", () => {
+    // NeoSchool est un espace a part entiere : il a sa propre adresse.
+    const u = b.dataset.neo
+      ? "https://neo-school-nine.vercel.app/"
+      : SITE + "?app=" + b.dataset.app;
+    chrome.tabs.create({ url: u });
+    window.close();
+  });
+});
+
+// Le compte. On ne PRETEND pas que tout est synchronise : tant qu'Aharon ne
+// s'est pas connecte sur le site, ses notes ne vivent que dans ce navigateur.
+// Le pied de la fenetre le dit maintenant honnetement, et ce bouton mene la ou
+// on se connecte.
+$("compte").addEventListener("click", () => {
+  chrome.tabs.create({ url: SITE + "?app=settings" });
+  window.close();
+});
+$("mac").addEventListener("click", () => {
+  chrome.tabs.create({ url: SITE + "Nexus-macOS.zip" });
+  window.close();
+});
+
+// On garde le brouillon : fermer la fenêtre ne doit pas effacer ce qu'on écrit.
+chrome.storage.local.get(["brouillon", "mode"], (d) => {
+  if (d.brouillon) $("texte").value = d.brouillon;
+  if (d.mode) basculer(d.mode);
+});
+$("texte").addEventListener("input", () => {
+  chrome.storage.local.set({ brouillon: $("texte").value, mode });
+});

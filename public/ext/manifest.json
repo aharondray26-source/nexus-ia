@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Nexus",
+  "version": "2.6.0",
+  "description": "Ton espace Nexus a chaque onglet : page d'accueil personnalisable, recherche ciblee, assistant, et une note ou une tache en deux secondes.",
+  "icons": {
+    "16": "icones/16.png",
+    "48": "icones/48.png",
+    "128": "icones/128.png"
+  },
+  "permissions": [
+    "contextMenus",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "fond.js"
+  },
+  "chrome_url_overrides": {
+    "newtab": "onglet.html"
+  },
+  "action": {
+    "default_title": "Nexus",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icones/16.png",
+      "48": "icones/48.png"
+    }
+  },
+  "optional_host_permissions": [
+    "https://api.openai.com/*",
+    "https://api.groq.com/*",
+    "https://api.mistral.ai/*",
+    "https://openrouter.ai/*"
+  ]
+}

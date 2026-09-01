@@ -1,0 +1,430 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><title>Nexus</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:#07070b;color:var(--txt,#f2f2f7);overflow:hidden;
+  font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased}
+
+/* ---- le fond, remplace par les reglages ---- */
+#fond{position:fixed;inset:0;z-index:0;background:#07070b;
+  background-size:cover;background-position:center;transition:opacity .5s}
+#voile{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:rgba(6,6,10,var(--voile,0));transition:background .35s}
+#lueur{position:fixed;inset:-30%;z-index:0;pointer-events:none;filter:blur(90px);opacity:.5}
+#lueur i{position:absolute;border-radius:50%;display:block}
+#lueur i:nth-child(1){width:46vw;height:46vw;left:8%;top:6%;background:var(--l1,#4f46e5);
+  animation:d1 26s ease-in-out infinite}
+#lueur i:nth-child(2){width:38vw;height:38vw;right:6%;top:22%;background:var(--l2,#7c3aed);
+  animation:d2 31s ease-in-out infinite}
+#lueur i:nth-child(3){width:34vw;height:34vw;left:34%;bottom:2%;background:var(--l3,#0ea5e9);
+  animation:d3 37s ease-in-out infinite;opacity:.65}
+@keyframes d1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(9vw,6vh) scale(1.12)}}
+@keyframes d2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-8vw,9vh) scale(.9)}}
+@keyframes d3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(6vw,-7vh) scale(1.1)}}
+body.calme #lueur{animation:none}
+body.calme #lueur i{animation:none}
+
+/* ---- la scene centrale ---- */
+main{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:26px;padding:0 26px;
+  transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .35s}
+body.ouvert main{transform:translateY(-9vh)}
+#tete{display:flex;flex-direction:column;align-items:center;gap:6px;
+  transition:opacity .35s,transform .45s cubic-bezier(.22,1,.36,1)}
+body.ouvert #tete{opacity:0;transform:translateY(-30px) scale(.94);pointer-events:none}
+#heure{font-size:78px;font-weight:200;letter-spacing:-.045em;line-height:1;
+  font-variant-numeric:tabular-nums}
+#bonjour{font-size:16.5px;color:var(--texte-doux,#a5a5b2);letter-spacing:-.01em}
+
+/* ---- la barre ---- */
+#zone{width:100%;max-width:720px;display:flex;flex-direction:column;align-items:center;gap:10px}
+
+/* LA BOITE. Fermee, c'est une barre. Ouverte, c'est un grand carre — le MEME
+   element, qui grandit et dont les coins s'arrondissent davantage. Meme
+   ressort que le panneau des reglages : c'est ce qui donne le geste. */
+#boite{position:relative;width:100%;max-width:600px;
+  border:1px solid var(--bord,rgba(255,255,255,.13));border-radius:16px;
+  background:var(--verre,rgba(255,255,255,.07));
+  -webkit-backdrop-filter:blur(22px) saturate(175%);backdrop-filter:blur(22px) saturate(175%);
+  box-shadow:0 8px 26px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.1);
+  display:flex;flex-direction:column;overflow:hidden;
+  transition:max-width .62s cubic-bezier(.16,1.02,.24,1),
+             border-radius .58s cubic-bezier(.3,.9,.2,1) .04s,
+             box-shadow .5s ease, background .3s ease, border-color .3s ease}
+body.ouvert #boite{max-width:720px;border-radius:26px;
+  background:var(--verre2,rgba(255,255,255,.1));
+  border-color:var(--vif,rgba(99,102,241,.5));
+  box-shadow:0 26px 70px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.14)}
+#boite:focus-within{border-color:var(--vif,rgba(99,102,241,.75));
+  box-shadow:0 8px 26px rgba(0,0,0,.26), 0 0 0 4px rgba(99,102,241,.16),
+             inset 0 1px 0 rgba(255,255,255,.12)}
+body.ouvert #boite:focus-within{box-shadow:0 26px 70px rgba(0,0,0,.45),
+  0 0 0 4px rgba(99,102,241,.16), inset 0 1px 0 rgba(255,255,255,.14)}
+
+form{width:100%;position:relative;display:flex;align-items:center;flex:0 0 auto}
+#q{width:100%;border:0;border-radius:0;background:transparent;color:inherit;
+  font:inherit;font-size:16px;padding:16px 116px 16px 48px;outline:none}
+#q::placeholder{color:var(--texte-doux,#77777f)}
+.loupe{position:absolute;left:17px;width:17px;height:17px;opacity:.45;pointer-events:none}
+#ia{position:absolute;right:8px;border:0;border-radius:11px;padding:9px 14px;
+  font:inherit;font-size:13px;font-weight:500;color:#fff;background:var(--acc,#6366f1);
+  cursor:pointer;transition:background .15s,transform .12s cubic-bezier(.2,1.5,.4,1),filter .15s}
+#ia:hover{filter:brightness(1.12)}
+#ia:active{transform:scale(.94)}
+#astuce{font-size:12.5px;color:var(--faible,#6e6e78);height:16px;
+  transition:opacity .3s ease,transform .4s cubic-bezier(.22,1,.36,1)}
+body.ouvert #astuce{opacity:0;transform:translateY(6px)}
+
+/* ---- LES RACCOURCIS, comme la page d'accueil d'un navigateur ----
+   Des tuiles carrees avec la vraie vignette du site. Les deux premieres —
+   Nexus et NeoSchool — sont FIXES : elles ne se deplacent ni ne s'effacent.
+   Les autres sont a lui : il en ajoute, il en retire. */
+#esp{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;max-width:660px;
+  transition:opacity .35s ease,transform .45s cubic-bezier(.22,1,.36,1)}
+body.ouvert #esp{opacity:0;transform:translateY(18px);pointer-events:none}
+.tuile{position:relative;width:74px;display:flex;flex-direction:column;
+  align-items:center;gap:7px;border:0;background:transparent;padding:0;
+  font:inherit;color:var(--texte-doux,#c9c9d4);cursor:pointer;
+  animation:entre .5s cubic-bezier(.16,1.02,.24,1) backwards}
+.tuile .p{width:52px;height:52px;border-radius:17px;display:flex;align-items:center;
+  justify-content:center;overflow:hidden;
+  background:var(--verre,rgba(255,255,255,.07));
+  border:1px solid var(--bord,rgba(255,255,255,.11));
+  box-shadow:0 4px 14px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.12);
+  transition:transform .3s cubic-bezier(.2,1.4,.4,1),box-shadow .26s ease,
+             border-color .2s ease,background .2s ease}
+.tuile .p img{width:28px;height:28px;border-radius:6px;display:block}
+.tuile .p span{font-size:21px;font-weight:500;line-height:1;color:#fff}
+.tuile:hover .p{transform:translateY(-4px) scale(1.06);
+  border-color:var(--vif,rgba(99,102,241,.55));
+  box-shadow:0 12px 26px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.18)}
+.tuile:active .p{transform:translateY(-1px) scale(.96)}
+.tuile em{font-style:normal;font-size:11.5px;max-width:74px;text-align:center;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color .18s ease}
+.tuile:hover em{color:var(--txt,#f2f2f7)}
+.tuile .x{position:absolute;top:-5px;right:4px;width:19px;height:19px;border-radius:50%;
+  border:0;background:rgba(20,20,26,.92);color:#c9c9d4;font-size:12px;line-height:1;
+  cursor:pointer;opacity:0;transform:scale(.6);display:flex;align-items:center;
+  justify-content:center;
+  transition:opacity .18s ease,transform .26s cubic-bezier(.2,1.4,.4,1),background .16s}
+.tuile:hover .x{opacity:1;transform:scale(1)}
+.tuile .x:hover{background:#e11d48;color:#fff}
+.tuile.fixe .x{display:none}
+.tuile.plus .p{border-style:dashed;background:transparent}
+.tuile.plus em{color:var(--faible,#6e6e78)}
+
+/* ---- le panneau de resultats, deploye sous la barre ---- */
+/* Les reponses sont DANS la boite : elles poussent ses parois, elles ne
+   s'affichent pas dessous. C'est toute la difference entre « la barre grandit »
+   et « une deuxieme boite apparait ». */
+#res{width:100%;max-height:0;opacity:0;overflow:hidden;padding:0 16px;
+  border-top:1px solid transparent;
+  transition:max-height .62s cubic-bezier(.16,1.02,.24,1),
+             opacity .32s ease .12s,
+             padding .5s cubic-bezier(.22,1,.36,1),
+             border-color .4s ease}
+body.ouvert #res{max-height:min(58vh,520px);opacity:1;overflow-y:auto;
+  padding:14px 16px 16px;border-top-color:var(--bord,rgba(255,255,255,.11))}
+#res::-webkit-scrollbar{width:8px}
+#res::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:4px}
+/* Tout ce qui entre dans la boite arrive avec le MEME ressort que le panneau
+   des reglages. Un mouvement unique, reconnaissable, dans toute l'extension. */
+@keyframes entre{
+  from{opacity:0;transform:translateY(14px) scale(.965)}
+  to{opacity:1;transform:none}
+}
+/* « backwards », pas « both » : « both » figerait l'etat final et empecherait
+   ensuite tout survol ou toute transition sur ces elements. */
+#res > *{animation:entre .52s cubic-bezier(.16,1.02,.24,1) backwards}
+.moi{align-self:flex-end;max-width:82%;margin:2px 0 12px auto;padding:9px 14px;
+  border-radius:15px 15px 5px 15px;background:var(--acc,#6366f1);color:#fff;font-size:14px;
+  box-shadow:0 4px 14px rgba(0,0,0,.2)}
+.rep{border:1px solid var(--bord,rgba(255,255,255,.1));border-radius:15px;
+  background:var(--verre,rgba(255,255,255,.05));padding:13px 15px;font-size:14.5px;
+  line-height:1.6;margin-bottom:12px;white-space:pre-wrap;
+  animation-delay:.06s}
+.rep .sig{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:600;
+  letter-spacing:.07em;text-transform:uppercase;color:var(--vifTxt,#a5aaff);margin-bottom:7px}
+.pense{display:inline-flex;gap:4px;align-items:center}
+.pense i{width:5px;height:5px;border-radius:50%;background:var(--vifTxt,#a5aaff);
+  animation:bat 1.1s ease-in-out infinite}
+.pense i:nth-child(2){animation-delay:.15s}.pense i:nth-child(3){animation-delay:.3s}
+@keyframes bat{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+.liens{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;
+  margin-bottom:14px;animation-delay:.1s}
+/* Les cartes tombent l'une apres l'autre, pas toutes d'un bloc : l'oeil suit. */
+.liens .lien{animation:entre .5s cubic-bezier(.16,1.02,.24,1) backwards}
+.liens .lien:nth-child(1){animation-delay:.10s}
+.liens .lien:nth-child(2){animation-delay:.16s}
+.liens .lien:nth-child(3){animation-delay:.22s}
+.liens .lien:nth-child(4){animation-delay:.28s}
+.liens .lien:nth-child(5){animation-delay:.33s}
+.liens .lien:nth-child(6){animation-delay:.37s}
+.liens .lien:nth-child(n+7){animation-delay:.41s}
+.lien{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;
+  border:1px solid var(--bord,rgba(255,255,255,.09));background:var(--verre,rgba(255,255,255,.04));
+  cursor:pointer;text-align:left;font:inherit;color:inherit;transition:background .15s,transform .12s}
+.lien{transition:background .16s ease,transform .22s cubic-bezier(.2,1.4,.4,1),
+  border-color .16s ease,box-shadow .22s ease}
+.lien:hover{background:var(--accFaible,rgba(99,102,241,.2));transform:translateY(-2px);
+  border-color:var(--vif,rgba(99,102,241,.45));box-shadow:0 6px 16px rgba(0,0,0,.22)}
+.lien:active{transform:translateY(0) scale(.985)}
+.lien .p{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-size:14px;background:rgba(255,255,255,.08);flex:0 0 auto}
+.lien .t{min-width:0}
+.lien .t b{display:block;font-size:13px;font-weight:550;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.lien .t span{display:block;font-size:11.5px;color:var(--faible,#8a8a95)}
+.calc{font-size:26px;font-weight:300;letter-spacing:-.02em;padding:14px 16px;
+  border-radius:15px;border:1px solid var(--bord,rgba(255,255,255,.1));
+  background:var(--verre,rgba(255,255,255,.05));margin-bottom:12px;animation-delay:.05s}
+.calc small{display:block;font-size:11.5px;color:var(--faible,#8a8a95);margin-top:3px}
+
+/* ---- coins ---- */
+#mac{position:fixed;left:20px;bottom:18px;z-index:3;display:flex;align-items:center;gap:7px;
+  padding:7px 12px;border-radius:11px;border:1px solid transparent;background:transparent;
+  color:var(--faible,#6a6a74);font:inherit;font-size:12px;cursor:pointer;
+  transition:color .18s,background .18s,border-color .18s}
+#mac:hover{color:var(--txt,#f2f2f7);background:var(--verre,rgba(255,255,255,.06));
+  border-color:var(--bord,rgba(255,255,255,.1))}
+#mac svg{width:13px;height:13px;fill:currentColor}
+/* La roue ROULE : un tour complet a l'ouverture. Le mouvement dit ce qui se
+   passe avant meme qu'on ait vu le panneau. */
+#roue{position:fixed;right:22px;bottom:22px;z-index:12;width:40px;height:40px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.16);color:var(--texte-doux,#a5a5b2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);
+  -webkit-backdrop-filter:blur(18px) saturate(170%);backdrop-filter:blur(18px) saturate(170%);
+  box-shadow:0 6px 18px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.18);
+  transition:transform .72s cubic-bezier(.22,1,.36,1),background .2s,color .2s,box-shadow .2s}
+#roue:hover{background:rgba(255,255,255,.15);color:#fff;
+  box-shadow:0 8px 24px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.26)}
+#roue:active{transform:scale(.92) rotate(40deg)}
+#roue svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7}
+body.reglages #roue{transform:rotate(360deg);color:#fff;
+  background:var(--accFaible,rgba(99,102,241,.34))}
+
+/* ---- le panneau lateral ---- */
+#ombre{position:fixed;inset:0;z-index:8;background:rgba(0,0,0,.34);opacity:0;
+  pointer-events:none;transition:opacity .4s,backdrop-filter .4s;
+  -webkit-backdrop-filter:blur(0px);backdrop-filter:blur(0px)}
+body.reglages #ombre{opacity:1;pointer-events:auto;
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+
+/* Le panneau NAIT DE LA ROUE : il part en bulle ronde, minuscule, posee sur
+   elle, puis il gonfle et ses coins se carrent. Il ne touche AUCUN bord — il
+   flotte. C'est la barre laterale du site prise pour modele : transparente,
+   liquide, bien arrondie, detachee. */
+#panneau{position:fixed;top:22px;right:22px;bottom:22px;z-index:10;
+  width:344px;max-width:calc(100vw - 44px);
+  background:rgba(20,20,26,.62);border:1px solid rgba(255,255,255,.14);
+  -webkit-backdrop-filter:blur(34px) saturate(190%);backdrop-filter:blur(34px) saturate(190%);
+  box-shadow:0 26px 70px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.16);
+  display:flex;flex-direction:column;color:#f2f2f7;overflow:hidden;
+  transform-origin:calc(100% - 18px) calc(100% - 18px);
+  transform:scale(.055);border-radius:50%;opacity:0;pointer-events:none;
+  transition:transform .62s cubic-bezier(.16,1.02,.24,1),
+             border-radius .58s cubic-bezier(.3,.9,.2,1) .06s,
+             opacity .3s ease}
+body.reglages #panneau{transform:scale(1);border-radius:26px;opacity:1;pointer-events:auto}
+
+/* SUR UN FOND CLAIR, un verre sombre devient un rectangle gris delave : ni
+   beau, ni franc. Le panneau s'eclaircit avec le fond, comme le fait macOS. */
+body.clair #panneau{background:rgba(252,252,254,.72);
+  border-color:rgba(0,0,0,.1);color:#15151b;
+  box-shadow:0 26px 70px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.95)}
+body.clair #panneau header{border-bottom-color:rgba(0,0,0,.09)}
+body.clair #fermer{background:rgba(0,0,0,.07);color:#4a4a56}
+body.clair #fermer:hover{background:rgba(0,0,0,.13);color:#15151b}
+body.clair .sec{color:#6c6c78}
+body.clair .opt{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.1);color:#3c3c48}
+body.clair .opt:hover{background:rgba(0,0,0,.1)}
+body.clair .opt.on{background:var(--acc,#6366f1);border-color:transparent;color:#fff}
+/* Sur les pastilles claires, une bordure blanche ne se voit pas. */
+body.clair .pastille.on{border-color:#15151b}
+body.clair .champ{background:rgba(255,255,255,.8);border-color:rgba(0,0,0,.12);color:#15151b}
+body.clair .champ::placeholder{color:#8b8b96}
+body.clair .bascule{border-bottom-color:rgba(0,0,0,.07)}
+body.clair .inter{background:rgba(0,0,0,.16)}
+body.clair .note{color:#6c6c78}
+body.clair #pied{border-top-color:rgba(0,0,0,.08);color:#7b7b86}
+body.clair #ombre{background:rgba(255,255,255,.28)}
+body.clair #roue{background:rgba(255,255,255,.62);border-color:rgba(0,0,0,.12);color:#4a4a56;
+  box-shadow:0 6px 18px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.9)}
+body.clair #roue:hover{background:rgba(255,255,255,.85);color:#15151b}
+body.clair .rep{color:#15151b}
+body.clair .lien .p{background:rgba(0,0,0,.06)}
+/* Le contenu n'apparait qu'une fois la bulle devenue carre : sinon on voit le
+   texte s'etirer pendant la deformation, et c'est laid. */
+#panneau > *{opacity:0;transition:opacity .28s ease .3s}
+body.reglages #panneau > *{opacity:1}
+#panneau header{padding:19px 20px 13px;display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.09);flex:0 0 auto}
+#panneau header b{font-size:15px;font-weight:600;flex:1;letter-spacing:-.01em}
+#fermer{width:27px;height:27px;border-radius:50%;border:0;background:rgba(255,255,255,.08);
+  color:#c9c9d4;font-size:15px;cursor:pointer;line-height:1}
+#fermer:hover{background:rgba(255,255,255,.16);color:#fff}
+/* ── Le mouvement de Nexus ────────────────────────────────────────────────
+   Les memes courbes que le site (`nexus-ia/src/index.css`) et que
+   l'application Mac (`enum Mouvement`). Le grand ressort est celui de ce
+   panneau-ci : c'est la reference de tout Nexus. Ne jamais ecrire « ease » ni
+   une courbe a la main — on perd l'unite, et c'est exactement ce qu'Aharon
+   reproche. */
+:root{
+  --ressort:cubic-bezier(.16,1.02,.24,1);   /* le grand geste */
+  --appui:cubic-bezier(.2,1.4,.4,1);        /* le petit rebond */
+  --doux:cubic-bezier(.22,1,.36,1);         /* les fondus */
+  --carre:cubic-bezier(.3,.9,.2,1);         /* les coins qui se carrent */
+  --t-grand:.58s; --t-moyen:.32s; --t-petit:.17s;
+  --texte-doux:#a5a5b2;
+}
+
+#corps{flex:1;overflow-y:auto;padding:6px 20px 24px;
+  /* Tranche net contre le bord du panneau, on ne voit pas que ça defile : le
+     contenu s'efface sur les 38 derniers pixels. C'est un MASQUE, pas un voile
+     colore — un voile reclamerait la teinte exacte du panneau et laisserait une
+     trace grise des qu'on se trompe. La meme chose que dans la palette du site. */
+  transition:-webkit-mask-image var(--t-moyen) var(--doux)}
+#corps.reste-en-bas{
+  -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 38px),transparent);
+          mask-image:linear-gradient(to bottom,#000 calc(100% - 38px),transparent)}
+#corps::-webkit-scrollbar{width:8px}
+#corps::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:4px}
+.sec{padding:16px 0 4px;font-size:10.5px;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;color:#7d7d88}
+.grille{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pastille{aspect-ratio:1;border-radius:11px;border:2px solid transparent;cursor:pointer;
+  padding:0;transition:transform .14s,border-color .14s;background-size:cover;background-position:center}
+.pastille:hover{transform:scale(1.07)}
+.pastille.on{border-color:#fff}
+.rangee{display:flex;gap:7px;flex-wrap:wrap}
+.opt{border:1px solid rgba(255,255,255,.11);border-radius:10px;padding:7px 12px;
+  font:inherit;font-size:12.5px;color:#c9c9d4;background:rgba(255,255,255,.05);cursor:pointer;
+  transition:background .15s,color .15s,border-color .15s}
+.opt:hover{background:rgba(255,255,255,.11)}
+.opt.on{background:var(--acc,#6366f1);border-color:transparent;color:#fff;font-weight:500}
+.champ{width:100%;border:1px solid rgba(255,255,255,.12);border-radius:11px;
+  background:rgba(255,255,255,.06);color:#f2f2f7;font:inherit;font-size:13px;
+  padding:10px 12px;outline:none;margin-top:4px}
+.champ:focus{border-color:rgba(99,102,241,.7);background:rgba(255,255,255,.09)}
+.note{font-size:11.5px;line-height:1.5;color:#82828d;margin-top:7px}
+.note a{color:#a5aaff}
+.bascule{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13.5px}
+.bascule:last-child{border-bottom:0}
+.inter{width:40px;height:23px;border-radius:12px;border:0;background:rgba(255,255,255,.14);
+  position:relative;cursor:pointer;flex:0 0 auto;transition:background .2s}
+.inter i{position:absolute;top:2.5px;left:2.5px;width:18px;height:18px;border-radius:50%;
+  background:#fff;transition:transform .22s var(--appui)}
+.inter.on{background:var(--acc,#6366f1)}
+.inter.on i{transform:translateX(17px)}
+#etatCle{font-size:11.5px;margin-top:6px;min-height:15px}
+.ok{color:#4ade80}.ko{color:#f87171}
+#pied{padding:14px 20px;border-top:1px solid rgba(255,255,255,.07);
+  font-size:11px;color:#5c5c66;display:flex;align-items:center;gap:6px}
+#pied span{width:5px;height:5px;border-radius:50%;background:#4ade80}
+</style></head><body>
+<div id="fond"></div>
+<div id="lueur"><i></i><i></i><i></i></div>
+<div id="voile"></div>
+
+<main>
+  <div id="tete">
+    <div id="heure">--:--</div>
+    <div id="bonjour"></div>
+  </div>
+  <div id="zone">
+    <!-- UNE seule boite : la barre EST le carre. Quand on demande quelque
+         chose, ce meme element grandit — il ne se dedouble pas en « barre en
+         haut + panneau en bas ». Tout se passe dedans. -->
+    <div id="boite">
+      <form id="f" autocomplete="off">
+        <svg class="loupe" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle>
+          <path d="M20 20l-3.6-3.6"></path></svg>
+        <input id="q" placeholder="Chercher sur le web, ou demander à Nexus…" autofocus>
+        <button type="button" id="ia">Nexus</button>
+      </form>
+      <div id="res"></div>
+    </div>
+    <div id="astuce">Entrée pour chercher · le bouton Nexus pour demander</div>
+  </div>
+  <div id="esp"></div>
+</main>
+
+<button id="mac" title="Nexus pour macOS">
+  <svg viewBox="0 0 24 24"><path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.2-2.8.8-3.5.8-.7 0-1.8-.8-3-.8-1.5 0-2.9.9-3.7 2.3-1.6 2.7-.4 6.8 1.1 9 .8 1.1 1.6 2.3 2.8 2.2 1.1 0 1.6-.7 2.9-.7 1.3 0 1.7.7 2.9.7 1.2 0 2-1.1 2.7-2.2.9-1.3 1.2-2.5 1.2-2.6 0 0-2.3-.9-2.3-3.4zM14.2 5.6c.6-.8 1-1.8.9-2.9-.9 0-2 .6-2.6 1.4-.6.7-1.1 1.7-.9 2.8 1 0 2-.5 2.6-1.3z"/></svg>
+  Nexus pour macOS
+</button>
+
+<button id="roue" title="Réglages">
+  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.1"/>
+    <path d="M19.4 14.5a1.6 1.6 0 0 0 .3 1.8l.1.1a1.9 1.9 0 1 1-2.7 2.7l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5v.2a1.9 1.9 0 1 1-3.8 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a1.9 1.9 0 1 1-2.7-2.7l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3.4a1.9 1.9 0 1 1 0-3.8h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a1.9 1.9 0 1 1 2.7-2.7l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5V3.4a1.9 1.9 0 1 1 3.8 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a1.9 1.9 0 1 1 2.7 2.7l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1h.2a1.9 1.9 0 1 1 0 3.8h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>
+</button>
+
+<div id="ombre"></div>
+<aside id="panneau" aria-label="Réglages Nexus">
+  <header><b>Réglages</b><button id="fermer" title="Fermer">×</button></header>
+  <div id="corps">
+    <div class="sec">Fond d'écran</div>
+    <div class="grille" id="fonds"></div>
+    <div class="rangee" style="margin-top:9px">
+      <button class="opt" id="fondPerso">Image de mon choix…</button>
+    </div>
+    <input class="champ" id="fondURL" placeholder="…ou colle l'adresse d'une image"
+      style="display:none">
+
+    <div class="sec">Ambiance</div>
+    <div class="rangee" id="themes"></div>
+
+    <div class="sec">Assombrir le fond</div>
+    <div class="rangee" id="voiles"></div>
+
+    <div class="sec">Affichage</div>
+    <div class="bascule">Horloge<button class="inter" id="tHeure"><i></i></button></div>
+    <div class="bascule">Raccourcis de sites<button class="inter" id="tEsp"><i></i></button></div>
+    <div class="bascule">Halos animés<button class="inter" id="tHalo"><i></i></button></div>
+    <div class="bascule">Bouton macOS<button class="inter" id="tMac"><i></i></button></div>
+    <div class="bascule">Format 24 h<button class="inter" id="t24"><i></i></button></div>
+
+    <div class="sec">École</div>
+    <div class="rangee" id="ecole"></div>
+    <div class="note">NeoSchool est l'espace scolaire de Nexus, côté navigateur :
+      notes, devoirs et emploi du temps, branché sur École Directe. Ton mot de
+      passe ne quitte jamais ta machine.</div>
+    <div class="bascule" style="margin-top:6px">Vignettes des sites<button class="inter" id="tVign"><i></i></button></div>
+    <div class="note">Les vraies icônes des sites, comme sur la page d'accueil de
+      ton navigateur. Elles sont demandées à Google au moment de l'affichage —
+      désactive-les et Nexus dessine une pastille à la place, sans rien
+      demander à personne.</div>
+
+    <div class="sec">Moteur de recherche</div>
+    <div class="rangee" id="moteurs"></div>
+
+    <div class="sec">Ton prénom</div>
+    <input class="champ" id="prenom" placeholder="Aharon" maxlength="24">
+
+    <div class="sec">Clé d'intelligence artificielle</div>
+    <input class="champ" id="cle" type="password" placeholder="Colle ta clé — elle reste ici">
+    <div id="etatCle"></div>
+    <div class="rangee" style="margin-top:8px">
+      <button class="opt" id="testerCle">Tester</button>
+      <button class="opt" id="voirCle">Afficher</button>
+      <button class="opt" id="viderCle">Effacer</button>
+    </div>
+    <div class="note">Reconnue toute seule : Google Gemini, OpenAI, Anthropic, Groq,
+      Mistral, OpenRouter. Elle est enregistrée dans ce navigateur uniquement, jamais
+      envoyée ailleurs qu'au fournisseur. Sans clé, Nexus répond quand même — avec des
+      résultats ciblés au lieu d'une réponse rédigée.
+      <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Clé Gemini gratuite</a></div>
+
+    <div class="sec">Économie</div>
+    <div class="bascule">Réponses courtes<button class="inter" id="tCourt"><i></i></button></div>
+    <div class="note">Limite chaque réponse au strict nécessaire. Recommandé si tu
+      partages la même clé avec l'application macOS.</div>
+  </div>
+  <div id="pied"><span></span>Nexus — conçu par Aharon Dray</div>
+</aside>
+
+<script src="onglet.js"></script>
+</body></html>
