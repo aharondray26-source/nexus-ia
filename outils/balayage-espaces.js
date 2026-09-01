@@ -12,6 +12,13 @@
 })();
 
 window.__bal = async function (id) {
+  // Un onglet masque a un viewport de taille NULLE. Tout parait alors deborder
+  // de plus de mille pixels, et l'on part chasser un fantome. On refuse de
+  // conclure quoi que ce soit dans ces conditions.
+  if (innerWidth < 320 || innerHeight < 240) {
+    return { id, erreur: 'écran de ' + innerWidth + '×' + innerHeight +
+             ' : onglet masqué, rien à conclure — remets la page au premier plan' };
+  }
   const S = window.useWindowsDebug;
   window.nexus.ouvrir(id);
   await new Promise(r => setTimeout(r, 700));  // l'animation de naissance doit etre FINIE : sinon on mesure un scale(0.9) et on croit a un debordement
