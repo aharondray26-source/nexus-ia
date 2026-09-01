@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { APPS } from "./appsRegistry";
 import { useWindows } from "./useWindows";
 import Icon from "./Icons";
@@ -16,6 +16,16 @@ export default function CommandPalette() {
 
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
+  // Quand la liste deborde, elle est tranchee net contre le bord du panneau :
+  // on ne voit pas qu'elle defile, on voit un element coupe. Un degrade en bas
+  // dit « ça continue » — et il s'efface des qu'on est arrive au bout.
+  const [resteEnBas, setResteEnBas] = useState(false);
+  const listeRef = useRef<HTMLUListElement>(null);
+  const mesurerDefilement = useCallback(() => {
+    const el = listeRef.current;
+    if (!el) return;
+    setResteEnBas(el.scrollHeight - el.scrollTop - el.clientHeight > 4);
+  }, []);
 
   // Safe Math Evaluator
   const mathResult = useMemo(() => {
@@ -116,6 +126,12 @@ export default function CommandPalette() {
     setSelectedIndex(0);
   }, [query]);
 
+  // ATTENTION : ce hook doit rester AVANT le retour anticipe ci-dessous. Place
+  // apres, il n'est appele que lorsque la palette est ouverte — le nombre de
+  // hooks change d'un rendu a l'autre et React s'arrete net (erreur 310,
+  // ecran noir). Le nombre de resultats change a chaque frappe : on remesure.
+  useEffect(mesurerDefilement, [mesurerDefilement, items, open]);
+
   if (!open) return null;
 
   function executeItem(item: typeof items[0]) {
@@ -185,7 +201,21 @@ export default function CommandPalette() {
           )}
         </div>
 
-        <ul className="nx-entre-liste max-h-[min(52vh,420px)] overflow-y-auto p-2 pb-3 space-y-1 [scrollbar-width:thin]">
+        <ul
+          ref={listeRef}
+          onScroll={mesurerDefilement}
+          className="nx-entre-liste max-h-[min(52vh,420px)] overflow-y-auto p-2 pb-3 space-y-1 [scrollbar-width:thin]"
+          style={
+            // C'est le CONTENU qui s'efface, pas un voile de couleur pose
+            // par-dessus : un degrade colore reclamerait la teinte exacte du
+            // panneau, differente en mode clair et en mode sombre, et laisserait
+            // une trace grise des qu'on se trompe. Le masque, lui, est juste.
+            resteEnBas
+              ? { maskImage: "linear-gradient(to bottom, #000 calc(100% - 38px), transparent)",
+                  WebkitMaskImage: "linear-gradient(to bottom, #000 calc(100% - 38px), transparent)" }
+              : undefined
+          }
+        >
           {items.map((item, i) => {
             const isSelected = i === selectedIndex;
             return (
