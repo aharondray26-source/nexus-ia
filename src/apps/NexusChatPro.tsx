@@ -33,6 +33,8 @@ import {
 } from "lucide-react";
 import { GoogleGenAI } from "@google/genai";
 import { generateNexusResponse } from "../lib/nexusBrain";
+import { demanderALocal, ollamaDisponible, commentInstaller } from "../lib/iaLocale";
+import { NexusMessageRenderer } from "../os/NexusMessageRenderer";
 import { addNexusTask } from "../lib/persist";
 
 interface ChatMessage {
@@ -40,6 +42,11 @@ interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   thinking?: string;
+  /// Qui a REELLEMENT repondu. L'en-tete annonçait « GEMINI-3.6-FLASH » quoi
+  /// qu'il arrive — meme quand la reponse venait d'un modele local ou des
+  /// phrases ecrites d'avance. Une etiquette qui ment sur la provenance d'une
+  /// reponse est pire qu'une etiquette absente.
+  moteur?: string;
   timestamp: string;
   codeSnippet?: {
     type: "html" | "javascript" | "pdf" | "audio" | "video" | "text";
@@ -152,6 +159,11 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const activeSession = sessions.find((s) => s.id === activeSessionId) || sessions[0];
+  // Le moteur qui a repondu la DERNIERE fois. Le pied de fenetre annonçait
+  // « Gemini 3.6 Flash Engine » en toutes circonstances, y compris quand la
+  // reponse venait d'un modele local ou de phrases ecrites d'avance.
+  const moteurDuDernier = [...(activeSession?.messages || [])]
+    .reverse().find((m) => m.role === "assistant" && m.moteur)?.moteur;
 
   useEffect(() => {
     localStorage.setItem("nexus_chat_pro_sessions", JSON.stringify(sessions));
@@ -256,6 +268,8 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
 
     try {
       let replyText = "";
+      // Le moteur qui repondra vraiment. Par defaut : celui qu'on a choisi.
+      let moteur: string = selectedModel;
       let thinkingText = "";
       let codeSnippet: ChatMessage["codeSnippet"] = undefined;
 
@@ -336,6 +350,7 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
             });
 
             replyText = res.text || "";
+            if (replyText) moteur = selectedModel;
             if (thinkingMode) {
               thinkingText = `Analyse réalisée en direct avec ta clé API Gemini 3.6 Flash (${selectedModel}).`;
             }
@@ -345,15 +360,44 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
         }
       }
 
-      // 3. Moteur local — celui qui répond VRAIMENT, sans clé et sans réseau.
-      //    Avant, cette branche fabriquait un faux widget HTML ou un texte creux
-      //    (« Analyse complète effectuée »). Ça n'aidait personne et ça donnait
-      //    l'impression que l'IA répondait alors qu'elle ne comprenait rien.
+      // 3. L'IA QUI TOURNE CHEZ TOI (Ollama). Ni clé, ni internet, et rien de
+      //    ce qui est écrit ne quitte la machine. C'est ce qu'Aharon voulait :
+      //    « sans clé, ça marche quand même » — pour de vrai, avec un vrai
+      //    modèle, pas avec des réponses écrites d'avance.
       if (!replyText) {
-        if (thinkingMode) {
-          thinkingText = `Pas d'accès au modèle distant : réponse construite par le moteur local de Nexus, sur cet appareil.`;
+        const local = await demanderALocal(
+          userText,
+          [],
+          "Tu es Nexus IA, l'assistant d'Aharon Dray. Réponds en français, avec "
+            + "justesse et sans bavardage, en Markdown quand ça aide à lire.",
+        );
+        if (local) {
+          replyText = local.reponse;
+          moteur = `${local.modele} · sur ta machine`;
+          if (thinkingMode) {
+            thinkingText = `Répondu par ${local.modele}, qui tourne sur cette machine : `
+              + `aucune clé, aucun réseau, rien n'est sorti d'ici.`;
+          }
         }
-        replyText = generateNexusResponse(userText);
+      }
+
+      // 4. Rien du tout. On ne fait pas semblant : on dit ce qui manque et
+      //    comment y remédier, en plus de ce qu'on sait répondre tout seul.
+      if (!replyText) {
+        moteur = "Nexus, sans modèle";
+        if (thinkingMode) {
+          thinkingText = `Aucun modèle joignable : ni serveur, ni clé, ni IA locale.`;
+        }
+        const etat = await ollamaDisponible();
+        const marche = commentInstaller(etat);
+        replyText = generateNexusResponse(userText)
+          + (marche.length
+            ? "\n\n---\n\n**Aucune intelligence artificielle n'est branchée.** "
+              + "Deux façons de m'en donner une :\n\n"
+              + "**A · Gratuite, sur ta machine, sans compte**\n"
+              + marche.map((l) => (/^(launchctl|ollama)/.test(l) ? "\n```\n" + l + "\n```\n" : "- " + l)).join("\n")
+              + "\n\n**B · Une clé** — Réglages → Clé d'intelligence artificielle."
+            : "");
       }
       }
 
@@ -374,6 +418,7 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
         role: "assistant",
         content: replyText,
         thinking: thinkingText || undefined,
+        moteur,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         codeSnippet,
       };
@@ -629,7 +674,7 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
                 >
                   <div className="flex items-center justify-between text-[11px] opacity-70 mb-1">
                     <span className="font-bold flex items-center gap-1.5">
-                      {isUser ? "Vous" : `Nexus IA Pro (${selectedModel.toUpperCase()})`}
+                      {isUser ? "Vous" : `Nexus IA — ${msg.moteur || selectedModel}`}
                     </span>
                     <span>{msg.timestamp}</span>
                   </div>
@@ -656,10 +701,23 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
                     </div>
                   )}
 
-                  {/* Message Content */}
-                  <div className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-sans">
-                    {msg.content}
-                  </div>
+                  {/* Message Content
+                      Le corps etait affiche en TEXTE BRUT : chaque **gras**,
+                      chaque titre, chaque liste et chaque bloc de code
+                      s'affichait avec ses etoiles et ses dieses en clair. Une
+                      IA repond en Markdown — il faut donc le lire. Le rendu
+                      existait deja dans Nexus, il n'etait simplement pas
+                      branche ici. Les messages de l'utilisateur restent bruts :
+                      ce qu'il ecrit ne doit pas etre reinterprete. */}
+                  {msg.role === "assistant" ? (
+                    <div className="text-xs sm:text-sm leading-relaxed font-sans">
+                      <NexusMessageRenderer content={msg.content} />
+                    </div>
+                  ) : (
+                    <div className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-sans">
+                      {msg.content}
+                    </div>
+                  )}
 
                   {/* Code Snippet Launcher */}
                   {msg.codeSnippet && (
@@ -693,7 +751,10 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
                         {copiedId === msg.id ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                         <span>{copiedId === msg.id ? "Copié" : "Copier le texte"}</span>
                       </button>
-                      <span className="text-slate-500">Gemini 3.6 Flash Engine</span>
+                      <span className="text-slate-500">
+                        {/* Ce qui repond VRAIMENT, pas ce qu'on aimerait afficher. */}
+                        {moteurDuDernier || "Aucun modèle branché"}
+                      </span>
                     </div>
                   )}
                 </div>

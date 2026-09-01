@@ -1,4 +1,6 @@
-const SITE = "https://nexus-espace.netlify.app/";
+// Sans barre a la fin, TOUJOURS. Les chemins la portent au debut : c'est la
+// seule convention qui ne fabrique jamais une adresse a double barre.
+const SITE = "https://nexus-espace.netlify.app";
 let mode = "note";
 const $ = (id) => document.getElementById(id);
 
@@ -15,7 +17,7 @@ $("tTache").addEventListener("click", () => basculer("tache"));
 function envoyer(contenu) {
   const t = (contenu || "").trim();
   if (!t) { $("texte").focus(); return; }
-  chrome.tabs.create({ url: SITE + "?" + mode + "=" + encodeURIComponent(t) });
+  chrome.tabs.create({ url: SITE + "/?" + mode + "=" + encodeURIComponent(t) });
   window.close();
 }
 $("ok").addEventListener("click", () => envoyer($("texte").value));
@@ -37,7 +39,7 @@ document.querySelectorAll(".esp button").forEach((b) => {
     // NeoSchool est desormais un ESPACE de Nexus : il s'ouvre dedans, comme
     // les autres. Avant, ce raccourci faisait sortir vers un autre site — ce
     // qui n'a jamais eu l'air d'appartenir a Nexus.
-    const u = SITE + "?app=" + (b.dataset.neo ? "neoschool" : b.dataset.app);
+    const u = SITE + "/?app=" + (b.dataset.neo ? "neoschool" : b.dataset.app);
     chrome.tabs.create({ url: u });
     window.close();
   });
@@ -48,11 +50,21 @@ document.querySelectorAll(".esp button").forEach((b) => {
 // Le pied de la fenetre le dit maintenant honnetement, et ce bouton mene la ou
 // on se connecte.
 $("compte").addEventListener("click", () => {
-  chrome.tabs.create({ url: SITE + "?app=settings" });
+  chrome.tabs.create({ url: SITE + "/?app=settings" });
   window.close();
 });
 $("mac").addEventListener("click", () => {
-  chrome.tabs.create({ url: SITE + "Nexus-macOS.zip" });
+  // On TELECHARGE, on n'ouvre pas un onglet dessus : selon la reponse du
+  // serveur, Chrome affichait le site au lieu du fichier et l'on se retrouvait
+  // sur la page d'accueil sans comprendre pourquoi.
+  const u = SITE + "/Nexus-macOS.zip";
+  if (chrome.downloads && chrome.downloads.download) {
+    chrome.downloads.download({ url: u, filename: "Nexus-macOS.zip" }, (id) => {
+      if (chrome.runtime.lastError || id === undefined) chrome.tabs.create({ url: u });
+    });
+  } else {
+    chrome.tabs.create({ url: u });
+  }
   window.close();
 });
 

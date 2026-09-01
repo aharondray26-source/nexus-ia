@@ -205,7 +205,9 @@ function vignette(url, nom, r) {
   for (const c of (hote || nom || "?")) h = (h * 31 + c.charCodeAt(0)) % 360;
   p.style.background = `linear-gradient(150deg,hsl(${h} 62% 52%),hsl(${(h + 38) % 360} 58% 38%))`;
   p.appendChild(lettre);
-  if (hote && R.vignettes) poserLaVignette(p, hote);
+  // On passe l'ADRESSE COMPLETE : Chrome retrouve l'icone d'une page precise,
+  // pas seulement celle d'un domaine.
+  if (hote && R.vignettes) poserLaVignette(p, hote, url);
   return p;
 }
 
@@ -224,11 +226,27 @@ const ICONES_CONNUES = {
   "classroom.google.com": "https://ssl.gstatic.com/classroom/favicon.png",
 };
 
-function poserLaVignette(p, hote) {
+function poserLaVignette(p, hote, adresse) {
   const sources = [];
+  // 1. CHROME LUI-MEME. Il connait deja l'icone de chaque site : c'est celle
+  //    qu'il affiche dans tes onglets et tes favoris. Elle ne peut pas se
+  //    tromper, elle marche pour les sous-domaines, et elle n'a besoin
+  //    d'aucune liste ecrite a la main. Il faut la permission « favicon ».
+  //    C'etait la bonne reponse depuis le debut ; je passais a cote.
+  try {
+    if (chrome.runtime && chrome.runtime.getURL) {
+      sources.push(chrome.runtime.getURL(
+        "/_favicon/?pageUrl=" + encodeURIComponent(adresse || ("https://" + hote + "/")) + "&size=64"));
+    }
+  } catch (e) {}
+  // 2. Une exception ecrite a la main, pour les rares qui n'en servent aucune.
   if (ICONES_CONNUES[hote]) sources.push(ICONES_CONNUES[hote]);
+  // 3. Le site lui-meme.
   sources.push("https://" + hote + "/apple-touch-icon.png");
   sources.push("https://" + hote + "/favicon.ico");
+  // 4. En TOUT DERNIER, le service de Google — celui qui RETOMBE sur le domaine
+  //    principal et donnait le logo de la recherche pour Classroom, Drive et
+  //    Gmail. On ne l'utilise que si tout le reste a echoue.
   sources.push("https://www.google.com/s2/favicons?domain=" + encodeURIComponent(hote) + "&sz=64");
 
   let n = 0;

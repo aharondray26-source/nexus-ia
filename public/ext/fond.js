@@ -1,4 +1,5 @@
-const SITE = "https://nexus-espace.netlify.app/";
+// Sans barre a la fin, TOUJOURS (voir popup.js).
+const SITE = "https://nexus-espace.netlify.app";
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: "nexus-note", title: "Enregistrer dans Nexus", contexts: ["selection"],
@@ -18,5 +19,5 @@ chrome.contextMenus.onClicked.addListener((info, onglet) => {
     contenu = ((onglet && onglet.title) || "Page") + "\n" + (info.pageUrl || "");
   }
   if (!contenu.trim()) return;
-  chrome.tabs.create({ url: SITE + "?" + cle + "=" + encodeURIComponent(contenu) });
+  chrome.tabs.create({ url: SITE + "/?" + cle + "=" + encodeURIComponent(contenu) });
 });

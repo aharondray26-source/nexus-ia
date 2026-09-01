@@ -4,6 +4,12 @@ import { auth } from "./googleAuth";
 // Bascule automatiquement entre l'API Gemini Serveur (gemini-3.6-flash),
 // l'API Gemini Directe Client (si clé API configurée) et le Cerveau Autonome Avancé.
 
+import { demanderALocal, ollamaDisponible, commentInstaller } from "./iaLocale";
+
+/// Y a-t-il un serveur a nous derriere ce site ? `null` = on ne sait pas encore.
+/// Sur un hebergement statique (Netlify), il n'y en a pas : on le retient.
+let serveurPresent: boolean | null = null;
+
 export interface NexusMessage {
   role: "user" | "assistant";
   text: string;
@@ -15,8 +21,11 @@ export interface NexusAiResponse {
 }
 
 export async function queryNexusAIObject(userText: string, history: NexusMessage[] = []): Promise<NexusAiResponse> {
-  // 1. Essai prioritaire : Serveur Backend Express (/api/gemini/chat) avec Gemini 3.6 Flash
-  try {
+  // 1. Un serveur a nous, s'il y en a un. Sur Netlify il n'y en a pas : la
+  //    requete part, echoue, et recommence a CHAQUE message. On retient donc
+  //    son absence apres le premier echec, au lieu de perdre un aller-retour a
+  //    chaque fois.
+  if (serveurPresent !== false) try {
     const res = await fetch("/api/gemini/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -32,14 +41,16 @@ export async function queryNexusAIObject(userText: string, history: NexusMessage
     if (res.ok) {
       const data = await res.json();
       if (data.reply) {
+        serveurPresent = true;
         return {
           reply: data.reply,
           modelUsed: data.modelUsed || "gemini-3.6-flash",
         };
       }
     }
+    if (res.status === 404 || res.status === 405) serveurPresent = false;
   } catch (err) {
-    console.warn("[Nexus AI] Serveur distant non disponible ou mode statique décelé.");
+    serveurPresent = false;
   }
 
   // 2. Essai secondaire (si déploiement statique avec Clé API enregistrée)
@@ -85,8 +96,32 @@ export async function queryNexusAIObject(userText: string, history: NexusMessage
     }
   }
 
-  // 3. Cerveau Local Haute Précision (Fallback Autonome 100% Statique sans clé)
-  return { reply: generateNexusResponse(userText, history), modelUsed: "Moteur Local Nexus" };
+  // 3. L'IA QUI TOURNE CHEZ TOI. Pas de clé, pas d'internet, rien qui sorte de
+  //    la machine. C'est exactement ce qu'Aharon voulait : sans clé, ça marche
+  //    quand meme — pour de vrai, pas avec des reponses ecrites d'avance.
+  const local = await demanderALocal(
+    userText,
+    history.map((m) => ({ role: m.role === "user" ? "user" as const : "assistant" as const, text: m.text })),
+    "Tu es Nexus, l'assistant d'Aharon Dray. Réponds en français, avec justesse "
+      + "et sans bavardage, en Markdown quand ça aide à lire.",
+  );
+  if (local) return { reply: local.reponse, modelUsed: `${local.modele} · sur ta machine` };
+
+  // 4. Rien du tout. On ne fait pas semblant d'etre une IA : on dit ce qui
+  //    manque et comment y remedier, puis on repond avec ce qu'on sait faire.
+  const etat = await ollamaDisponible();
+  const marche = commentInstaller(etat);
+  const explique = marche.length
+    ? "\n\n---\n\n**Aucune intelligence artificielle n'est branchée pour l'instant.**\n\n"
+      + "Deux façons de m'en donner une :\n\n"
+      + "**A · Gratuite, sur ta machine, sans compte**\n"
+      + marche.map((l) => (l.startsWith("launchctl") || l.startsWith("ollama") ? "\n```\n" + l + "\n```\n" : "- " + l)).join("\n")
+      + "\n\n**B · Une clé**\n- Réglages → Clé d'intelligence artificielle."
+    : "";
+  return {
+    reply: generateNexusResponse(userText, history) + explique,
+    modelUsed: "Nexus, sans modèle",
+  };
 }
 
 export async function queryNexusAI(userText: string, history: NexusMessage[] = []): Promise<string> {

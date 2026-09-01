@@ -11,7 +11,8 @@
   "permissions": [
     "contextMenus",
     "storage",
-    "downloads"
+    "downloads",
+    "favicon"
   ],
   "background": {
     "service_worker": "fond.js"
