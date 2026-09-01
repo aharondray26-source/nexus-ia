@@ -28,10 +28,10 @@ body.calme #lueur i{animation:none}
 /* ---- la scene centrale ---- */
 main{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:26px;padding:0 26px;
-  transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .35s}
+  transition:transform .5s var(--doux),opacity .35s}
 body.ouvert main{transform:translateY(-9vh)}
 #tete{display:flex;flex-direction:column;align-items:center;gap:6px;
-  transition:opacity .35s,transform .45s cubic-bezier(.22,1,.36,1)}
+  transition:opacity .35s,transform .45s var(--doux)}
 body.ouvert #tete{opacity:0;transform:translateY(-30px) scale(.94);pointer-events:none}
 #heure{font-size:78px;font-weight:200;letter-spacing:-.045em;line-height:1;
   font-variant-numeric:tabular-nums}
@@ -49,8 +49,8 @@ body.ouvert #tete{opacity:0;transform:translateY(-30px) scale(.94);pointer-event
   -webkit-backdrop-filter:blur(22px) saturate(175%);backdrop-filter:blur(22px) saturate(175%);
   box-shadow:0 8px 26px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.1);
   display:flex;flex-direction:column;overflow:hidden;
-  transition:max-width .62s cubic-bezier(.16,1.02,.24,1),
-             border-radius .58s cubic-bezier(.3,.9,.2,1) .04s,
+  transition:max-width .62s var(--ressort),
+             border-radius .58s var(--carre) .04s,
              box-shadow .5s ease, background .3s ease, border-color .3s ease}
 body.ouvert #boite{max-width:720px;border-radius:26px;
   background:var(--verre2,rgba(255,255,255,.1));
@@ -69,11 +69,11 @@ form{width:100%;position:relative;display:flex;align-items:center;flex:0 0 auto}
 .loupe{position:absolute;left:17px;width:17px;height:17px;opacity:.45;pointer-events:none}
 #ia{position:absolute;right:8px;border:0;border-radius:11px;padding:9px 14px;
   font:inherit;font-size:13px;font-weight:500;color:#fff;background:var(--acc,#6366f1);
-  cursor:pointer;transition:background .15s,transform .12s cubic-bezier(.2,1.5,.4,1),filter .15s}
+  cursor:pointer;transition:background .15s,transform .12s var(--appui),filter .15s}
 #ia:hover{filter:brightness(1.12)}
 #ia:active{transform:scale(.94)}
 #astuce{font-size:12.5px;color:var(--faible,#6e6e78);height:16px;
-  transition:opacity .3s ease,transform .4s cubic-bezier(.22,1,.36,1)}
+  transition:opacity .3s ease,transform .4s var(--doux)}
 body.ouvert #astuce{opacity:0;transform:translateY(6px)}
 
 /* ---- LES RACCOURCIS, comme la page d'accueil d'un navigateur ----
@@ -81,18 +81,18 @@ body.ouvert #astuce{opacity:0;transform:translateY(6px)}
    Nexus et NeoSchool — sont FIXES : elles ne se deplacent ni ne s'effacent.
    Les autres sont a lui : il en ajoute, il en retire. */
 #esp{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;max-width:660px;
-  transition:opacity .35s ease,transform .45s cubic-bezier(.22,1,.36,1)}
+  transition:opacity .35s ease,transform .45s var(--doux)}
 body.ouvert #esp{opacity:0;transform:translateY(18px);pointer-events:none}
 .tuile{position:relative;width:74px;display:flex;flex-direction:column;
   align-items:center;gap:7px;border:0;background:transparent;padding:0;
   font:inherit;color:var(--texte-doux,#c9c9d4);cursor:pointer;
-  animation:entre .5s cubic-bezier(.16,1.02,.24,1) backwards}
+  animation:entre .5s var(--ressort) backwards}
 .tuile .p{width:52px;height:52px;border-radius:17px;display:flex;align-items:center;
   justify-content:center;overflow:hidden;
   background:var(--verre,rgba(255,255,255,.07));
   border:1px solid var(--bord,rgba(255,255,255,.11));
   box-shadow:0 4px 14px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.12);
-  transition:transform .3s cubic-bezier(.2,1.4,.4,1),box-shadow .26s ease,
+  transition:transform .3s var(--appui),box-shadow .26s ease,
              border-color .2s ease,background .2s ease}
 .tuile .p img{width:28px;height:28px;border-radius:6px;display:block}
 .tuile .p span{font-size:21px;font-weight:500;line-height:1;color:#fff}
@@ -107,7 +107,7 @@ body.ouvert #esp{opacity:0;transform:translateY(18px);pointer-events:none}
   border:0;background:rgba(20,20,26,.92);color:#c9c9d4;font-size:12px;line-height:1;
   cursor:pointer;opacity:0;transform:scale(.6);display:flex;align-items:center;
   justify-content:center;
-  transition:opacity .18s ease,transform .26s cubic-bezier(.2,1.4,.4,1),background .16s}
+  transition:opacity .18s ease,transform .26s var(--appui),background .16s}
 .tuile:hover .x{opacity:1;transform:scale(1)}
 .tuile .x:hover{background:#e11d48;color:#fff}
 .tuile.fixe .x{display:none}
@@ -118,11 +118,34 @@ body.ouvert #esp{opacity:0;transform:translateY(18px);pointer-events:none}
 /* Les reponses sont DANS la boite : elles poussent ses parois, elles ne
    s'affichent pas dessous. C'est toute la difference entre « la barre grandit »
    et « une deuxieme boite apparait ». */
+/* ── Le retour ──────────────────────────────────────────────────────────────
+   Il n'apparait qu'une fois le panneau ouvert, et il pousse doucement la
+   loupe hors du chemin plutot que de la remplacer d'un coup. Ferme, il ne
+   prend AUCUNE place : une largeur nulle, pas un « display:none » qui
+   couperait l'animation net. */
+#retour{position:absolute;left:11px;width:28px;height:28px;padding:0;border:0;
+  border-radius:9px;background:transparent;color:var(--texte-doux,#a5a5b2);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  opacity:0;transform:translateX(7px) scale(.86);pointer-events:none;
+  transition:opacity var(--t-petit) var(--doux),
+             transform var(--t-moyen) var(--ressort),
+             background var(--t-petit) var(--doux),
+             color var(--t-petit) var(--doux)}
+#retour svg{width:17px;height:17px}
+#retour:hover{color:#fff;background:rgba(255,255,255,.09)}
+#retour:active{transform:scale(.9)}
+body.ouvert #retour{opacity:1;transform:none;pointer-events:auto}
+/* La loupe cede sa place au retour : deux symboles au meme endroit, ça fait
+   encombre. Elle revient quand on referme — le geste exactement a l'envers. */
+.loupe{transition:opacity var(--t-petit) var(--doux),
+                  transform var(--t-moyen) var(--ressort)}
+body.ouvert .loupe{opacity:0;transform:translateX(-7px) scale(.86)}
+
 #res{width:100%;max-height:0;opacity:0;overflow:hidden;padding:0 16px;
   border-top:1px solid transparent;
-  transition:max-height .62s cubic-bezier(.16,1.02,.24,1),
+  transition:max-height .62s var(--ressort),
              opacity .32s ease .12s,
-             padding .5s cubic-bezier(.22,1,.36,1),
+             padding .5s var(--doux),
              border-color .4s ease}
 body.ouvert #res{max-height:min(58vh,520px);opacity:1;overflow-y:auto;
   padding:14px 16px 16px;border-top-color:var(--bord,rgba(255,255,255,.11))}
@@ -136,7 +159,7 @@ body.ouvert #res{max-height:min(58vh,520px);opacity:1;overflow-y:auto;
 }
 /* « backwards », pas « both » : « both » figerait l'etat final et empecherait
    ensuite tout survol ou toute transition sur ces elements. */
-#res > *{animation:entre .52s cubic-bezier(.16,1.02,.24,1) backwards}
+#res > *{animation:entre .52s var(--ressort) backwards}
 .moi{align-self:flex-end;max-width:82%;margin:2px 0 12px auto;padding:9px 14px;
   border-radius:15px 15px 5px 15px;background:var(--acc,#6366f1);color:#fff;font-size:14px;
   box-shadow:0 4px 14px rgba(0,0,0,.2)}
@@ -154,7 +177,7 @@ body.ouvert #res{max-height:min(58vh,520px);opacity:1;overflow-y:auto;
 .liens{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;
   margin-bottom:14px;animation-delay:.1s}
 /* Les cartes tombent l'une apres l'autre, pas toutes d'un bloc : l'oeil suit. */
-.liens .lien{animation:entre .5s cubic-bezier(.16,1.02,.24,1) backwards}
+.liens .lien{animation:entre .5s var(--ressort) backwards}
 .liens .lien:nth-child(1){animation-delay:.10s}
 .liens .lien:nth-child(2){animation-delay:.16s}
 .liens .lien:nth-child(3){animation-delay:.22s}
@@ -165,7 +188,7 @@ body.ouvert #res{max-height:min(58vh,520px);opacity:1;overflow-y:auto;
 .lien{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;
   border:1px solid var(--bord,rgba(255,255,255,.09));background:var(--verre,rgba(255,255,255,.04));
   cursor:pointer;text-align:left;font:inherit;color:inherit;transition:background .15s,transform .12s}
-.lien{transition:background .16s ease,transform .22s cubic-bezier(.2,1.4,.4,1),
+.lien{transition:background .16s ease,transform .22s var(--appui),
   border-color .16s ease,box-shadow .22s ease}
 .lien:hover{background:var(--accFaible,rgba(99,102,241,.2));transform:translateY(-2px);
   border-color:var(--vif,rgba(99,102,241,.45));box-shadow:0 6px 16px rgba(0,0,0,.22)}
@@ -196,7 +219,7 @@ body.ouvert #res{max-height:min(58vh,520px);opacity:1;overflow-y:auto;
   display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);
   -webkit-backdrop-filter:blur(18px) saturate(170%);backdrop-filter:blur(18px) saturate(170%);
   box-shadow:0 6px 18px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.18);
-  transition:transform .72s cubic-bezier(.22,1,.36,1),background .2s,color .2s,box-shadow .2s}
+  transition:transform .72s var(--doux),background .2s,color .2s,box-shadow .2s}
 #roue:hover{background:rgba(255,255,255,.15);color:#fff;
   box-shadow:0 8px 24px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.26)}
 #roue:active{transform:scale(.92) rotate(40deg)}
@@ -223,8 +246,8 @@ body.reglages #ombre{opacity:1;pointer-events:auto;
   display:flex;flex-direction:column;color:#f2f2f7;overflow:hidden;
   transform-origin:calc(100% - 18px) calc(100% - 18px);
   transform:scale(.055);border-radius:50%;opacity:0;pointer-events:none;
-  transition:transform .62s cubic-bezier(.16,1.02,.24,1),
-             border-radius .58s cubic-bezier(.3,.9,.2,1) .06s,
+  transition:transform .62s var(--ressort),
+             border-radius .58s var(--carre) .06s,
              opacity .3s ease}
 body.reglages #panneau{transform:scale(1);border-radius:26px;opacity:1;pointer-events:auto}
 
@@ -342,6 +365,14 @@ body.reglages #panneau > *{opacity:1}
         <svg class="loupe" viewBox="0 0 24 24" fill="none" stroke="currentColor"
           stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle>
           <path d="M20 20l-3.6-3.6"></path></svg>
+        <!-- Le retour. Il n'existe QUE quand le panneau est ouvert, et il
+             refait le geste a l'envers : la reponse se replie, puis la boite
+             retrecit et ses coins s'arrondissent. -->
+        <button type="button" id="retour" title="Revenir à la recherche (Échap)"
+          aria-label="Revenir à la recherche">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"
+            stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
         <input id="q" placeholder="Chercher sur le web, ou demander à Nexus…" autofocus>
         <button type="button" id="ia">Nexus</button>
       </form>

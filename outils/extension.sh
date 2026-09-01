@@ -29,14 +29,24 @@ cp "$SRC/icone-48.png"  "$DEST/icones/48.png"
 cp "$SRC/icone-128.png" "$DEST/icones/128.png"
 
 V=$(grep '"version"' "$SRC/manifest.json" | sed 's/[^0-9.]//g' | sed 's/\.$//')
-rm -f ~/Downloads/nexus-extension-*.zip
-( cd ~/Downloads && ditto -c -k --sequesterRsrc nexus-extension "nexus-extension-$V.zip" )
+
+# UN SEUL DOSSIER dans les Telechargements, et RIEN d'autre.
+#
+# On fabriquait aussi un .zip a cote. Aharon le double-cliquait, macOS en tirait
+# « nexus-extension-2.6.0/ » — un SECOND dossier, d'apparence identique mais
+# fige a la version du zip. Il s'est retrouve avec deux dossiers impossibles a
+# distinguer a l'oeil, dont un perime : charger le mauvais dans Chrome, c'est
+# retrouver d'anciens bugs et croire que rien n'a ete corrige.
+# Le zip n'a aucune raison d'exister ici : le site sait le fabriquer, et ce
+# script sait refaire le dossier a tout moment.
+setopt NULL_GLOB 2>/dev/null || true   # un motif sans correspondance n'est pas une erreur
+rm -rf ~/Downloads/nexus-extension-*.zip ~/Downloads/nexus-extension-[0-9]* 2>/dev/null || true
 
 node --check "$DEST/onglet.js"
 node --check "$DEST/popup.js"
 node --check "$DEST/fond.js"
 python3 -c "import json;json.load(open('$DEST/manifest.json'))"
 
-echo "  ✓ extension $V — dossier « $DEST » et zip « nexus-extension-$V.zip »"
+echo "  ✓ extension $V — un seul dossier : « $DEST »"
 echo "    Dans Chrome : chrome://extensions → Supprimer → Charger l'extension"
 echo "    non empaquetee → Telechargements/nexus-extension"

@@ -205,15 +205,48 @@ function vignette(url, nom, r) {
   for (const c of (hote || nom || "?")) h = (h * 31 + c.charCodeAt(0)) % 360;
   p.style.background = `linear-gradient(150deg,hsl(${h} 62% 52%),hsl(${(h + 38) % 360} 58% 38%))`;
   p.appendChild(lettre);
-  if (hote && R.vignettes) {
+  if (hote && R.vignettes) poserLaVignette(p, hote);
+  return p;
+}
+
+// ── Trouver la BONNE icone d'un site ────────────────────────────────────────
+// On demandait tout a « google.com/s2/favicons ». Ce service RETOMBE sur le
+// domaine principal des qu'il s'agit d'un sous-domaine : Google Classroom
+// recevait le logo de la recherche Google, Drive et Gmail aussi. Verifie le
+// 1er septembre 2026 — et le service de DuckDuckGo fait exactement pareil
+// (meme fichier au octet pres pour classroom, drive et mail).
+//
+// Le favicon du site LUI-MEME, lui, ne peut pas se tromper d'adresse. On le
+// demande donc en premier, et l'on ne retombe sur Google qu'en dernier.
+const ICONES_CONNUES = {
+  // Les rares qui ne servent aucun favicon a leur propre adresse. Ecrit a la
+  // main, verifie a la main — pas devine.
+  "classroom.google.com": "https://ssl.gstatic.com/classroom/favicon.png",
+};
+
+function poserLaVignette(p, hote) {
+  const sources = [];
+  if (ICONES_CONNUES[hote]) sources.push(ICONES_CONNUES[hote]);
+  sources.push("https://" + hote + "/apple-touch-icon.png");
+  sources.push("https://" + hote + "/favicon.ico");
+  sources.push("https://www.google.com/s2/favicons?domain=" + encodeURIComponent(hote) + "&sz=64");
+
+  let n = 0;
+  const essayer = () => {
+    if (n >= sources.length) return;            // on garde la lettre coloree
     const img = new Image();
     img.width = 28; img.height = 28; img.alt = "";
-    img.onload = () => { p.style.background = ""; p.replaceChildren(img); };
-    img.onerror = () => {};
-    img.src = "https://www.google.com/s2/favicons?domain=" +
-              encodeURIComponent(hote) + "&sz=64";
-  }
-  return p;
+    img.referrerPolicy = "no-referrer";
+    img.onload = () => {
+      // Une image d'un pixel est une image d'erreur deguisee.
+      if (img.naturalWidth < 8) { n++; essayer(); return; }
+      p.style.background = "";
+      p.replaceChildren(img);
+    };
+    img.onerror = () => { n++; essayer(); };
+    img.src = sources[n];
+  };
+  essayer();
 }
 
 function tuile(r, i) {
@@ -369,6 +402,25 @@ function cibler(q) {
 // -- L'affichage des reponses ------------------------------------------------
 const res = $("res");
 function ouvrirPanneau() { document.body.classList.add("ouvert"); }
+
+// Refermer, c'est le MEME geste a l'envers : la reponse se replie, la boite
+// retrecit, ses coins s'arrondissent, la loupe revient et le retour s'efface.
+// Tout est deja decrit en CSS — il suffit d'enlever la classe.
+function fermerPanneau() {
+  if (!document.body.classList.contains("ouvert")) return false;
+  document.body.classList.remove("ouvert");
+  // On vide la reponse APRES le repli : la vider tout de suite ferait
+  // disparaitre le texte d'un coup au lieu de le laisser se replier.
+  setTimeout(function () {
+    if (!document.body.classList.contains("ouvert")) {
+      var r = document.getElementById("res");
+      if (r) r.innerHTML = "";
+    }
+  }, 620);
+  var q = document.getElementById("q");
+  if (q) q.focus();
+  return true;
+}
 function poserQuestion(t) {
   const d = document.createElement("div");
   d.className = "moi"; d.textContent = t;
@@ -553,19 +605,48 @@ $("ia").addEventListener("click", demander);
 $("q").addEventListener("keydown", (e) => {
   // Cmd/Ctrl + Entree : demander a Nexus sans lacher le clavier.
   if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); demander(); }
-  if (e.key === "Escape") {
-    if (document.body.classList.contains("ouvert")) {
-      document.body.classList.remove("ouvert"); res.innerHTML = "";
-    } else { $("q").value = ""; }
-  }
+  if (e.key === "Escape") { if (!fermerPanneau()) $("q").value = ""; }
 });
+$("retour").addEventListener("click", fermerPanneau);
 document.addEventListener("keydown", (e) => {
+  // Echap rend la main OU QUE SOIT le curseur : avant, il ne marchait que si
+  // l'on n'avait pas quitte le champ de recherche.
+  if (e.key === "Escape" && document.activeElement !== $("q")) fermerPanneau();
   if (e.key === "/" && document.activeElement !== $("q")) { e.preventDefault(); $("q").focus(); }
+});
+// Cliquer a cote referme aussi — comme on repose un objet.
+document.addEventListener("mousedown", (e) => {
+  if (!document.body.classList.contains("ouvert")) return;
+  if (document.body.classList.contains("reglages")) return;
+  if (!e.target.closest("#boite")) fermerPanneau();
 });
 
 // -- Les coins ---------------------------------------------------------------
-$("mac").addEventListener("click", () =>
-  window.open(SITE + "/Nexus-macOS.zip", "_blank", "noopener"));
+// « Nexus pour macOS » TELECHARGE l'application. Avant, on ouvrait un onglet
+// sur le fichier : selon la reponse du serveur, Chrome affichait le site au
+// lieu de telecharger, et l'on se retrouvait sur la page d'accueil sans
+// comprendre. `chrome.downloads` ne laisse aucune place au doute — le fichier
+// apparait dans la barre de telechargements, avec sa progression.
+$("mac").addEventListener("click", () => {
+  const url = SITE + "/Nexus-macOS.zip";
+  const etat = document.getElementById("mac");
+  const direBref = (t) => {
+    const avant = etat.textContent;
+    etat.textContent = t;
+    setTimeout(() => { etat.textContent = avant; }, 2600);
+  };
+  if (chrome.downloads && chrome.downloads.download) {
+    chrome.downloads.download({ url, filename: "Nexus-macOS.zip" }, (id) => {
+      if (chrome.runtime.lastError || id === undefined) {
+        window.open(url, "_blank", "noopener");
+        return;
+      }
+      direBref("Téléchargement…");
+    });
+    return;
+  }
+  window.open(url, "_blank", "noopener");
+});
 
 // -- Le panneau de reglages --------------------------------------------------
 // Le panneau deborde largement : sans rien, il est tranche net contre son
