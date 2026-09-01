@@ -195,6 +195,19 @@ export default function NexusAssistant() {
   const [deplaceeAuto, setDeplaceeAuto] = useState(false);
   /// Un fichier survole la mascotte : elle s'ouvre en grand pour dire « donne ».
   const [surLaMascotte, setSurLaMascotte] = useState(false);
+  /// Elle vient de répondre : elle sourit deux secondes, puis reprend son air
+  /// normal. Un sourire permanent ne veut plus rien dire.
+  const [vientDeRepondre, setVientDeRepondre] = useState(false);
+  const chargeaitAvant = useRef(false);
+  useEffect(() => {
+    if (chargeaitAvant.current && !loading) {
+      setVientDeRepondre(true);
+      const t = window.setTimeout(() => setVientDeRepondre(false), 2200);
+      chargeaitAvant.current = false;
+      return () => window.clearTimeout(t);
+    }
+    chargeaitAvant.current = loading;
+  }, [loading]);
   const enDeplacement = useRef(false);
 
   useEffect(() => {
@@ -904,6 +917,11 @@ export default function NexusAssistant() {
         <div ref={mascotRef} className="relative">
           <Mascotte
             active={open}
+            // Son humeur suit ce qui se passe : elle écarquille les yeux quand
+            // un fichier arrive sur elle, elle se plisse pendant qu'elle
+            // réfléchit, et elle sourit quand elle vient de répondre.
+            humeur={surLaMascotte ? "surprise" : loading ? "pense"
+                    : vientDeRepondre ? "content" : "normal"}
             size={pillSize === "compact" ? 46 : pillSize === "normal" ? 58 : 70}
             onBody={() => handleToggle()}
             onLeftEye={() => fileInputRef.current?.click()}
