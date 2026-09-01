@@ -740,6 +740,13 @@ html.light-mode .nx-widget {
   transition: opacity .6s var(--doux), transform .8s var(--doux);
 }
 .nx-world-dim { opacity: .08; transform: scale(1.06); }
+/* En mode clair, la meme carte devient BEAUCOUP plus lourde : un trait sombre
+   a 30 % sur du blanc donne des continents gris pleins, qui traversaient
+   l'horloge et le texte d'accueil au point qu'on ne les lisait plus. Sur du
+   noir, le meme trait n'est qu'un liseré. Il faut donc deux reglages, pas un.
+   La carte est là pour donner de la profondeur, pas pour se faire lire. */
+html.light-mode .nx-world { opacity: .11; }
+html.light-mode .nx-world-dim { opacity: .04; }
 
 /* ============ EPAISSEUR DES WIDGETS ============
    Le widget ne doit pas etre une vignette plate posee sur le fond : il doit
