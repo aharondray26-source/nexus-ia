@@ -93,6 +93,44 @@ h1.title{font-size:clamp(34px,8vw,64px);font-weight:900;letter-spacing:4px;backg
 </style>
 </head>
 <body>
+<!-- ── Le retour vers l'arcade ────────────────────────────────────────────────
+     Sur le site, ce jeu remplace l'arcade DANS la meme fenetre. Sans ce
+     bouton on entrait dedans et l'on ne pouvait plus en sortir autrement qu'en
+     fermant l'espace entier : on perdait sa partie pour revenir au menu.
+     Il n'apparait QUE dans un cadre (le site). Dans l'application Mac, le jeu
+     a sa propre fenetre, qui a deja son bouton de fermeture. -->
+<button id="retourArcade" hidden>← Arcade</button>
+<style>
+  #retourArcade{position:fixed;top:12px;left:12px;z-index:99999;
+    font:600 12px/1 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;
+    color:#e7e7ef;background:rgba(14,14,20,.78);border:1px solid rgba(255,255,255,.16);
+    border-radius:10px;padding:8px 12px;cursor:pointer;backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);opacity:.55;
+    transition:opacity .17s cubic-bezier(.22,1,.36,1),
+               transform .17s cubic-bezier(.2,1.4,.4,1),
+               background .17s cubic-bezier(.22,1,.36,1)}
+  #retourArcade:hover{opacity:1;transform:translateX(-2px);background:rgba(26,26,36,.92)}
+  #retourArcade:active{transform:scale(.95)}
+  #retourArcade[hidden]{display:none}
+</style>
+<script>
+  (function(){
+    var b = document.getElementById('retourArcade');
+    // « dans un cadre » = on est sur le site, dans la fenetre de l'arcade.
+    var dansUnCadre = false;
+    try { dansUnCadre = window.top !== window.self; } catch (e) { dansUnCadre = true; }
+    if (!dansUnCadre) return;                    // application Mac : rien a faire
+    b.hidden = false;
+    b.addEventListener('click', function(){ window.location.href = 'arcade.html'; });
+    // Echap rend aussi la main, mais SEULEMENT depuis le menu du jeu : en
+    // pleine partie, Echap sert deja a mettre en pause.
+    document.addEventListener('keydown', function(e){
+      if (e.key !== 'Escape') return;
+      var menu = document.getElementById('menu');
+      if (menu && !menu.classList.contains('hidden')) window.location.href = 'arcade.html';
+    });
+  })();
+</script>
 <canvas id="cv"></canvas>
 <div id="vignette"></div>
 
