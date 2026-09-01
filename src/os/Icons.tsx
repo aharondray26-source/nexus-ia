@@ -38,6 +38,15 @@ const PATHS: Record<string, ReactElement> = {
       <path d="M7 11v4c0 1 2.2 2.5 5 2.5s5-1.5 5-2.5v-4" />
     </>
   ),
+  // NeoSchool : la meme toque que « Apprendre », avec le gland qui pend — on
+  // les reconnait comme parents sans les confondre.
+  neoschool: (
+    <>
+      <path d="M3 9l9-4 9 4-9 4-9-4z" />
+      <path d="M7 11.2v3.8c0 1 2.2 2.5 5 2.5s5-1.5 5-2.5v-3.8" />
+      <path d="M21 9v5" />
+    </>
+  ),
   mail: (
     <>
       <rect x="3" y="5" width="18" height="14" rx="2" />

@@ -11,6 +11,7 @@ import Tasks from "../apps/Tasks";
 import Clock from "../apps/Clock";
 import WebSearch from "../apps/WebSearch";
 import Annales from "../apps/Annales";
+import NeoSchool from "../apps/NeoSchool";
 import Weather from "../apps/Weather";
 import Focus from "../apps/Focus";
 import Settings from "../apps/Settings";
@@ -84,6 +85,7 @@ export const APPS: AppDefinition[] = [
   { id: "news", title: "Actualités", icon: "news", hue: "#3c83f6", keywords: "actu infos foot football scores direct ligue des champions journal", Component: News, width: 680, height: 520 },
   { id: "soundscapes", title: "Ambiances", icon: "soundscapes", hue: "#39ddf9", keywords: "bruit blanc pluie vagues ambiance musique concentration relaxation audio", Component: Soundscapes, width: 540, height: 440 },
   { id: "learn", title: "Apprendre", icon: "learn", hue: "#50e2ad", keywords: "ecole cours lecon histoire sciences maths", Component: Learn, width: 500, height: 460 },
+  { id: "neoschool", title: "NeoSchool", icon: "neoschool", hue: "#38bdf8", keywords: "neoschool ecole notes devoirs emploi du temps bulletin scolaire lycee", Component: NeoSchool, width: 900, height: 620 },
   { id: "annales", title: "Révisions", icon: "annales", hue: "#f86d6d", keywords: "sujets brevet bac examen revision documents", Component: Annales, width: 480, height: 480 },
   { id: "onthisday", title: "Éphéméride", icon: "history", hue: "#fb923c", keywords: "histoire ce jour anecdote culture", Component: OnThisDay, width: 460, height: 480 },
   { id: "web", title: "Recherche web", icon: "search", hue: "#e66df8", keywords: "google chercher internet wikipedia", Component: WebSearch, width: 480, height: 480 },
