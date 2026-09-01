@@ -41,13 +41,18 @@ export default function Game() {
             <ChessGame />
           </div>
         ) : (
-          <iframe
-            title="Nexus Retro Arcade"
-            src="/arcade.html"
-            className="h-full w-full"
-            style={{ border: 0 }}
-            allow="fullscreen"
-          />
+          // Le meme retrait que pour les echecs : sans lui, la barre d'onglets
+          // flottante tombait EN PLEIN MILIEU du titre « NEXUS ARCADE » et en
+          // mangeait les lettres du centre.
+          <div className="h-full pt-16">
+            <iframe
+              title="Nexus Retro Arcade"
+              src="/arcade.html"
+              className="h-full w-full"
+              style={{ border: 0 }}
+              allow="fullscreen"
+            />
+          </div>
         )}
       </div>
     </div>

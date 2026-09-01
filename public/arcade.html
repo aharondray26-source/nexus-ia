@@ -53,12 +53,12 @@ kbd{border:1px solid #27272a;border-radius:4px;padding:1px 6px;font-size:10px;co
 
 <div id="menu" class="screen">
   <h1>NEXUS <b>ARCADE</b></h1>
-  <div class="sub">Quatre jeux, zero prise de tete</div>
+  <div class="sub">Quatre jeux, zéro prise de tête</div>
   <div class="cards">
     <div class="card" id="playArena">
       <div class="ico">◉</div>
       <div class="name">Neon Arena II</div>
-      <div class="desc">Survis aux vagues. Ameliore-toi entre chaque vague, affronte les boss.</div>
+      <div class="desc">Survis aux vagues. Améliore-toi entre chaque vague, affronte les boss.</div>
       <div class="best" id="bestArena"></div>
     </div>
     <div class="card" id="playSnake">
@@ -76,12 +76,12 @@ kbd{border:1px solid #27272a;border-radius:4px;padding:1px 6px;font-size:10px;co
     <div class="card" id="playUltra">
       <div class="ico">⚔</div>
       <div class="name">Neon Arena Ultra</div>
-      <div class="desc">3 contre 3, brawl ball, survivant, combat de geant. Brawlers,
+      <div class="desc">3 contre 3, brawl ball, survivant, combat de géant. Brawlers,
         boutique, coffres et pass de combat.</div>
-      <div class="best">Le grand jeu — s'ouvre a part</div>
+      <div class="best">Le grand jeu — s'ouvre à part</div>
     </div>
   </div>
-  <div class="hint">Deplacement : <kbd>fleches</kbd> ou <kbd>ZQSD</kbd> &nbsp;·&nbsp; Dash : <kbd>espace</kbd> &nbsp;·&nbsp; Pause : <kbd>P</kbd> &nbsp;·&nbsp; Menu : <kbd>Echap</kbd><br>A la souris : glisse dans une direction pour jouer (2048 et Serpent) · clique pour le dash<br>Sur mobile : glisse pour bouger · double-tape pour le dash · balaye pour tourner</div>
+  <div class="hint">Déplacement : <kbd>fleches</kbd> ou <kbd>ZQSD</kbd> &nbsp;·&nbsp; Dash : <kbd>espace</kbd> &nbsp;·&nbsp; Pause : <kbd>P</kbd> &nbsp;·&nbsp; Menu : <kbd>Échap</kbd><br>À la souris : glisse dans une direction pour jouer (2048 et Serpent) · clique pour le dash<br>Sur mobile : glisse pour bouger · double-tape pour le dash · balaye pour tourner</div>
 </div>
 
 <div id="over" class="overlay hidden">
@@ -262,7 +262,7 @@ const UPGRADES = [
   { ico:"»", name:"Dash affute", desc:"Dash plus frequent", max:a=>a.dashCdMax<=.45, apply:a=>a.dashCdMax=Math.max(.45,a.dashCdMax*.85) },
   { ico:"⋔", name:"Multi-tir", desc:"+1 projectile", max:a=>a.shots>=5, apply:a=>a.shots=Math.min(5,a.shots+1) },
   { ico:"→", name:"Perforant", desc:"Traverse +1 ennemi", max:a=>a.pierce>=3, apply:a=>a.pierce=Math.min(3,a.pierce+1) },
-  { ico:"➤", name:"Vitesse", desc:"Deplacement +12%", max:a=>a.speed>=430, apply:a=>a.speed=Math.min(430,a.speed+30) },
+  { ico:"➤", name:"Vitesse", desc:"Déplacement +12%", max:a=>a.speed>=430, apply:a=>a.speed=Math.min(430,a.speed+30) },
   { ico:"◎", name:"Aimant", desc:"Ramasse de plus loin", max:a=>a.magnet>=180, apply:a=>a.magnet=Math.min(180,a.magnet+35) },
   // Nouvelles voies : plus de varietes de parties possibles
   { ico:"✧", name:"Ricochet", desc:"Les tirs rebondissent sur les bords", max:a=>a.bounce>=2, apply:a=>a.bounce=(a.bounce||0)+1 },
