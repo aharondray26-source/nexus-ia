@@ -34,10 +34,10 @@ $("page").addEventListener("click", async () => {
 // alors en grand, centre. Avant, on tombait sur l'accueil sans rien de plus.
 document.querySelectorAll(".esp button").forEach((b) => {
   b.addEventListener("click", () => {
-    // NeoSchool est un espace a part entiere : il a sa propre adresse.
-    const u = b.dataset.neo
-      ? "https://neo-school-nine.vercel.app/"
-      : SITE + "?app=" + b.dataset.app;
+    // NeoSchool est desormais un ESPACE de Nexus : il s'ouvre dedans, comme
+    // les autres. Avant, ce raccourci faisait sortir vers un autre site — ce
+    // qui n'a jamais eu l'air d'appartenir a Nexus.
+    const u = SITE + "?app=" + (b.dataset.neo ? "neoschool" : b.dataset.app);
     chrome.tabs.create({ url: u });
     window.close();
   });
