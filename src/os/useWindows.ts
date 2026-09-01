@@ -47,11 +47,30 @@ interface WindowsState {
 // telle quelle dans la session : la fenetre se dessinait alors a la taille de
 // son contenu et debordait de l'ecran, boutons coupes. On refuse toute mesure
 // qui n'a pas de sens.
-const ECRAN_MIN_L = 900, ECRAN_MIN_H = 600;
-function ecran() {
+/// La ZONE BUREAU : la place réellement disponible pour les fenêtres, en
+/// coordonnées d'écran. Ce n'est PAS la fenêtre du navigateur : la barre
+/// latérale et la barre du haut lui prennent de la place, et les fenêtres sont
+/// positionnées À L'INTÉRIEUR de ce qui reste.
+///
+/// On bornait sur la largeur de l'écran (1280) alors que le bureau n'en fait
+/// que 1226 : une fenêtre posée tout à droite dépassait de la largeur de la
+/// barre latérale — 34 px de contenu hors de l'écran, invisibles et
+/// inatteignables. Même famille que la largeur négative : une mesure prise au
+/// mauvais endroit.
+let zone: { left: number; top: number; width: number; height: number } | null = null;
+export function noterZoneBureau(z: { left: number; top: number; width: number; height: number }) {
+  if (z.width >= 320 && z.height >= 240) zone = z;
+}
+export function zoneBureau() {
+  if (zone) return zone;
   const w = typeof window !== "undefined" ? window.innerWidth : 0;
   const h = typeof window !== "undefined" ? window.innerHeight : 0;
-  return { vw: w >= 320 ? w : 1280, vh: h >= 240 ? h : 800 };
+  return { left: 0, top: 0, width: w >= 320 ? w : 1280, height: h >= 240 ? h : 800 };
+}
+
+function ecran() {
+  const z = zoneBureau();
+  return { vw: z.width, vh: z.height };
 }
 // Une fenetre a toujours une taille utilisable : jamais plus grande que
 // l'ecran, jamais plus petite que de quoi lire son contenu.

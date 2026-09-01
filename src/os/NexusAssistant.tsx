@@ -20,7 +20,7 @@ import {
   ArrowDown,
   Sliders,
 } from "lucide-react";
-import { useWindows } from "./useWindows";
+import { useWindows, zoneBureau } from "./useWindows";
 import { generateNexusResponse, queryNexusAIObject } from "../lib/nexusBrain";
 import { addNexusTask } from "../lib/persist";
 import { NexusMessageRenderer } from "./NexusMessageRenderer";
@@ -184,6 +184,119 @@ export default function NexusAssistant() {
     setOpen(nextState);
     window.dispatchEvent(new CustomEvent("nexus:ai-active", { detail: { active: nextState } }));
   };
+
+  // ── La mascotte va se mettre là où elle gêne le moins ────────────────────
+  //
+  // Aharon : « il faut que le robot se déplace là où il y a du vide, pas besoin
+  // que je le déplace ». Elle restait plantée en bas à droite, souvent PAR-DESSUS
+  // une fenêtre. Elle regarde maintenant où sont les fenêtres ouvertes et va
+  // s'installer dans le coin le plus dégagé — d'un mouvement souple, jamais
+  // pendant qu'on la tient, jamais quand son panneau est ouvert.
+  const [deplaceeAuto, setDeplaceeAuto] = useState(false);
+  /// Un fichier survole la mascotte : elle s'ouvre en grand pour dire « donne ».
+  const [surLaMascotte, setSurLaMascotte] = useState(false);
+  const enDeplacement = useRef(false);
+
+  useEffect(() => {
+    if (open || isDocked) return;
+    // On REESSAIE. Le premier jet mesurait une fois, et si la page n'etait pas
+    // encore disposee — largeur 0, onglet masque — il renonçait pour toujours :
+    // la mascotte restait posee sur une fenetre, sans jamais se rattraper. Elle
+    // se replace donc aussi quand l'ecran change de taille, c'est-a-dire aussi
+    // quand la page devient enfin visible.
+    const placer = () => {
+      if (enDeplacement.current) return;
+      const vw = window.innerWidth, vh = window.innerHeight;
+      if (vw < 600 || vh < 400) return;           // téléphone, ou page pas encore mesurée
+      // On MESURE la mascotte au lieu de supposer sa taille : elle change avec
+      // le reglage compact/normal/agrandi, et une taille devinee la faisait
+      // mordre sur la barre laterale.
+      const boite = mascotRef.current?.getBoundingClientRect();
+      const taille = Math.max(46, Math.round(boite?.width || 76));
+      const marge = 18, basDuDock = 84;
+
+      // Les fenêtres visibles, en coordonnées d'ÉCRAN. Leurs x et y sont
+      // relatifs au bureau, qui commence sous la barre du haut et à droite de
+      // la barre latérale : sans ce décalage on cherchait le vide au mauvais
+      // endroit, et la mascotte se posait tranquillement sur une fenêtre.
+      const z0 = zoneBureau();
+      // Une zone qui vaut exactement l'ecran, c'est la valeur de repli : la
+      // vraie n'a pas encore ete mesuree. On ne place rien sur une supposition.
+      if (z0.left === 0 && z0.top === 0) return;
+      const zones = windows
+        .filter((w) => !w.minimized)
+        .map((w) => ({ x: z0.left + w.x, y: z0.top + w.y, w: w.width, h: w.height }));
+
+      // Les quatre coins, plus les deux milieux verticaux : six places
+      // possibles, toutes en bordure pour ne jamais couper le travail en deux.
+      const places = [
+        { nom: "bas-droite", left: vw - taille - marge, top: vh - taille - basDuDock },
+        { nom: "bas-gauche", left: z0.left + marge, top: vh - taille - basDuDock },
+        { nom: "haut-droite", left: vw - taille - marge, top: z0.top + marge },
+        { nom: "haut-gauche", left: z0.left + marge, top: z0.top + marge },
+        { nom: "milieu-droite", left: vw - taille - marge, top: (vh - taille) / 2 },
+        { nom: "milieu-gauche", left: z0.left + marge, top: (vh - taille) / 2 },
+      ];
+
+      // Combien une place est-elle libre ? On mesure la distance à la fenêtre
+      // la plus proche ; une place POSÉE SUR une fenêtre vaut zéro.
+      const degagement = (p: { left: number; top: number }) => {
+        let pire = Infinity;
+        for (const z of zones) {
+          const dx = Math.max(z.x - (p.left + taille), p.left - (z.x + z.w), 0);
+          const dy = Math.max(z.y - (p.top + taille), p.top - (z.y + z.h), 0);
+          pire = Math.min(pire, dx === 0 && dy === 0 ? 0 : Math.hypot(dx, dy));
+        }
+        return zones.length ? pire : Infinity;
+      };
+
+      // On note TOUTES les places, puis on compare. Le premier jet comparait
+      // chaque place au meilleur score COURANT en exigeant 24 px de mieux :
+      // partant de -1, la toute première place ne pouvait jamais l'emporter, et
+      // la mascotte restait plantée sur la fenêtre. On compare donc à la
+      // MAISON — le bas-droite — et on ne déménage que si c'est nettement
+      // mieux : une mascotte qui saute d'un coin à l'autre pour trois pixels
+      // gagnés est plus agaçante qu'une mascotte immobile.
+      const notes = places.map((p) => ({ p, sc: degagement(p) }));
+      const maison = notes[0];
+      const meilleur = notes.reduce((a, b) => (b.sc > a.sc ? b : a));
+      const meilleure = meilleur.sc > maison.sc + 40 ? meilleur.p : maison.p;
+
+      // De la position naturelle (bas-droite) vers la place choisie.
+      // ABSOLU, jamais relatif. Un premier jet ajoutait l'ecart au decalage
+      // courant : chaque passage empilait l'erreur du precedent et la mascotte
+      // finissait HORS DE L'ECRAN. On calcule donc sa position NATURELLE — celle
+      // qu'elle aurait sans decalage — puis le decalage exact pour l'amener au
+      // but. Le resultat ne depend jamais de ce qui a ete fait avant.
+      const enveloppe = mascotRef.current?.parentElement;
+      if (!enveloppe || !boite) return;
+      const st = window.getComputedStyle(enveloppe);
+      const m = new DOMMatrixReadOnly(st.transform === "none" ? "" : st.transform);
+      const naturelLeft = boite.left - m.m41;
+      const naturelTop = boite.top - m.m42;
+      const x = Math.round(meilleure.left - naturelLeft);
+      const y = Math.round(meilleure.top - naturelTop);
+
+      enDeplacement.current = true;
+      setDeplaceeAuto(true);
+      pillControls
+        .start({ x, y, transition: { type: "spring", stiffness: 190, damping: 21, mass: 0.9 } })
+        .finally(() => {
+          enDeplacement.current = false;
+          // Le halo s'éteint APRÈS l'arrivée : un déplacement qu'on n'a pas vu
+          // partir donne l'impression d'un bug, pas d'une intention.
+          window.setTimeout(() => setDeplaceeAuto(false), 260);
+        });
+    };
+    // On laisse la fenêtre finir de naître avant de juger de la place.
+    const t = window.setTimeout(placer, 420);
+    window.addEventListener("resize", placer);
+    return () => {
+      window.clearTimeout(t);
+      window.removeEventListener("resize", placer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [windows, open, isDocked]);
 
   const handleFileSelect = (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -767,7 +880,24 @@ export default function NexusAssistant() {
         }}
         whileDrag={{ scale: 1.06, boxShadow: "0 20px 50px rgba(56,189,248,0.5)" }}
         whileHover={{ scale: 1.03 }}
-        className="fixed bottom-24 sm:bottom-16 right-3 sm:right-6 z-[999999] touch-none cursor-grab active:cursor-grabbing select-none"
+        onDragEnter={(e) => { e.preventDefault(); setSurLaMascotte(true); }}
+        onDragOver={(e) => { e.preventDefault(); setSurLaMascotte(true); }}
+        onDragLeave={() => setSurLaMascotte(false)}
+        onDrop={(e) => {
+          // Glisser un fichier SUR la mascotte : elle l'attrape, ouvre le chat,
+          // et le fichier y est déjà. C'est exactement ce qu'Aharon demandait —
+          // pas « ouvre le chat PUIS cherche le bouton PUIS choisis le fichier ».
+          const f = (e as unknown as React.DragEvent).dataTransfer?.files;
+          if (!f || !f.length) return;
+          e.preventDefault();
+          e.stopPropagation();
+          setSurLaMascotte(false);
+          handleFileSelect(f);
+          setOpen(true);
+        }}
+        className={`fixed bottom-24 sm:bottom-16 right-3 sm:right-6 z-[999999] touch-none cursor-grab active:cursor-grabbing select-none ${
+          surLaMascotte ? "nx-mascotte-recoit" : ""
+        } ${deplaceeAuto ? "nx-mascotte-file" : ""}`}
       >
         {/* La mascotte remplace l'ancienne pastille : le corps ouvre l'assistant,
             l'oeil gauche ajoute un fichier, l'oeil droit ouvre la cle API. */}

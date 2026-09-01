@@ -5,7 +5,7 @@ import "./index.css";
 import { initSliderFill } from "./lib/sliderFill";
 import { runMigrations } from "./lib/migrations";
 import { initNexusSync } from "./lib/nexusAccount";
-import { useWindows, tailleGrande } from "./os/useWindows";
+import { useWindows, tailleGrande, zoneBureau } from "./os/useWindows";
 import { getApp, APPS } from "./os/appsRegistry";
 import { arrivee, vientDUnLien } from "./lib/arrivee";
 
@@ -75,6 +75,7 @@ declare global {
       ouvrir: (id: string) => void;
       espaces: () => string[];
       espacesConnus: () => string[];
+      zone: () => { left: number; top: number; width: number; height: number };
     };
   }
 }
@@ -86,6 +87,9 @@ window.nexus = {
   // Tous les espaces existants, ouverts ou non : c'est par la que le banc
   // d'essai les passe en revue un par un.
   espacesConnus: () => APPS.map((a) => a.id),
+  // La zone bureau telle que Nexus la voit. Sert au banc d'essai : une fenetre
+  // qui deborde vient presque toujours d'une zone mal mesuree.
+  zone: () => zoneBureau(),
 };
 
 // Le service worker (mode hors ligne). Il n'est PAS indispensable : Nexus

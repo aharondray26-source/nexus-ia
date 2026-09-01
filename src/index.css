@@ -752,6 +752,19 @@ html.light-mode .nx-widget {
                    -ms-overflow-style: none; }
 .nx-barre-outils::-webkit-scrollbar { display: none; }
 
+/* La mascotte reçoit un fichier : elle grandit et s'auréole, pour qu'on voie
+   qu'on peut lâcher. Sans ce signal, on lâche à côté et le fichier s'ouvre dans
+   un onglet — le contraire de ce qu'on voulait. */
+.nx-mascotte-recoit { animation: nx-recoit .9s var(--doux) infinite; }
+/* Elle se déplace toute seule : un halo la suit le temps du trajet, pour qu'on
+   VOIE qu'elle bouge d'elle-même. Un objet qui change de place sans prévenir
+   ressemble à un bug ; le même, avec une traînée, ressemble à une intention. */
+.nx-mascotte-file { filter: drop-shadow(0 0 16px rgba(129,140,248,.55)); }
+@keyframes nx-recoit {
+  0%, 100% { transform: scale(1.06); filter: drop-shadow(0 0 0 rgba(56,189,248,.0)); }
+  50%      { transform: scale(1.13); filter: drop-shadow(0 0 22px rgba(56,189,248,.75)); }
+}
+
 /* La carte du monde reste bien visible sur l'ecran d'accueil */
 .nx-world {
   position: fixed; inset: 0; pointer-events: none; z-index: 0;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Dock from "./Dock";
 import TopBar from "./TopBar";
 import { estModeOnglet } from "../lib/ongletMode";
@@ -7,7 +7,7 @@ import ControlRoom from "./ControlRoom";
 import CallWatcher from "./CallWatcher";
 import Home from "./Home";
 import CommandPalette from "./CommandPalette";
-import { useWindows } from "./useWindows";
+import { useWindows, noterZoneBureau } from "./useWindows";
 import { useSettings, resolveWallpaper, type DockPos } from "./useSettings";
 import { getApp } from "./appsRegistry";
 import { isTauri } from "../lib/tauri";
@@ -23,6 +23,7 @@ export default function Desktop() {
   const setPaletteOpen = useWindows((s) => s.setPaletteOpen);
   const autoMinimizeInactiveWindows = useWindows((s) => s.autoMinimizeInactiveWindows);
   const ajusterAEcran = useWindows((s) => s.ajusterAEcran);
+  const zoneRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const background = useSettings((s) => s.background);
   const wallpaper = useSettings((s) => s.wallpaper);
@@ -38,10 +39,17 @@ export default function Desktop() {
   // taille : la moitie du contenu passait hors champ.
   useEffect(() => {
     let t: number | undefined;
+    const mesurer = () => {
+      const el = zoneRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      noterZoneBureau({ left: r.left, top: r.top, width: r.width, height: r.height });
+    };
     const suivre = () => {
       window.clearTimeout(t);
-      t = window.setTimeout(() => ajusterAEcran(), 120);
+      t = window.setTimeout(() => { mesurer(); ajusterAEcran(); }, 120);
     };
+    mesurer();
     ajusterAEcran();
     window.addEventListener("resize", suivre);
     window.addEventListener("orientationchange", suivre);
@@ -129,8 +137,11 @@ export default function Desktop() {
       >
         {!estModeOnglet() && (pos === "left" || pos === "right") && dockEl}
 
-        {/* Le bureau ou se posent les fenetres. */}
-        <div className="relative flex-1 overflow-hidden">
+        {/* Le bureau ou se posent les fenetres. On MESURE cette zone : c'est
+            elle qui borne les fenetres, pas la fenetre du navigateur. La barre
+            laterale lui prend sa largeur, et une fenetre bornee sur l'ecran
+            entier depassait d'autant a droite. */}
+        <div ref={zoneRef} className="relative flex-1 overflow-hidden">
           {/* Reflet discret du fond d'ecran choisi : l'espace de travail garde
               son epure, mais reste en continuite visuelle avec l'accueil. */}
           <div
