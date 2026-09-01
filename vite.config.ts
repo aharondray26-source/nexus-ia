@@ -11,6 +11,13 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
+        // On inscrit le service worker NOUS-MEMES (voir main.tsx). Le script
+        // pose par defaut n'attrape pas l'echec : dans un WKWebView, ou dans
+        // un onglet ou les service workers sont interdits, il laissait une
+        // promesse rejetee dans la console — « An unknown error occurred when
+        // fetching the script » — qui donne l'impression d'un site casse alors
+        // que tout marche.
+        injectRegister: null,
         manifest: false, // We already have our own site.webmanifest and meta tags in index.html
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg}'],

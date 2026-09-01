@@ -88,6 +88,20 @@ window.nexus = {
   espacesConnus: () => APPS.map((a) => a.id),
 };
 
+// Le service worker (mode hors ligne). Il n'est PAS indispensable : Nexus
+// marche sans lui. On l'inscrit donc en silence, et on avale l'echec — dans
+// l'application Mac, WebKit refuse les service workers servis depuis un
+// serveur local, et la promesse rejetee salissait la console pour rien.
+function inscrireLeServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {
+      // Hors ligne indisponible ici. Tout le reste fonctionne.
+    });
+  });
+}
+inscrireLeServiceWorker();
+
 demandesDeLExtension();
 runMigrations();
 initSliderFill();
