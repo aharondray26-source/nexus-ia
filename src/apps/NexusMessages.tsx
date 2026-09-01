@@ -84,7 +84,7 @@ export default function NexusMessages() {
         <UserPlus size={26} className="text-nexus-muted" />
         <p className="text-sm text-nexus-text">Connecte-toi a ton compte Nexus</p>
         <p className="max-w-xs text-[11px] leading-relaxed text-nexus-muted">
-          Clique sur « Compte » en haut a droite. Ton ami cree le sien avec SON adresse
+          Clique sur « Compte » en haut à droite. Ton ami crée le sien avec SON adresse
           e-mail (pas besoin de Google). Ensuite tu l'ajoutes ici et vous discutez.
         </p>
       </div>

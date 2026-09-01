@@ -99,7 +99,7 @@ export default function Notes() {
           ))}
           {notes.length === 0 && (
             <li className="px-1 py-2 text-[11px] text-nexus-muted/70">
-              Aucune note. Cree la premiere.
+              Aucune note. Crée la première.
             </li>
           )}
         </ul>
@@ -156,14 +156,14 @@ export default function Notes() {
             <textarea
               value={active.body}
               onChange={(e) => updateActive({ body: e.target.value })}
-              placeholder="Commence a ecrire..."
+              placeholder="Commence à écrire…"
               className="flex-1 resize-none bg-transparent text-sm leading-relaxed text-nexus-text outline-none placeholder:text-nexus-muted/50"
             />
           </>
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-nexus-border text-center">
             <span className="text-sm text-nexus-muted">
-              Choisis une note ou cree-en une.
+              Choisis une note, ou crée-en une.
             </span>
           </div>
         )}

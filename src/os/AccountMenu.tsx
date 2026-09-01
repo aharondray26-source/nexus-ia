@@ -237,7 +237,7 @@ export default function AccountMenu() {
               {!hasPassword() && (
                 <div className="flex flex-col gap-1.5 rounded-xl border border-nexus-border bg-white/[0.04] p-2">
                   <span className="text-[10px] leading-relaxed text-nexus-muted">
-                    Ce compte a ete cree via Google. Ajoute un mot de passe pour
+                    Ce compte a été créé via Google. Ajoute un mot de passe pour
                     pouvoir aussi entrer sans Google, depuis n'importe ou.
                   </span>
                   <div className="flex gap-1.5">
@@ -275,7 +275,7 @@ export default function AccountMenu() {
           ) : (
             <form onSubmit={submitNexus} className="flex flex-col gap-2">
               <p className="text-[11px] leading-relaxed text-nexus-muted">
-                Ton e-mail + un mot de passe. Si le compte n'existe pas, il est cree.
+                Ton e-mail + un mot de passe. Si le compte n'existe pas, il est créé.
               </p>
               <input
                 type="email"
@@ -350,7 +350,7 @@ export default function AccountMenu() {
                 Continuer avec Google
               </button>
               <p className="mt-1 text-[10px] leading-relaxed text-nexus-muted/80">
-                Ouvert a tout le monde. C'est le meme compte Nexus : tes donnees
+                Ouvert à tout le monde. C'est le même compte Nexus : tes données
                 te suivent, que tu entres par Google ou par mot de passe.
               </p>
             </>
@@ -359,8 +359,8 @@ export default function AccountMenu() {
           {proposerCreation && (
             <div className="mt-2 flex flex-col gap-1.5 rounded-lg border border-nexus-border bg-nexus-bg p-2.5">
               <span className="text-[11px] leading-relaxed text-nexus-muted">
-                Si c'est ta premiere fois, cree le compte. Si tu en as deja un,
-                verifie le mot de passe ou entre par Google — c'est le meme compte.
+                Si c'est ta première fois, crée le compte. Si tu en as déjà un,
+                vérifie le mot de passe ou entre par Google — c'est le même compte.
               </span>
               <div className="flex flex-wrap gap-1.5">
                 <button onClick={creerCompte} disabled={busy}

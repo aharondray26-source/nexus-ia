@@ -157,7 +157,7 @@ export default function Window({ win, title, hue, children }: WindowProps) {
         {/* Ilot de boutons (fermer, reduire, agrandir) sur le coté gauche */}
         <div className="group/ctrl flex items-center gap-1.5">
           <Control color="#f87171" symbol="✕" onClick={animatedClose} label="Fermer" />
-          <Control color="#fbbf24" symbol="–" onClick={() => toggleMinimize(win.id)} label="Reduire" />
+          <Control color="#fbbf24" symbol="–" onClick={() => toggleMinimize(win.id)} label="Réduire" />
           {!isMobile && (
             <Control color="#34d399" symbol="◻" onClick={toggleMaximize} label="Agrandir" />
           )}

@@ -227,6 +227,10 @@ export default function Files() {
   });
 
   // Calculate folder counts
+  // « General » est la CLE du dossier par defaut, enregistree dans les fichiers
+  // deja ranges : la renommer les perdrait tous. On corrige seulement le nom
+  // AFFICHE.
+  const nomDossier = (fName: string) => (fName === "General" ? "Général" : fName);
   const getFolderCount = (fName: string) => files.filter((x) => x.folder === fName).length;
 
   return (
@@ -306,7 +310,7 @@ export default function Files() {
                   >
                     <div className="flex items-center gap-2 truncate">
                       <Folder className={`w-4 h-4 shrink-0 ${isActive ? "text-cyan-400 fill-cyan-400/20" : "text-amber-400/80"}`} />
-                      <span className="truncate">{fName}</span>
+                      <span className="truncate">{nomDossier(fName)}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <span className="text-[10px] bg-black/40 px-1.5 py-0.5 rounded-full text-slate-400 font-mono">
@@ -365,7 +369,7 @@ export default function Files() {
             <span className="text-slate-400 font-mono">Racine</span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
             <span className="font-bold text-white bg-white/10 px-2 py-0.5 rounded-lg border border-white/10">
-              {currentFolder === "ALL" ? "Tous les fichiers" : currentFolder}
+              {currentFolder === "ALL" ? "Tous les fichiers" : nomDossier(currentFolder)}
             </span>
           </div>
 
@@ -440,7 +444,7 @@ export default function Files() {
                     <div className="flex items-center gap-3 truncate">
                       <Folder className="w-8 h-8 text-amber-400 group-hover:scale-105 transition-transform" />
                       <div className="truncate">
-                        <p className="text-xs font-bold text-white truncate">{fName}</p>
+                        <p className="text-xs font-bold text-white truncate">{nomDossier(fName)}</p>
                         <p className="text-[10px] text-slate-400">{getFolderCount(fName)} élément(s)</p>
                       </div>
                     </div>

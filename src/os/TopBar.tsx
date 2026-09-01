@@ -112,7 +112,7 @@ export default function TopBar() {
         {openCount >= 2 && (
           <button
             onClick={closeAll}
-            title="Fermer toutes les fenetres"
+            title="Fermer toutes les fenêtres"
             className="nx-btn nx-btn-danger sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px]"
           >
             Fermer tout

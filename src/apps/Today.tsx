@@ -28,7 +28,7 @@ export default function Today() {
     <div className="flex h-full flex-col gap-4 overflow-y-auto">
       <div>
         <h3 className="text-base font-medium text-nexus-text">
-          {userName ? `Bonjour, ${userName}` : "Ta journee"}
+          {userName ? `Bonjour, ${userName}` : "Ta journée"}
         </h3>
         <p className="text-xs capitalize text-nexus-muted">{dateLabel}</p>
       </div>
@@ -73,7 +73,7 @@ export default function Today() {
 
       <div className="mt-auto flex flex-col gap-2">
         <span className="text-[11px] uppercase tracking-wider text-nexus-muted">
-          Ton activite
+          Ton activité
         </span>
         <div className="grid grid-cols-3 gap-2">
           <Stat value={activity.daysActive} label="jours actifs" />

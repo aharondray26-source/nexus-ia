@@ -80,9 +80,9 @@ export default function Settings() {
   const reset = useSettings((s) => s.reset);
 
   const WIDGET_LABELS: { key: keyof typeof widgets; label: string }[] = [
-    { key: "activity", label: "Mon activite" },
+    { key: "activity", label: "Mon activité" },
     { key: "tasks", label: "A faire" },
-    { key: "weather", label: "Meteo" },
+    { key: "weather", label: "Météo" },
     { key: "history", label: "Ce jour" },
     { key: "quote", label: "Pensee du jour" },
   ];
@@ -304,7 +304,7 @@ export default function Settings() {
 
       <div className="flex flex-col gap-2">
         <span className="text-xs uppercase tracking-wider text-nexus-muted">
-          Fond d'ecran de l'accueil
+          Fond d'écran de l'accueil
         </span>
         <div className="grid grid-cols-4 gap-2">
           {WALLPAPERS.map((w) => (
@@ -356,7 +356,7 @@ export default function Settings() {
           </label>
         </div>
         <span className="text-[10px] text-nexus-muted/70">
-          + : importe ta propre image comme fond d'ecran.
+          + : importe ta propre image comme fond d'écran.
         </span>
       </div>
 
@@ -570,26 +570,26 @@ export default function Settings() {
           Faire de Nexus ta page d'accueil
         </span>
         <div className="rounded-lg border border-nexus-border bg-nexus-bg p-3 text-[11px] leading-relaxed text-nexus-muted">
-          Pour retrouver Nexus a chaque ouverture du navigateur :
+          Pour retrouver Nexus à chaque ouverture du navigateur :
           {typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent) ? (
             <p className="mt-1">
-              <span className="text-nexus-text">Safari</span> : Reglages → General →
+              <span className="text-nexus-text">Safari</span> : Réglages → Général →
               « La page d'accueil » → colle{" "}
               <span className="text-nexus-text">nexus-espace.netlify.app</span>.
               <br />
-              <span className="text-nexus-text">Chrome</span> : Parametres → Au
-              demarrage → « Ouvrir une page » → ajoute l'adresse.
+              <span className="text-nexus-text">Chrome</span> : Paramètres → Au
+              démarrage → « Ouvrir une page » → ajoute l'adresse.
             </p>
           ) : (
             <p className="mt-1">
-              <span className="text-nexus-text">Chrome / Edge</span> : Parametres → Au
-              demarrage → « Ouvrir une page ou des pages precises » → ajoute{" "}
+              <span className="text-nexus-text">Chrome / Edge</span> : Paramètres → Au
+              démarrage → « Ouvrir une page ou des pages précises » → ajoute{" "}
               <span className="text-nexus-text">nexus-espace.netlify.app</span>.
             </p>
           )}
           <p className="mt-1">
-            <span className="text-nexus-text">Telephone</span> : ouvre le site, puis
-            « Partager → Sur l'ecran d'accueil » (iPhone) ou « Ajouter a l'ecran
+            <span className="text-nexus-text">Téléphone</span> : ouvre le site, puis
+            « Partager → Sur l'écran d'accueil » (iPhone) ou « Ajouter à l'écran
             d'accueil » (Android).
           </p>
         </div>

@@ -47,7 +47,7 @@ export default function Terminal() {
   • ls           - Lister les applications installées
   • open <id>    - Ouvrir une application (ex: open notes, open weather)
   • ai <texte>   - Interroger l'IA Nexus AI Pro directement
-  • theme <nom>  - Changer la couleur (cyan, matrix, amber, violet)
+  • thème <nom>  - Changer la couleur (cyan, matrix, amber, violet)
   • matrix       - Activer l'animation Matrix
   • whoami       - Informations utilisateur
   • date         - Date et heure système

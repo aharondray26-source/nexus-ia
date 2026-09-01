@@ -5,7 +5,8 @@ import "./index.css";
 import { initSliderFill } from "./lib/sliderFill";
 import { runMigrations } from "./lib/migrations";
 import { initNexusSync } from "./lib/nexusAccount";
-import { useWindows } from "./os/useWindows";
+import { useWindows, tailleGrande } from "./os/useWindows";
+import { getApp, APPS } from "./os/appsRegistry";
 import { arrivee, vientDUnLien } from "./lib/arrivee";
 
 // Ce que l'extension du navigateur peut demander au site, par l'adresse :
@@ -42,9 +43,7 @@ function demandesDeLExtension() {
       // Arrivee depuis l'extension : on ouvre EN GRAND. Une fenetre de
       // 620x480 perdue au milieu de l'ecran donnait l'impression que le
       // bouton n'avait rien fait.
-      const vw = window.innerWidth, vh = window.innerHeight;
-      const taille = { width: Math.min(1320, Math.round(vw * 0.88)),
-                       height: Math.min(900, Math.round(vh * 0.86)) };
+      const taille = tailleGrande(getApp(quoi));
       try {
         // On ecarte ce qui trainait de la session precedente : arriver par
         // « ouvre-moi les Notes » et tomber sur une pile de quatre fenetres
@@ -71,17 +70,22 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
 // de ses fenetres et doit pouvoir lui demander quelque chose.
 // On n'expose PAS le magasin entier : seulement ce qui est utile.
 declare global {
-  interface Window { nexus?: { ouvrir: (id: string) => void; espaces: () => string[] } }
+  interface Window {
+    nexus?: {
+      ouvrir: (id: string) => void;
+      espaces: () => string[];
+      espacesConnus: () => string[];
+    };
+  }
 }
 window.nexus = {
   ouvrir(id: string) {
-    const vw = window.innerWidth, vh = window.innerHeight;
-    useWindows.getState().openApp(id, {
-      width: Math.min(1320, Math.round(vw * 0.88)),
-      height: Math.min(900, Math.round(vh * 0.86)),
-    });
+    useWindows.getState().openApp(id, tailleGrande(getApp(id)));
   },
   espaces: () => useWindows.getState().windows.map((w) => w.appId),
+  // Tous les espaces existants, ouverts ou non : c'est par la que le banc
+  // d'essai les passe en revue un par un.
+  espacesConnus: () => APPS.map((a) => a.id),
 };
 
 demandesDeLExtension();

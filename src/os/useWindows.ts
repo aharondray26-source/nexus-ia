@@ -35,9 +35,47 @@ interface WindowsState {
   toggleAutoOrganize: () => void;
   setAutoOrganize: (enabled: boolean) => void;
   autoMinimizeInactiveWindows: (thresholdMs?: number) => void;
+  ajusterAEcran: () => void;
 
   setPaletteOpen: (open: boolean) => void;
   togglePalette: () => void;
+}
+
+// Mesure de l'ecran. `window.innerWidth` peut valoir 0 : onglet encore
+// masque, fenetre pas encore disposee. Un seul zero suffisait a produire une
+// fenetre de largeur NEGATIVE (`Math.min(520, 0 - 88)` = -88), enregistree
+// telle quelle dans la session : la fenetre se dessinait alors a la taille de
+// son contenu et debordait de l'ecran, boutons coupes. On refuse toute mesure
+// qui n'a pas de sens.
+const ECRAN_MIN_L = 900, ECRAN_MIN_H = 600;
+function ecran() {
+  const w = typeof window !== "undefined" ? window.innerWidth : 0;
+  const h = typeof window !== "undefined" ? window.innerHeight : 0;
+  return { vw: w >= 320 ? w : 1280, vh: h >= 240 ? h : 800 };
+}
+// Une fenetre a toujours une taille utilisable : jamais plus grande que
+// l'ecran, jamais plus petite que de quoi lire son contenu.
+const FEN_MIN_L = 380, FEN_MIN_H = 320;
+// « Ouvre-moi cet espace en grand » : la taille d'une arrivee depuis
+// l'exterieur (extension, application Mac, banc d'essai). Elle se calcule ici,
+// une seule fois, pour que personne ne la recalcule a partir d'un innerWidth
+// qui peut valoir 0.
+export function tailleGrande(naturel?: { width: number; height: number }) {
+  const { vw, vh } = ecran();
+  const maxL = Math.min(1320, Math.round(vw * 0.88));
+  const maxH = Math.min(900, Math.round(vh * 0.86));
+  // Sans indication, on prend toute la place. Mais un espace qui se contente
+  // de 420 px de large (la Meteo) ouvert plein ecran, ce sont trois lignes
+  // perdues dans un grand vide : on l'agrandit franchement, pas absurdement.
+  if (!naturel) return { width: maxL, height: maxH };
+  return { width: Math.min(maxL, Math.round(naturel.width * 1.35)),
+           height: Math.min(maxH, Math.round(naturel.height * 1.35)) };
+}
+function borner(l: number, h: number, vw: number, vh: number) {
+  return {
+    width: Math.max(Math.min(FEN_MIN_L, vw - 16), Math.min(l, vw - 24)),
+    height: Math.max(Math.min(FEN_MIN_H, vh - 16), Math.min(h, vh - 60)),
+  };
 }
 
 // Positionne chaque nouvelle fenetre legerement decalee pour un effet d'empilement.
@@ -56,7 +94,24 @@ function loadSession(): { windows: OpenWindow[]; zCounter: number } {
   try {
     const raw = localStorage.getItem("nexus.session");
     if (!raw) return { windows: [], zCounter: 1 };
-    const windows = JSON.parse(raw) as OpenWindow[];
+    const brut = JSON.parse(raw) as OpenWindow[];
+    // Soin des sessions deja abimees : une taille absurde enregistree hier ne
+    // doit pas continuer a casser l'affichage aujourd'hui.
+    const { vw, vh } = ecran();
+    const windows = brut.map((w) => {
+      const t = borner(
+        Number.isFinite(w.width) && w.width > 0 ? w.width : 620,
+        Number.isFinite(w.height) && w.height > 0 ? w.height : 480,
+        vw, vh
+      );
+      return {
+        ...w,
+        width: t.width,
+        height: t.height,
+        x: Math.max(8, Math.min(Number.isFinite(w.x) ? w.x : 80, vw - t.width - 8)),
+        y: Math.max(8, Math.min(Number.isFinite(w.y) ? w.y : 60, vh - t.height - 8)),
+      };
+    });
     const zMax = windows.reduce((m, w) => Math.max(m, w.z), 1);
     return { windows, zCounter: zMax };
   } catch {
@@ -78,15 +133,12 @@ export const useWindows = create<WindowsState>((set, get) => ({
       const now = Date.now();
       const existing = state.windows.find((w) => w.appId === appId);
       const z = state.zCounter + 1;
-      const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
-      const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+      const { vw, vh } = ecran();
       if (existing) {
         // Deja ouvert : on le remonte, et s'il nous demande explicitement une
         // grande taille (arrivee depuis l'extension) on la lui applique aussi,
         // sinon rouvrir depuis l'extension laissait une fenetre minuscule.
-        const g = size
-          ? { width: Math.min(size.width, vw - 88), height: Math.min(size.height, vh - 96) }
-          : null;
+        const g = size ? borner(size.width, size.height, vw, vh) : null;
         return {
           zCounter: z,
           windows: state.windows.map((w) =>
@@ -101,8 +153,7 @@ export const useWindows = create<WindowsState>((set, get) => ({
           ),
         };
       }
-      const width = Math.min(size?.width ?? 520, vw - 88);
-      const height = Math.min(size?.height ?? 460, vh - 96);
+      const { width, height } = borner(size?.width ?? 520, size?.height ?? 460, vw, vh);
       // Une fenetre presque aussi large que l'ecran est une ouverture « en
       // grand » : on la centre au lieu de l'empiler en escalier, sinon elle
       // deborde par le bas. C'est le cas quand l'extension ouvre un espace.
@@ -212,12 +263,29 @@ export const useWindows = create<WindowsState>((set, get) => ({
     })),
 
   // Organise intelligemment toutes les fenetres sur l'ecran sans chevauchement
+  // L'ecran a change de taille (navigateur redimensionne, fenetre du Mac
+  // reduite, telephone tourne). Sans ce rattrapage les espaces gardaient leur
+  // ancienne taille et sortaient de l'ecran : boutons coupes, contenu illisible.
+  ajusterAEcran: () =>
+    set((state) => {
+      const { vw, vh } = ecran();
+      let change = false;
+      const windows = state.windows.map((w) => {
+        const t = borner(w.width, w.height, vw, vh);
+        const x = Math.max(8, Math.min(w.x, vw - t.width - 8));
+        const y = Math.max(8, Math.min(w.y, vh - t.height - 8));
+        if (t.width === w.width && t.height === w.height && x === w.x && y === w.y) return w;
+        change = true;
+        return { ...w, width: t.width, height: t.height, x, y };
+      });
+      return change ? { windows } : state;
+    }),
+
   organizeWindows: () =>
     set((state) => {
       if (state.windows.length === 0) return state;
 
-      const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
-      const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+      const { vw, vh } = ecran();
 
       const padTop = 46;
       const padBottom = 54;
@@ -228,8 +296,12 @@ export const useWindows = create<WindowsState>((set, get) => ({
       const availW = Math.max(320, vw - padLeft - padRight);
       const availH = Math.max(240, vh - padTop - padBottom);
 
-      const visibleWins = state.windows;
+      // Seules les fenetres VISIBLES se partagent le bureau. Ranger en
+      // comptant les fenetres reduites donnait a la seule fenetre affichee
+      // un tiers de l'ecran, pour rien.
+      const visibleWins = state.windows.filter((w) => !w.minimized);
       const count = visibleWins.length;
+      if (count === 0) return state;
       const now = Date.now();
 
       const newPositions: { id: string; x: number; y: number; width: number; height: number }[] = [];

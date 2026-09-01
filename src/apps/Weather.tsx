@@ -1,16 +1,16 @@
 import { useState, type FormEvent } from "react";
 import { usePersistentState } from "../lib/persist";
 
-// Meteo via Open-Meteo (gratuit, sans cle, avec CORS). On cherche d'abord la
-// ville pour obtenir ses coordonnees, puis on demande les previsions.
+// Météo via Open-Meteo (gratuit, sans clé, avec CORS). On cherche d'abord la
+// ville pour obtenir ses coordonnées, puis on demande les prévisions.
 const WEATHER_LABELS: Record<number, string> = {
-  0: "Ciel degage",
-  1: "Plutot degage",
+  0: "Ciel dégagé",
+  1: "Plutôt dégagé",
   2: "Partiellement nuageux",
   3: "Couvert",
   45: "Brouillard",
   48: "Brouillard givrant",
-  51: "Bruine legere",
+  51: "Bruine légère",
   53: "Bruine",
   55: "Bruine forte",
   61: "Pluie faible",
@@ -23,7 +23,7 @@ const WEATHER_LABELS: Record<number, string> = {
   81: "Averses",
   82: "Averses violentes",
   95: "Orage",
-  96: "Orage avec grele",
+  96: "Orage avec grêle",
   99: "Orage violent",
 };
 

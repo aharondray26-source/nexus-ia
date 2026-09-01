@@ -22,6 +22,7 @@ export default function Desktop() {
   const togglePalette = useWindows((s) => s.togglePalette);
   const setPaletteOpen = useWindows((s) => s.setPaletteOpen);
   const autoMinimizeInactiveWindows = useWindows((s) => s.autoMinimizeInactiveWindows);
+  const ajusterAEcran = useWindows((s) => s.ajusterAEcran);
   const isMobile = useIsMobile();
   const background = useSettings((s) => s.background);
   const wallpaper = useSettings((s) => s.wallpaper);
@@ -32,6 +33,25 @@ export default function Desktop() {
   const [aiState, setAiState] = useState<{ active: boolean; thinking?: boolean }>({ active: false });
 
   // Verification periodique des fenetres inactives (2 min)
+  // Quand l'ecran change de taille, on remet les espaces dedans. Sans cela,
+  // reduire la fenetre du navigateur laissait les espaces a leur ancienne
+  // taille : la moitie du contenu passait hors champ.
+  useEffect(() => {
+    let t: number | undefined;
+    const suivre = () => {
+      window.clearTimeout(t);
+      t = window.setTimeout(() => ajusterAEcran(), 120);
+    };
+    ajusterAEcran();
+    window.addEventListener("resize", suivre);
+    window.addEventListener("orientationchange", suivre);
+    return () => {
+      window.clearTimeout(t);
+      window.removeEventListener("resize", suivre);
+      window.removeEventListener("orientationchange", suivre);
+    };
+  }, [ajusterAEcran]);
+
   useEffect(() => {
     if (!autoMinimizeInactive) return;
     const timer = setInterval(() => {

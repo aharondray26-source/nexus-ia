@@ -914,7 +914,7 @@ export default function ControlRoom() {
             <Search size={14} /> Rechercher un espace
           </button>
           <button onClick={() => { openApp("settings", { width: 460, height: 560 }); setMenu(null); }}>
-            <Settings2 size={14} /> Personnalisation complete
+            <Settings2 size={14} /> Personnalisation complète
           </button>
           <button onClick={() => {
             const all = ALL.map((w) => w.id);

@@ -123,12 +123,12 @@ export default function WebSearch() {
         ))}
         {searched && !loading && results.length === 0 && (
           <li className="flex flex-1 items-center justify-center text-[11px] text-nexus-muted/70">
-            Aucun resultat. Essaie les moteurs ci-dessus.
+            Aucun résultat. Essaie les moteurs ci-dessus.
           </li>
         )}
         {!searched && (
           <li className="flex flex-1 items-center justify-center text-center text-[11px] text-nexus-muted/70">
-            Les resultats s'affichent ici. Un clic ouvre la page choisie.
+            Les résultats s'affichent ici. Un clic ouvre la page choisie.
           </li>
         )}
       </ul>
