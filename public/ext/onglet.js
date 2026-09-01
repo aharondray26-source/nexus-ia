@@ -51,6 +51,8 @@ const Rangement = {
 const PAR_DEFAUT = {
   fond: "nuit", fondImage: "", theme: "indigo", voile: 0,
   heure: true, espaces: true, halos: true, boutonMac: true, format24: true,
+  // Aharon voulait pouvoir mettre l'heure « en horloge » : un vrai cadran.
+  aiguilles: false, secondes: false, dateSousHeure: true,
   moteur: "google", prenom: "", cle: "", court: true, ecole: true,
   vignettes: true,
   // Quelques raccourcis pour demarrer. Il les change comme il veut.
@@ -154,14 +156,66 @@ function salut(h) {
   if (h < 18) return "Bon après-midi";
   return "Bonsoir";
 }
+// Les douze graduations du cadran, posées par le script : douze lignes écrites
+// en dur, ce seraient douze occasions de se tromper d'un degré.
+function dessinerGraduations() {
+  const g = document.getElementById("grad");
+  if (!g || g.childElementCount) return;
+  for (let i = 0; i < 12; i++) {
+    const a = (i * 30) * Math.PI / 180;
+    const r1 = i % 3 === 0 ? 36 : 39.5, r2 = 43;
+    const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    l.setAttribute("x1", (50 + r1 * Math.sin(a)).toFixed(2));
+    l.setAttribute("y1", (50 - r1 * Math.cos(a)).toFixed(2));
+    l.setAttribute("x2", (50 + r2 * Math.sin(a)).toFixed(2));
+    l.setAttribute("y2", (50 - r2 * Math.cos(a)).toFixed(2));
+    l.setAttribute("stroke", i % 3 === 0 ? "rgba(255,255,255,.55)" : "rgba(255,255,255,.22)");
+    l.setAttribute("stroke-width", i % 3 === 0 ? "2.2" : "1.4");
+    l.setAttribute("stroke-linecap", "round");
+    g.appendChild(l);
+  }
+}
+
+function appliquerHorloge() {
+  document.body.classList.toggle("aiguilles", !!R.aiguilles);
+  const s = document.getElementById("aigS");
+  if (s) s.style.display = R.secondes ? "" : "none";
+  if (R.aiguilles) dessinerGraduations();
+}
+
 function battre() {
   const d = new Date();
-  $("heure").textContent = R.format24
-    ? deux(d.getHours()) + ":" + deux(d.getMinutes())
-    : d.toLocaleTimeString("fr-FR", { hour: "numeric", minute: "2-digit", hour12: true });
-  $("bonjour").textContent = salut(d.getHours()) + (R.prenom ? " " + R.prenom : "")
-    + " · " + JOURS[d.getDay()] + " " + d.getDate() + " " + MOIS[d.getMonth()];
+  const hh = d.getHours(), mm = d.getMinutes(), ss = d.getSeconds();
+
+  if (R.aiguilles) {
+    const tourner = (id, deg) => {
+      const e = document.getElementById(id);
+      if (!e) return;
+      // À midi pile, l'aiguille repasse de 354° à 0° : sans ce détour elle
+      // ferait un tour complet à l'envers sous les yeux. On laisse alors filer
+      // au-delà de 360 plutôt que de revenir en arrière.
+      const av = parseFloat(e.dataset.deg || "0");
+      let d2 = deg;
+      while (d2 < av - 180) d2 += 360;
+      e.dataset.deg = String(d2);
+      e.style.transform = "rotate(" + d2.toFixed(2) + "deg)";
+    };
+    tourner("aigH", ((hh % 12) + mm / 60) * 30);
+    tourner("aigM", (mm + ss / 60) * 6);
+    if (R.secondes) tourner("aigS", ss * 6);
+  } else {
+    const base = R.format24
+      ? deux(hh) + ":" + deux(mm)
+      : d.toLocaleTimeString("fr-FR", { hour: "numeric", minute: "2-digit", hour12: true });
+    $("heure").textContent = R.secondes ? base + ":" + deux(ss) : base;
+  }
+
+  $("bonjour").textContent = salut(hh) + (R.prenom ? " " + R.prenom : "")
+    + (R.dateSousHeure
+        ? " · " + JOURS[d.getDay()] + " " + d.getDate() + " " + MOIS[d.getMonth()]
+        : "");
 }
+appliquerHorloge();
 setInterval(battre, 1000);
 
 // -- Les raccourcis ----------------------------------------------------------
@@ -761,7 +815,8 @@ function construireReglages() {
   // Les bascules
   const bascules = [["tHeure","heure"],["tEsp","espaces"],["tHalo","halos"],
                     ["tMac","boutonMac"],["t24","format24"],["tCourt","court"],
-                    ["tVign","vignettes"]];
+                    ["tVign","vignettes"],["tAig","aiguilles"],["tSec","secondes"],
+                    ["tDate","dateSousHeure"]];
   for (const [id, champ] of bascules) {
     const b = $(id);
     b.classList.toggle("on", !!R[champ]);
@@ -769,6 +824,10 @@ function construireReglages() {
       garder(champ, !R[champ]);
       b.classList.toggle("on", !!R[champ]);
       if (champ === "vignettes") dessinerRaccourcis();
+      // Ces trois-là changent l'heure : on la redessine tout de suite, sinon on
+      // coche et il ne se passe rien pendant une seconde entière.
+      if (champ === "aiguilles" || champ === "secondes" || champ === "dateSousHeure"
+          || champ === "format24") { appliquerHorloge(); battre(); }
     };
   }
   $("prenom").value = R.prenom || "";

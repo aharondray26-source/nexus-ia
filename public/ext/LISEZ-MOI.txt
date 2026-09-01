@@ -1,4 +1,4 @@
-EXTENSION NEXUS 2.6 — installation gratuite, 4 clics
+EXTENSION NEXUS 2.7 — installation gratuite, 4 clics
 
 SI TU AVAIS DEJA UNE VERSION DE NEXUS : supprime-la d'abord.
 Sur chrome://extensions, sur la carte « Nexus », clique « Supprimer ».
@@ -61,7 +61,15 @@ LE BOUTON DANS LA BARRE D'OUTILS
   retrouver sur ton Mac et tes autres appareils, connecte-toi au site : le
   bouton « Compte », en bas de la petite fenetre, y mene directement.
 
-NOUVEAU EN 2.6 — le panneau des reglages ne se coupe plus en bas : quand il
+NOUVEAU EN 2.7 — les logos des raccourcis sont enfin les BONS. On les
+demandait a un service de Google qui retombe sur le domaine principal des qu'il
+s'agit d'un sous-domaine : Google Classroom recevait le logo de la recherche
+Google, Drive et Gmail aussi. On demande maintenant a Chrome lui-meme, qui
+connait deja l'icone de chaque site — celle qu'il affiche dans tes onglets.
+Aussi : une horloge A AIGUILLES au choix, les secondes, la date qu'on peut
+enlever, et un nouveau logo — un noyau, six branches, trois relais.
+
+RAPPEL 2.6 — le panneau des reglages ne se coupe plus en bas : quand il
 reste des reglages a voir, le contenu s'efface en douceur au lieu d'etre
 tranche net, et le voile disparait des qu'on est arrive au bout.
 Sous le capot, toutes les animations passent enfin par le meme vocabulaire que

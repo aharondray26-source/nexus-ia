@@ -33,6 +33,18 @@ body.ouvert main{transform:translateY(-9vh)}
 #tete{display:flex;flex-direction:column;align-items:center;gap:6px;
   transition:opacity .35s,transform .45s var(--doux)}
 body.ouvert #tete{opacity:0;transform:translateY(-30px) scale(.94);pointer-events:none}
+/* L'horloge a aiguilles. Dessinee, pas une image : elle pese quelques lignes,
+   s'affiche instantanement et suit la couleur d'ambiance choisie. */
+#cadran{display:none;margin:0 auto;width:132px;height:132px}
+body.aiguilles #heure{display:none}
+body.aiguilles #cadran{display:block}
+#cadran circle.bord{fill:none;stroke:rgba(255,255,255,.16);stroke-width:2}
+#cadran line{stroke-linecap:round;transform-origin:50% 50%;
+  transition:transform .18s cubic-bezier(.2,1.4,.4,1)}
+#cadran line.h{stroke:#fff;stroke-width:5}
+#cadran line.m{stroke:#fff;stroke-width:3.4;opacity:.92}
+#cadran line.s{stroke:var(--acc,#6366f1);stroke-width:1.8}
+#cadran .pt{fill:rgba(255,255,255,.35)}
 #heure{font-size:78px;font-weight:200;letter-spacing:-.045em;line-height:1;
   font-variant-numeric:tabular-nums}
 #bonjour{font-size:16.5px;color:var(--texte-doux,#a5a5b2);letter-spacing:-.01em}
@@ -354,6 +366,17 @@ body.reglages #panneau > *{opacity:1}
 <main>
   <div id="tete">
     <div id="heure">--:--</div>
+<!-- L'horloge a aiguilles, dessinee a la main. Les graduations sont posees par
+     le script : douze lignes ecrites en dur, ce serait douze occasions de se
+     tromper. -->
+<svg id="cadran" viewBox="0 0 100 100" aria-hidden="true">
+  <circle class="bord" cx="50" cy="50" r="46"></circle>
+  <g id="grad"></g>
+  <line class="h" id="aigH" x1="50" y1="50" x2="50" y2="27"></line>
+  <line class="m" id="aigM" x1="50" y1="50" x2="50" y2="18"></line>
+  <line class="s" id="aigS" x1="50" y1="56" x2="50" y2="14"></line>
+  <circle class="pt" cx="50" cy="50" r="2.6"></circle>
+</svg>
     <div id="bonjour"></div>
   </div>
   <div id="zone">
@@ -417,6 +440,9 @@ body.reglages #panneau > *{opacity:1}
     <div class="bascule">Halos animés<button class="inter" id="tHalo"><i></i></button></div>
     <div class="bascule">Bouton macOS<button class="inter" id="tMac"><i></i></button></div>
     <div class="bascule">Format 24 h<button class="inter" id="t24"><i></i></button></div>
+    <div class="bascule">Horloge à aiguilles<button class="inter" id="tAig"><i></i></button></div>
+    <div class="bascule">Secondes<button class="inter" id="tSec"><i></i></button></div>
+    <div class="bascule">Date sous l'heure<button class="inter" id="tDate"><i></i></button></div>
 
     <div class="sec">École</div>
     <div class="rangee" id="ecole"></div>
