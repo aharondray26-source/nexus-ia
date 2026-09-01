@@ -565,6 +565,64 @@ async function permissionSiBesoin(f) {
   } catch (_) { return true; }
 }
 
+// ── L'IA QUI TOURNE CHEZ TOI (Ollama) ───────────────────────────────────────
+// La meme cascade que sur le site : la cle d'abord si elle existe, sinon le
+// modele installe sur cette machine, gratuit et hors ligne. Aharon voulait les
+// trois surfaces — le site, l'application Mac et l'extension — capables de
+// repondre sans cle.
+//
+// Une extension Chrome a un avantage sur un site : elle n'est pas soumise aux
+// memes regles d'origine, elle peut donc parler a Ollama directement, sans que
+// tu aies rien a regler.
+const OLLAMA = "http://127.0.0.1:11434";
+let ollamaConnu = null;                       // null = pas encore regarde
+
+async function ollamaModele() {
+  if (ollamaConnu !== null) return ollamaConnu;
+  // Une extension doit DEMANDER le droit de parler a une adresse. On le fait
+  // ici, sans fenetre modale : `contains` ne derange personne, et `request`
+  // n'est tente que si l'on a le droit de le faire (une frappe compte comme
+  // un geste de l'utilisateur).
+  try {
+    const regle = { origins: ["http://127.0.0.1:11434/*"] };
+    const dejaLa = await new Promise(r => chrome.permissions.contains(regle, r));
+    if (!dejaLa) {
+      const donne = await new Promise(r => chrome.permissions.request(regle, r));
+      if (!donne) { ollamaConnu = false; return false; }
+    }
+  } catch (e) { /* pas d'API des permissions : on tente quand meme */ }
+  try {
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), 1500);
+    const r = await fetch(OLLAMA + "/api/tags", { signal: c.signal });
+    clearTimeout(t);
+    if (!r.ok) { ollamaConnu = false; return false; }
+    const d = await r.json();
+    const noms = (d.models || []).map(m => m.name).filter(Boolean);
+    const prefs = ["llama3.2","llama3.1","llama3","qwen2.5","mistral","gemma2","gemma3","phi3"];
+    ollamaConnu = noms.find(n => prefs.some(p => n.startsWith(p))) || noms[0] || false;
+  } catch (e) { ollamaConnu = false; }
+  return ollamaConnu;
+}
+
+async function demanderALocal(question, court) {
+  const m = await ollamaModele();
+  if (!m) return null;
+  try {
+    const r = await fetch(OLLAMA + "/api/chat", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: m, stream: false, messages: [
+        { role: "system", content: "Tu es Nexus. Réponds en français, avec justesse"
+          + (court ? ", en trois phrases au plus." : ", sans bavardage.") },
+        { role: "user", content: question }] }),
+    });
+    if (!r.ok) return null;
+    const d = await r.json();
+    const t = d && d.message && d.message.content;
+    return (typeof t === "string" && t.trim()) ? { texte: t, modele: m } : null;
+  } catch (e) { return null; }
+}
+
 async function demanderALIA(question, court) {
   const f = devinerFournisseur(R.cle);
   if (!f) throw new Error("aucune clé");
@@ -636,13 +694,28 @@ async function demander() {
   if (c) poserCalcul(c);
 
   if (!R.cle) {
-    // Sans cle : on ne rédige pas, on vise. Et on dit ou trouver mieux.
+    // Avant de renoncer : le modele de CETTE machine, s'il y en a un. Gratuit,
+    // hors ligne, et rien de ce qui est ecrit ne sort d'ici.
+    const local = await demanderALocal(t, R.court);
+    if (local) {
+      const d = document.createElement("div");
+      d.className = "rep";
+      d.innerHTML = '<div class="sig">✦ ' + ech(local.modele) + ' · sur ta machine</div>';
+      d.appendChild(document.createTextNode(local.texte));
+      res.appendChild(d); res.scrollTop = res.scrollHeight;
+      return;
+    }
+    // Sans cle ni modele local : on ne rédige pas, on vise. Et on dit ou
+    // trouver mieux.
     poserLiens(cibler(t));
     const d = document.createElement("div");
     d.className = "rep";
     d.innerHTML = '<div class="sig">✦ Nexus</div>Voilà les sources les plus '
-      + 'directes pour ça. Pour une vraie réponse rédigée, ajoute une clé dans '
-      + 'les réglages (la roue, en bas à droite) — ou ouvre le chat du site.';
+      + 'directes pour ça.<br><br>Pour une vraie réponse rédigée, au choix :<br>'
+      + '· une clé, dans les réglages (la roue, en bas à droite) ;<br>'
+      + '· ou <b>gratuitement, sur ta machine</b> : installe Ollama depuis '
+      + 'ollama.com, puis colle dans le Terminal <code>ollama pull llama3.2</code>. '
+      + 'Nexus le trouvera tout seul.';
     const b = document.createElement("button");
     b.className = "opt"; b.textContent = "Ouvrir le chat Nexus";
     b.style.cssText = "margin-top:11px;display:block";
