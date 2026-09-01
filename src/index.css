@@ -61,12 +61,18 @@ body {
      --ressort : le grand geste (une fenetre qui nait, un panneau qui grandit)
      --appui   : le petit rebond (un bouton qu'on presse)
      --doux    : les fondus et les glissements, sans rebond
+     --carre   : les coins qui se carrent — la bulle qui devient panneau
    Ne plus ecrire de courbe a la main : on perd l'unite.
    ============================================================================ */
 :root {
   --ressort: cubic-bezier(.16, 1.02, .24, 1);
   --appui:   cubic-bezier(.2, 1.4, .4, 1);
   --doux:    cubic-bezier(.22, 1, .36, 1);
+  /* Le rayon ne suit pas la meme loi que la taille : la bulle grandit d'un
+     coup (--ressort) tandis que ses coins se carrent un peu plus tard et plus
+     calmement. C'est cet ecart qui donne le geste qu'Aharon a aime dans le
+     panneau des reglages de l'extension. */
+  --carre:   cubic-bezier(.3, .9, .2, 1);
   --t-grand: .58s;
   --t-moyen: .32s;
   --t-petit: .17s;
@@ -246,9 +252,19 @@ html.light-mode .nx-palette {
    coins se carrent — exactement le geste du panneau des reglages de
    l'extension, celui qu'Aharon a aime. */
 @keyframes nexus-naissance {
-  from { opacity: 0; transform: scale(.9) translateY(10px); border-radius: 30px; }
+  from { opacity: 0; transform: scale(.9) translateY(10px); }
   60%  { opacity: 1; }
   to   { opacity: 1; transform: none; }
+}
+/* Le rayon a sa PROPRE animation, pour avoir sa propre courbe et son propre
+   retard. Une seule animation ne peut pas donner deux lois a deux proprietes,
+   et c'est pourtant tout le geste : la chose grandit d'un coup pendant que ses
+   coins se carrent un peu apres, plus calmement. C'est exactement ce que fait
+   le panneau des reglages de l'extension, celui qu'Aharon a aime.
+   Une regle sans « to » finit sur la valeur propre de l'element : ici le
+   rounded-2xl de la fenetre. On n'a donc rien a coder en dur. */
+@keyframes nexus-coins {
+  from { border-radius: 30px; }
 }
 .nexus-naissance {
   /* « backwards » et surtout PAS « both ». Avec « both », l'etat final de
@@ -257,7 +273,8 @@ html.light-mode .nx-palette {
      de se fermer : on la voyait encore, mais elle etait morte. « backwards »
      ne remplit qu'AVANT le depart, ce qui evite le clignotement sans figer
      quoi que ce soit. */
-  animation: nexus-naissance var(--t-grand) var(--ressort) backwards;
+  animation: nexus-naissance var(--t-grand) var(--ressort) backwards,
+             nexus-coins var(--t-grand) var(--carre) 40ms backwards;
   transform-origin: center center;
 }
 
