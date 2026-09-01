@@ -286,7 +286,7 @@ export default function QRCodeApp() {
   return (
     <div className="flex h-full w-full bg-slate-950 text-slate-100 flex-col overflow-hidden">
       {/* Top Header Navigation Tabs */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-800 bg-slate-900/80">
+      <div className="nx-barre-outils flex items-center justify-between gap-3 px-4 py-2.5 border-b border-slate-800 bg-slate-900/80">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-xl nx-grad text-white shadow-md shadow-cyan-500/20">
             <QrCode className="w-4 h-4" />

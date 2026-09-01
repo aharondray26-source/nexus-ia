@@ -92,7 +92,7 @@ export default function Calendar() {
         onClick={() => setView(new Date(today.getFullYear(), today.getMonth(), 1))}
         className="nx-btn nx-btn-secondary mt-auto text-xs"
       >
-        Revenir a aujourd'hui
+        Revenir à aujourd'hui
       </button>
     </div>
   );

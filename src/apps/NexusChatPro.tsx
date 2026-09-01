@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useEtroit } from "../lib/useEtroit";
 import {
   Sparkles,
   Send,
@@ -113,7 +114,20 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
   const [sidebarWidth, setSidebarWidth] = useState<number>(200); // compact default
   const [sandboxWidth, setSandboxWidth] = useState<number>(300); // compact default
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
+  // L'historique et la conversation cote a cote demandent de la place. Dans une
+  // fenetre etroite — un telephone, ou un espace qu'Aharon a retreci — ils ne
+  // tenaient pas : la conversation sortait de la fenetre, et le selecteur de
+  // modele avec elle. L'historique se replie donc tout seul quand la place
+  // manque, et se rouvre quand elle revient.
+  const { ref: racine, etroit: tropEtroit } = useEtroit<HTMLDivElement>(560);
+  const historiqueReplie = sidebarCollapsed || tropEtroit;
   const [sandboxCollapsed, setSandboxCollapsed] = useState<boolean>(false);
+  // Les DEUX panneaux se replient quand la place manque. Sans cela, dans une
+  // fenetre etroite, l'historique (200 px) et le bac a sable (300 px) se
+  // servaient les premiers et la CONVERSATION se retrouvait a zero pixel de
+  // large : le chat devenait proprement inutilisable, sur telephone comme dans
+  // un espace qu'on a retreci.
+  const bacASableReplie = sandboxCollapsed || tropEtroit;
 
   // Resizing Drag Handles
   const isDraggingSidebar = useRef(false);
@@ -401,9 +415,9 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
   );
 
   return (
-    <div className="flex h-full w-full bg-slate-950 text-slate-100 select-none overflow-hidden relative">
+    <div ref={racine} className="flex h-full w-full bg-slate-950 text-slate-100 select-none overflow-hidden relative">
       {/* Left Sidebar - History & Sessions */}
-      {!sidebarCollapsed ? (
+      {!historiqueReplie ? (
         <div
           style={{ width: `${sidebarWidth}px` }}
           className="shrink-0 bg-slate-900/90 border-r border-slate-800/80 flex flex-col p-3 gap-3 relative z-10 transition-all duration-75"
@@ -481,21 +495,26 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
           />
         </div>
       ) : (
-        <button
-          onClick={() => setSidebarCollapsed(false)}
-          className="nx-btn nx-btn-icon absolute top-3 left-3 z-30"
-          title="Ouvrir l'historique"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </button>
+        // Quand la fenetre est trop etroite, ce bouton ne servirait a rien :
+        // l'historique se replierait aussitot. Un bouton qui ne fait rien est
+        // pire que pas de bouton.
+        !tropEtroit && (
+          <button
+            onClick={() => setSidebarCollapsed(false)}
+            className="nx-btn nx-btn-icon absolute top-3 left-3 z-30"
+            title="Ouvrir l'historique"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        )
       )}
 
       {/* Main Enlarged Chat Area (flex-1) */}
       <div className="flex-1 flex flex-col min-w-0 bg-slate-950/80 relative">
         {/* Top Header with Gemini 3.6 Flash Models & Thinking Mode Switch */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md gap-3">
+        <div className="nx-barre-outils flex items-center justify-between px-4 py-2.5 border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md gap-3">
           <div className="flex items-center gap-3">
-            {sidebarCollapsed && <div className="w-6" />}
+            {historiqueReplie && <div className="w-6" />}
             <div className="p-2 rounded-xl nx-grad text-white shadow-md shadow-cyan-500/20">
               <Sparkles className="w-4 h-4" />
             </div>
@@ -572,7 +591,7 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
             </button>
 
             {/* Toggle Sandbox Side */}
-            {sandboxCollapsed && (
+            {bacASableReplie && (
               <button
                 onClick={() => setSandboxCollapsed(false)}
                 className="nx-btn nx-btn-icon"
@@ -749,7 +768,7 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
       </div>
 
       {/* Right Sandbox & Media Viewer Panel */}
-      {!sandboxCollapsed && sandboxContent && (
+      {!bacASableReplie && sandboxContent && (
         <div
           style={{ width: `${sandboxWidth}px` }}
           className="shrink-0 bg-slate-900/95 border-l border-slate-800/80 flex flex-col relative z-10 transition-all duration-75"

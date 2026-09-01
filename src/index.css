@@ -421,6 +421,8 @@ button:active { transform: scale(.985); }   /* appui subtil, plus "cher" */
 
 .nx-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  /* Voir la regle « .nx-btn.hidden » plus bas : sans elle, ce display gagnait
+     contre le « hidden » de Tailwind et le bouton refusait de disparaitre. */
   border-radius: 12px;                 /* coins doux, pas secs */
   font-size: 12px; font-weight: 700;
   padding: 7px 14px;
@@ -436,6 +438,13 @@ button:active { transform: scale(.985); }   /* appui subtil, plus "cher" */
               transform .14s var(--doux),
               opacity .2s;
 }
+/* `.nx-btn` pose un `display` ; `hidden` de Tailwind en pose un autre. A egalite
+   de specificite, c'est le DERNIER ECRIT qui gagne — et nos classes viennent
+   apres les utilitaires. Resultat : « hidden md:flex » ne cachait rien, et sur
+   telephone la barre du haut debordait de 93 px, « Rechercher » et l'heure
+   coupes au bord. C'est le meme piege que l'opacite de Tailwind sur une
+   variable deja en rgba : une classe maison qui gagne sans qu'on s'en doute. */
+.nx-btn.hidden { display: none; }
 .nx-btn:disabled { opacity: .4; cursor: not-allowed; }
 .nx-btn:not(:disabled):active { transform: scale(.955); }
 
@@ -731,6 +740,17 @@ html.light-mode .nx-widget {
 @keyframes nx-hint { 0%,100% { transform: translateY(0); opacity: .55; } 50% { transform: translateY(6px); opacity: 1; } }
 .nx-hint { animation: nx-hint 2.1s ease-in-out infinite; }
 .reduce-motion .nx-hint, .reduce-motion .nx-fly-in { animation: none !important; opacity: 1 !important; transform: none !important; }
+
+/* Une barre d'outils qui ne tient pas dans la largeur doit DEFILER, pas sortir.
+   Sur telephone, les barres de Documents, du QR Code et du chat poussaient
+   leurs boutons hors de la fenetre : « Importer Fichier », « Enregistrer »,
+   « Scanner », « Mode Réflexion » etaient simplement inatteignables. Elles ne
+   peuvent pas se replier — ce sont des rangees d'icones dont l'ordre compte —
+   alors elles glissent, comme le dock. La barre de defilement est cachee :
+   c'est un geste, pas un meuble. */
+.nx-barre-outils { overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+                   -ms-overflow-style: none; }
+.nx-barre-outils::-webkit-scrollbar { display: none; }
 
 /* La carte du monde reste bien visible sur l'ecran d'accueil */
 .nx-world {

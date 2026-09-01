@@ -1,4 +1,5 @@
 import { useState, useEffect, type FormEvent } from "react";
+import { useEtroit } from "../lib/useEtroit";
 import { usePersistentState } from "../lib/persist";
 import { useWindows } from "../os/useWindows";
 import { openAiWindow } from "../lib/tauri";
@@ -69,14 +70,14 @@ export function generateInitialEmails(userEmail: string, userName: string): Emai
       senderName: "Nexus",
       senderEmail: "nexus@nexus-espace.app",
       recipientEmail: email,
-      subject: "Bienvenue dans ta boite mail Nexus",
+      subject: "Bienvenue dans ta boîte mail Nexus",
       body:
         `Bonjour ${name},\n\n` +
-        `Cette boite est vide pour l'instant : c'est normal, aucun message n'est invente ici.\n\n` +
+        `Cette boîte est vide pour l'instant : c'est normal, aucun message n'est inventé ici.\n\n` +
         `Pour voir tes VRAIS e-mails Gmail :\n` +
-        `1. Ouvre « Compte » en haut a droite.\n` +
+        `1. Ouvre « Compte » en haut à droite.\n` +
         `2. Clique sur « Autoriser aussi Gmail et Drive ».\n\n` +
-        `Tes messages resteront prives : ils ne sont ni copies ni conserves par Nexus.`,
+        `Tes messages resteront privés : ils ne sont ni copiés ni conservés par Nexus.`,
       date: "Maintenant",
       folder: "inbox",
       read: false,
@@ -107,6 +108,11 @@ export default function Mail() {
 
   const [activeFolder, setActiveFolder] = useState<"inbox" | "sent" | "starred" | "drafts" | "trash">("inbox");
   const [selectedMailId, setSelectedMailId] = useState<string | null>(emails[0]?.id || null);
+  // Trois colonnes — dossiers, liste, lecture — dans une fenetre etroite, ce
+  // sont les deux premieres qui se servent et la LECTURE qui se retrouve a
+  // zero pixel : on ne pouvait plus lire un seul message. Etroit, on montre
+  // une colonne a la fois, comme le fait le courrier d'un telephone.
+  const { ref: cadre, etroit } = useEtroit<HTMLDivElement>(620);
   const [searchQuery, setSearchQuery] = useState("");
   const [showCompose, setShowCompose] = useState(false);
   const [showAccountModal, setShowAccountModal] = useState(false);
@@ -316,9 +322,9 @@ export default function Mail() {
   }
 
   return (
-    <div className="flex h-full w-full rounded-2xl border border-white/10 bg-slate-950/80 backdrop-blur-xl overflow-hidden">
+    <div ref={cadre} className="flex h-full w-full rounded-2xl border border-white/10 bg-slate-950/80 backdrop-blur-xl overflow-hidden">
       {/* Sidebar Folders & Account info */}
-      <div className="w-56 sm:w-60 border-r border-white/10 flex flex-col bg-black/40 p-2 gap-2 shrink-0">
+      <div className={`${etroit ? "hidden" : "flex"} w-56 sm:w-60 border-r border-white/10 flex-col bg-black/40 p-2 gap-2 shrink-0`}>
         {/* User Badge & Switcher */}
         <button
           onClick={() => {
@@ -488,7 +494,7 @@ export default function Mail() {
         {/* Email List + Reader Split View */}
         <div className="flex-1 flex overflow-hidden">
           {/* Email List */}
-          <div className="w-80 border-r border-white/10 flex flex-col overflow-y-auto bg-black/20 shrink-0">
+          <div className={`${etroit ? (activeMail ? "hidden" : "flex flex-1") : "flex w-80 shrink-0"} border-r border-white/10 flex-col overflow-y-auto bg-black/20`}>
             {filteredEmails.length > 0 ? (
               filteredEmails.map((m) => {
                 const isSelected = m.id === selectedMailId;
@@ -543,7 +549,17 @@ export default function Mail() {
           </div>
 
           {/* Email Reader View */}
-          <div className="flex-1 flex flex-col overflow-y-auto p-4 bg-slate-950/40">
+          <div className={`${etroit && !activeMail ? "hidden" : "flex"} flex-1 flex-col overflow-y-auto p-4 bg-slate-950/40`}>
+            {etroit && activeMail && (
+              // Sans ce retour, on entrait dans un message et l'on ne pouvait
+              // plus en sortir : la liste avait disparu.
+              <button
+                onClick={() => setSelectedMailId(null)}
+                className="nx-btn nx-btn-secondary mb-3 self-start text-xs"
+              >
+                ← Tous les messages
+              </button>
+            )}
             {activeMail ? (
               <div className="flex flex-col gap-4">
                 {/* Header Actions */}

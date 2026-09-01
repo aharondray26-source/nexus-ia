@@ -51,7 +51,11 @@ window.__bal = async function (id) {
     // elle a un text-overflow ou un nombre de lignes fixe.
     const volontaire = s.textOverflow === 'ellipsis' ||
                        (s.webkitLineClamp && s.webkitLineClamp !== 'none') ||
-                       e.tagName === 'INPUT' || e.tagName === 'TEXTAREA';
+                       e.tagName === 'INPUT' || e.tagName === 'TEXTAREA' ||
+                       // Une image en « object-cover » a TOUJOURS une taille
+                       // propre plus grande que son cadre : c'est le principe
+                       // meme du recadrage, pas un texte coupe.
+                       ['IMG', 'VIDEO', 'CANVAS', 'SVG', 'IFRAME'].includes(e.tagName);
     if (debordeX && !peutDefiler && !volontaire && s.overflow !== 'visible' && e.clientWidth > 0) {
       coupes++;
       if (exemples.length < 4)
@@ -93,7 +97,7 @@ window.__bal = async function (id) {
     'evenement':'évènement','Evenement':'Évènement','numero':'numéro','Numero':'Numéro',
     'reponse':'réponse','Reponse':'Réponse','question':null,'video':'vidéo','Video':'Vidéo',
     'meteo':'météo','Meteo':'Météo','categorie':'catégorie','Categorie':'Catégorie',
-    'prive':'privé','Prive':'Privé','cote':null,'defaut':'défaut','Defaut':'Défaut'
+    'prive':'privé','Prive':'Privé','prives':'privés','boite':'boîte','Boite':'Boîte','invente':'inventé','copies':'copiés','conserves':'conservés','geant':'géant','legere':'légère','grele':'grêle','degage':'dégagé','integree':'intégrée','telechargent':'téléchargent','ameliore':'améliore','Ameliore':'Améliore','cote':null,'defaut':'défaut','Defaut':'Défaut'
   };
   const vus = new Set();
   for (const m of txt.split(/[^A-Za-zÀ-ÿ']+/)) {

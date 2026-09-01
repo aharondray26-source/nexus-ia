@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Sun, Moon, Cloud, Mail, MessageSquare, Package } from "lucide-react";
+import { Sun, Moon, Cloud, Mail, MessageSquare, Package, X } from "lucide-react";
 import { useWindows } from "./useWindows";
 import { useSettings } from "./useSettings";
 import Logo from "./Logo";
@@ -113,15 +113,22 @@ export default function TopBar() {
           <button
             onClick={closeAll}
             title="Fermer toutes les fenêtres"
-            className="nx-btn nx-btn-danger sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px]"
+            aria-label="Fermer toutes les fenêtres"
+            className="nx-btn nx-btn-danger px-2 py-1 sm:px-2.5 text-[10px] sm:text-[11px]"
           >
-            Fermer tout
+            {/* Sur telephone, le libelle a lui seul faisait deborder la barre :
+                « Fermer tout » se retrouvait tranche au bord de l'ecran. La
+                croix dit la meme chose et tient. */}
+            <X size={13} className="sm:hidden" />
+            <span className="hidden sm:inline">Fermer tout</span>
           </button>
         )}
         <button
           onClick={() => openApp("clock", { width: 380, height: 440 })}
           title="Ouvrir l'horloge"
-          className="text-[11px] sm:text-xs tabular-nums text-nexus-muted transition-colors hover:text-nexus-text px-1"
+          // Un telephone affiche deja l'heure dans sa propre barre d'etat :
+          // la redire ici ne servait qu'a faire deborder la notre.
+          className="hidden sm:block text-[11px] sm:text-xs tabular-nums text-nexus-muted transition-colors hover:text-nexus-text px-1"
         >
           {now.toLocaleTimeString("fr-FR", {
             hour: "2-digit",

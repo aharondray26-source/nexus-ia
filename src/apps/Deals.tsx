@@ -13,7 +13,7 @@ interface Deal {
   specs: string;
 }
 
-// Aucune offre inventee : on n'attribue pas de faux prix a de vraies enseignes.
+// Aucune offre inventée : on n'attribue pas de faux prix à de vraies enseignes.
 const DEFAULT_DEALS: Deal[] = [];
 
 export default function Deals() {
@@ -75,7 +75,7 @@ export default function Deals() {
           <p className="py-8 text-center text-[11px] leading-relaxed text-nexus-muted/70">
             Cherche un produit ci-dessus pour comparer les offres.
             <br />
-            Aucune offre n'est affichee tant que tu n'as pas cherche : rien n'est invente ici.
+            Aucune offre n'est affichée tant que tu n'as pas cherché : rien n'est inventé ici.
           </p>
         )}
         {deals.map((deal, idx) => (
