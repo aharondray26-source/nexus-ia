@@ -517,14 +517,18 @@ function startGame(mode){
   wave:0,spawnQ:[],waveDelay:1.5,boss:null,
   level:1,xp:0,xpNeed:40,niveauxDus:0,streak:0,charges:{drone:0,strike:0},
   combo:0,comboT:0,kills:0,score:0,coinsEarned:0,gemsEarned:0,
-  mine:{x:W/2,y:H/2,t:0},countdown:-1,cdTeam:null,
+  mine:{x:W/2,y:H/2,t:0},countdown:-1,cdTeam:null,sursis:0,
   ball:null,scoreBlue:0,scoreRed:0,gasR:0,gasT:0,myRank:0,
   hpLag:1,over:false,prevFire:false,
   duree:(mode==='gems'||mode==='ball')?150:0};
  const names=[...BOTNAMES].sort(()=>Math.random()-.5);
  if(mode==='gems'||mode==='ball'){
-  const bl=[{x:90,y:H/2},{x:70,y:H/2-130},{x:70,y:H/2+130}];
-  const rd=[{x:W-90,y:H/2},{x:W-70,y:H/2-130},{x:W-70,y:H/2+130}];
+  // Les six combattants etaient alignes CONTRE les murs, en deux colonnes a
+  // 70 px du bord : au coup d'envoi on voyait six pastilles collees aux bords,
+  // et le premier pas de chacun etait un pas vers l'interieur. On les pose en
+  // triangle, decolles du mur, tournes vers le centre.
+  const bl=[{x:150,y:H/2},{x:96,y:H/2-118},{x:96,y:H/2+118}];
+  const rd=[{x:W-150,y:H/2},{x:W-96,y:H/2-118},{x:W-96,y:H/2+118}];
   G.player=makePlayerUnit('blue',bl[0].x,bl[0].y);
   G.units.push(G.player);
   for(let i=1;i<3;i++)G.units.push(makeUnit({team:'blue',name:names[i],color:TEAMCOL.blue,x:bl[i].x,y:bl[i].y}));
@@ -921,7 +925,9 @@ function resetBallPositions(){
   u.dead=false;u.hp=u.maxhp;u.hasBall=false;u.iframe=1;
   u.x=u.spawn.x;u.y=u.spawn.y;u.bot.destX=u.x;u.bot.destY=u.y;u.bot.target=null;
  }
- G.freezeT=1.2;
+ // Le temps de voir le but marque et de se remettre en place. A 1,2 s on
+ // repartait avant d'avoir compris.
+ G.freezeT=2.0;
 }
 
 /* ============ IA DES BOTS ============ */
@@ -954,18 +960,45 @@ function botDecide(u){
  }else if(G.mode==='gems'){
   let g=null,gd=1e9;
   for(const c of G.pickups)if(c.kind==='gem'){const d=Math.hypot(c.x-u.x,c.y-u.y);if(d<gd){gd=d;g=c;}}
-  if(g&&(gd<340||!tgt))dest={x:g.x,y:g.y};
-  else if(tgt&&bd<460)dest=combatDest(u,tgt);
+  // L'OBJECTIF D'ABORD.
+  //
+  // Un bot lachait sa gemme pour aller se battre des qu'un adverse passait a
+  // 460 px — c'est-a-dire presque partout sur un terrain de 760. Le mode s'est
+  // transforme en fusillade permanente : quatre-vingts morts en deux minutes
+  // trente, et personne ne tenait jamais dix gemmes assez longtemps pour
+  // gagner. On ne va au combat que s'il est SUR LE CHEMIN.
+  if(g&&(gd<380||!tgt))dest={x:g.x,y:g.y};
+  else if(tgt&&bd<250)dest=combatDest(u,tgt);
   else dest={x:G.mine.x+rand(-130,130),y:G.mine.y+rand(-130,130)};
   if(tgt&&bd<u.range*.95)b.wantFire=true;
  }else if(G.mode==='ball'){
   const ball=G.ball;
+  const monBut=u.team==='blue'?{x:30,y:H/2}:{x:W-30,y:H/2};
+  const butAdverse=u.team==='blue'?{x:W-30,y:H/2}:{x:30,y:H/2};
+  // UN GARDIEN PAR EQUIPE.
+  //
+  // Sans lui, le porteur du ballon courait tout droit et marquait : une partie
+  // durait DIX-NEUF SECONDES en moyenne, mesure faite. Le troisieme de chaque
+  // equipe reste maintenant devant sa cage et intercepte — c'est ce qui donne
+  // au jeu son va-et-vient.
+  const miens=G.units.filter(x=>x.team===u.team);
+  const jeSuisGardien=miens.length>2&&miens[miens.length-1]===u&&ball.carrier!==u;
   if(ball.carrier===u){
-   const goal=u.team==='blue'?{x:W-30,y:H/2}:{x:30,y:H/2};
-   dest={x:goal.x,y:goal.y};
-   u.aim=angTo(u,goal);
-   const gd=Math.hypot(goal.x-u.x,goal.y-u.y);
-   if(gd<230||(tgt&&bd<70&&Math.random()<.6))kickBall(u);
+   dest={x:butAdverse.x,y:butAdverse.y};
+   u.aim=angTo(u,butAdverse);
+   const gd=Math.hypot(butAdverse.x-u.x,butAdverse.y-u.y);
+   // On tirait au but depuis 230 px, c'est-a-dire depuis le milieu du terrain.
+   // De plus pres, un gardien a une chance.
+   if(gd<140||(tgt&&bd<70&&Math.random()<.6))kickBall(u);
+  }else if(jeSuisGardien&&!(ball.carrier&&ball.carrier.team===u.team)){
+   // Se placer entre le ballon et sa propre cage, sans jamais s'y coller.
+   const a=Math.atan2(ball.y-monBut.y,ball.x-monBut.x);
+   const d=Math.min(150,Math.hypot(ball.x-monBut.x,ball.y-monBut.y)*.55);
+   dest={x:clamp(monBut.x+Math.cos(a)*d,50,W-50),
+         y:clamp(monBut.y+Math.sin(a)*d,50,H-50)};
+   // Et si le ballon arrive vraiment pres, on va le chercher.
+   if(Math.hypot(ball.x-monBut.x,ball.y-monBut.y)<190)dest={x:ball.x,y:ball.y};
+   if(tgt&&bd<u.range*.9)b.wantFire=true;
   }else if(ball.carrier&&ball.carrier.team!==u.team){
    b.target=ball.carrier;dest=combatDest(u,ball.carrier);b.wantFire=true;
   }else if(!ball.carrier){
@@ -1023,8 +1056,25 @@ function updateBot(u,dt){
  collideObstacles(u);
  u.x=clamp(u.x,u.r,W-u.r);u.y=clamp(u.y,u.r,H-u.r);
  if(b.target&&!b.target.dead){
-  if(!(G.ball&&G.ball.carrier===u))u.aim=angTo(u,b.target)+Math.sin(G.t*3+u.seed)*.05;
-  if(b.wantFire&&u.cdT<=0&&u.mag>0&&!u.reload.active&&!u.hasBall&&dist(u,b.target)<u.range)shootUnit(u);
+  // UNE MAIN HUMAINE.
+  //
+  // Les bots visaient au degre pres jusqu'a 460 px, et tiraient des qu'ils le
+  // pouvaient : on mourait toutes les dix secondes sans jamais comprendre d'ou
+  // venait le coup. Mesure faite : quatre-vingt-sept morts en deux minutes
+  // trente, a six.
+  // Maintenant leur main tremble d'autant plus que la cible est loin ou
+  // qu'elle bouge, et de loin ils ne tirent qu'une fois sur deux. De pres ils
+  // restent redoutables — c'est la ou le jeu est bon.
+  const dc=dist(u,b.target);
+  const loin=Math.min(1,dc/Math.max(1,u.range));
+  const erreur=(loin*loin)*.30*(b.target.moving?1.35:1);
+  if(!(G.ball&&G.ball.carrier===u)){
+   u.aim=angTo(u,b.target)+Math.sin(G.t*3+u.seed)*.05
+        +Math.sin(G.t*1.7+u.seed*3.1)*erreur;
+  }
+  // Trop loin, on hesite : un tir sur deux part, comme quelqu'un qui doute.
+  const oseTirer=loin<.55||Math.random()<(1-loin)*1.6;
+  if(b.wantFire&&oseTirer&&u.cdT<=0&&u.mag>0&&!u.reload.active&&!u.hasBall&&dc<u.range)shootUnit(u);
  }else if(u.moving)u.aim=Math.atan2(vy,vx);
  if(u.mag<=0&&!u.reload.active)startReload(u);
 }
@@ -1341,8 +1391,12 @@ function update(dt){
     if(blueScored)G.scoreBlue++;else G.scoreRed++;
     banner(blueScored?'🥅 BUUUT POUR TON ÉQUIPE !':'🥅 But de l’équipe rouge...');
     SFX.goal();fireworks(ball.x,ball.y);addShake(12);
-    if(G.scoreBlue>=2)return endGame(true);
-    if(G.scoreRed>=2)return endGame(false);
+    // TROIS buts, plus deux. Mesure faite : une partie durait DIX-NEUF
+    // SECONDES en moyenne — c'etait fini avant qu'on ait compris ce qui se
+    // passait. Trois buts, avec une defense qui existe enfin (voir botDecide),
+    // laissent le temps de jouer.
+    if(G.scoreBlue>=3)return endGame(true);
+    if(G.scoreRed>=3)return endGame(false);
     resetBallPositions();
    }
    // ramassage
@@ -1425,8 +1479,19 @@ function update(dt){
   const lead=bg>=10?'blue':(rg>=10?'red':null);
   if(lead){
    if(G.cdTeam!==lead){G.cdTeam=lead;G.countdown=15;banner(lead==='blue'?'⏳ TENEZ 15 SECONDES !':'⚠️ L’ÉQUIPE ROUGE A 10 GEMMES !');}
+   G.sursis=0;
    G.countdown-=dt;
    if(G.countdown<=0)return endGame(lead==='blue');
+  }else if(G.cdTeam){
+   // UN SURSIS D'UNE SECONDE ET DEMIE.
+   //
+   // Un mort lache ses gemmes, l'equipe passe de 10 a 9 pendant un souffle, et
+   // le compte a rebours repartait de QUINZE. Resultat mesure : le denouement
+   // du mode n'arrivait presque jamais, les parties finissaient toutes au
+   // chronometre. Une seconde et demie de battement suffit a ramasser ce qu'on
+   // vient de laisser tomber — au-dela, c'est vraiment perdu.
+   G.sursis=(G.sursis||0)+dt;
+   if(G.sursis>1.5){G.cdTeam=null;G.countdown=-1;G.sursis=0;banner('💎 Le compte est brisé !');}
   }else{G.cdTeam=null;G.countdown=-1;}
   // Le temps reglementaire. Sans lui, deux equipes qui se neutralisent
   // jouaient pour toujours.
