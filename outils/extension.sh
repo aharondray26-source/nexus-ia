@@ -12,7 +12,12 @@
 set -e
 cd "$(dirname "$0")/.."
 SRC=public/ext
-DEST=~/Downloads/nexus-extension
+# Le nom compte. Aharon : « dans mon fichier telechargement y a pas celui de
+# l'extension de navigateur » — il cherchait un FICHIER et ne voyait qu'un
+# dossier nomme « nexus-extension », noye au milieu du reste et pas range a
+# cote de l'application. Les deux commencent maintenant par « Nexus », donc ils
+# se suivent dans le Finder, et le nom dit a quoi ça sert.
+DEST=~/Downloads/Nexus-extension-Chrome
 
 for f in manifest.json onglet.html onglet.js popup.html popup.js fond.js LISEZ-MOI.txt; do
   [ -f "$SRC/$f" ] || { echo "  ✗ $SRC/$f manque"; exit 1; }
@@ -40,7 +45,11 @@ V=$(grep '"version"' "$SRC/manifest.json" | sed 's/[^0-9.]//g' | sed 's/\.$//')
 # Le zip n'a aucune raison d'exister ici : le site sait le fabriquer, et ce
 # script sait refaire le dossier a tout moment.
 setopt NULL_GLOB 2>/dev/null || true   # un motif sans correspondance n'est pas une erreur
-rm -rf ~/Downloads/nexus-extension-*.zip ~/Downloads/nexus-extension-[0-9]* 2>/dev/null || true
+# On efface les anciens noms et les anciennes decompressions : c'est ce qui a
+# fait qu'Aharon s'est retrouve avec deux dossiers d'apparence identique, dont
+# un perime, sans pouvoir les distinguer.
+rm -rf ~/Downloads/nexus-extension ~/Downloads/nexus-extension-*.zip \
+       ~/Downloads/nexus-extension-[0-9]* 2>/dev/null || true
 
 node --check "$DEST/onglet.js"
 node --check "$DEST/popup.js"
@@ -49,4 +58,4 @@ python3 -c "import json;json.load(open('$DEST/manifest.json'))"
 
 echo "  ✓ extension $V — un seul dossier : « $DEST »"
 echo "    Dans Chrome : chrome://extensions → Supprimer → Charger l'extension"
-echo "    non empaquetee → Telechargements/nexus-extension"
+echo "    non empaquetee → Telechargements/Nexus-extension-Chrome"

@@ -119,24 +119,28 @@ export default function MacIntegration() {
       ]);
 
       const zip = creerZip([
-        { nom: "nexus-extension/manifest.json", donnees: manifestF },
-        { nom: "nexus-extension/onglet.html", donnees: ongletHtmlF },
-        { nom: "nexus-extension/onglet.js", donnees: ongletJsF },
-        { nom: "nexus-extension/popup.html", donnees: popupF },
-        { nom: "nexus-extension/popup.js", donnees: popupJsF },
-        { nom: "nexus-extension/fond.js", donnees: fondJsF },
-        { nom: "nexus-extension/icones/16.png", donnees: i16 },
-        { nom: "nexus-extension/icones/48.png", donnees: i48 },
-        { nom: "nexus-extension/icones/128.png", donnees: i128 },
-        { nom: "nexus-extension/LISEZ-MOI.txt", donnees: lisezMoiF },
+        { nom: "Nexus-extension-Chrome/manifest.json", donnees: manifestF },
+        { nom: "Nexus-extension-Chrome/onglet.html", donnees: ongletHtmlF },
+        { nom: "Nexus-extension-Chrome/onglet.js", donnees: ongletJsF },
+        { nom: "Nexus-extension-Chrome/popup.html", donnees: popupF },
+        { nom: "Nexus-extension-Chrome/popup.js", donnees: popupJsF },
+        { nom: "Nexus-extension-Chrome/fond.js", donnees: fondJsF },
+        { nom: "Nexus-extension-Chrome/icones/16.png", donnees: i16 },
+        { nom: "Nexus-extension-Chrome/icones/48.png", donnees: i48 },
+        { nom: "Nexus-extension-Chrome/icones/128.png", donnees: i128 },
+        { nom: "Nexus-extension-Chrome/LISEZ-MOI.txt", donnees: lisezMoiF },
       ]);
 
       const a = document.createElement("a");
       a.href = URL.createObjectURL(zip);
-      a.download = "nexus-extension.zip";
+      // Le zip et le dossier qu'il produit portent le meme nom : sinon on se
+      // retrouve avec deux dossiers d'apparence identique, dont un perime.
+      a.download = "Nexus-extension-Chrome.zip";
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-      setFait("nexus-extension.zip téléchargé. Décompresse-le, puis suis LISEZ-MOI.txt.");
+      setFait("Nexus-extension-Chrome.zip téléchargé. Double-clique dessus, puis "
+        + "dans Chrome : chrome://extensions → Charger l'extension non empaquetée "
+        + "→ choisis le dossier Nexus-extension-Chrome.");
     } catch (e) {
       setFait("Échec : " + (e as Error).message);
     }

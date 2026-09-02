@@ -48,11 +48,27 @@ const Rangement = {
 };
 
 // -- Reglages ----------------------------------------------------------------
+/// Les réglages d'avant. « format24 » et « aiguilles » étaient deux bascules
+/// qui pouvaient se contredire ; c'est maintenant un seul choix. On traduit les
+/// anciens plutôt que de remettre Aharon en 24 h sans prévenir.
+function reprendreLesAnciens(r) {
+  if (!r || r.format) return r;
+  if (r.aiguilles) r.format = "aiguilles";
+  else if (r.format24 === false) r.format = "12h";
+  else r.format = "24h";
+  delete r.aiguilles; delete r.format24;
+  return r;
+}
+
 const PAR_DEFAUT = {
   fond: "nuit", fondImage: "", theme: "indigo", voile: 0,
-  heure: true, espaces: true, halos: true, boutonMac: true, format24: true,
-  // Aharon voulait pouvoir mettre l'heure « en horloge » : un vrai cadran.
-  aiguilles: false, secondes: false, dateSousHeure: true,
+  heure: true, espaces: true, halos: true, boutonMac: true,
+  // L'heure : un FORMAT, pas trois bascules qui se contredisent. « Format 24 h »
+  // et « Horloge à aiguilles » pouvaient être cochés tous les deux, et l'un des
+  // deux ne servait alors à rien — sans que rien ne le dise.
+  format: "24h",            // "24h" · "12h" · "aiguilles"
+  tailleHeure: "moyen",     // "petit" · "moyen" · "grand"
+  secondes: false, chiffresCadran: false, dateSousHeure: true,
   moteur: "google", prenom: "", cle: "", court: true, ecole: true,
   vignettes: true,
   // Quelques raccourcis pour demarrer. Il les change comme il veut.
@@ -176,18 +192,46 @@ function dessinerGraduations() {
   }
 }
 
+/// Les chiffres du cadran, quand on les veut. Douze textes places au compas :
+/// les ecrire en dur, ce seraient douze occasions de se tromper d'un degre.
+function dessinerChiffres() {
+  const g = document.getElementById("chiffres");
+  if (!g) return;
+  g.innerHTML = "";
+  if (!R.chiffresCadran) return;
+  for (let i = 1; i <= 12; i++) {
+    const a = (i * 30 - 90) * Math.PI / 180;
+    const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    t.setAttribute("class", "chiffre");
+    t.setAttribute("x", (50 + 31 * Math.cos(a)).toFixed(2));
+    t.setAttribute("y", (50 + 31 * Math.sin(a)).toFixed(2));
+    t.textContent = String(i);
+    g.appendChild(t);
+  }
+}
+
+const TAILLES = { petit: "96px", moyen: "132px", grand: "176px" };
+
 function appliquerHorloge() {
-  document.body.classList.toggle("aiguilles", !!R.aiguilles);
+  const aig = R.format === "aiguilles";
+  document.body.classList.toggle("aiguilles", aig);
+  document.documentElement.style.setProperty("--cadran",
+    TAILLES[R.tailleHeure] || TAILLES.moyen);
+  // Les chiffres suivent la même taille : à 96 px, l'heure écrite doit rétrécir
+  // aussi, sinon elle déborde de la boîte de recherche.
+  const h = document.getElementById("heure");
+  if (h) h.style.fontSize = R.tailleHeure === "petit" ? "52px"
+    : R.tailleHeure === "grand" ? "104px" : "78px";
   const s = document.getElementById("aigS");
   if (s) s.style.display = R.secondes ? "" : "none";
-  if (R.aiguilles) dessinerGraduations();
+  if (aig) { dessinerGraduations(); dessinerChiffres(); }
 }
 
 function battre() {
   const d = new Date();
   const hh = d.getHours(), mm = d.getMinutes(), ss = d.getSeconds();
 
-  if (R.aiguilles) {
+  if (R.format === "aiguilles") {
     const tourner = (id, deg) => {
       const e = document.getElementById(id);
       if (!e) return;
@@ -204,9 +248,9 @@ function battre() {
     tourner("aigM", (mm + ss / 60) * 6);
     if (R.secondes) tourner("aigS", ss * 6);
   } else {
-    const base = R.format24
-      ? deux(hh) + ":" + deux(mm)
-      : d.toLocaleTimeString("fr-FR", { hour: "numeric", minute: "2-digit", hour12: true });
+    const base = R.format === "12h"
+      ? d.toLocaleTimeString("fr-FR", { hour: "numeric", minute: "2-digit", hour12: true })
+      : deux(hh) + ":" + deux(mm);
     $("heure").textContent = R.secondes ? base + ":" + deux(ss) : base;
   }
 
@@ -885,11 +929,34 @@ function construireReglages() {
     b.addEventListener("click", () => { garder("moteur", nom); construireReglages(); });
     m.appendChild(b);
   }
+  // Le format de l'heure, et sa taille : des choix, pas des bascules qui se
+  // contredisent.
+  const rangee = (id, choix, champ, apres) => {
+    const r = document.getElementById(id);
+    if (!r) return;
+    r.innerHTML = "";
+    for (const [val, nom] of choix) {
+      const b = document.createElement("button");
+      b.className = "opt" + (R[champ] === val ? " on" : "");
+      b.textContent = nom;
+      b.addEventListener("click", () => {
+        garder(champ, val);
+        construireReglages();
+        appliquerHorloge();
+        battre();
+        if (apres) apres();
+      });
+      r.appendChild(b);
+    }
+  };
+  rangee("formats", [["24h", "14:05"], ["12h", "2:05 PM"], ["aiguilles", "Aiguilles"]], "format");
+  rangee("taillesHeure", [["petit", "Petit"], ["moyen", "Moyen"], ["grand", "Grand"]], "tailleHeure");
+
   // Les bascules
   const bascules = [["tHeure","heure"],["tEsp","espaces"],["tHalo","halos"],
-                    ["tMac","boutonMac"],["t24","format24"],["tCourt","court"],
-                    ["tVign","vignettes"],["tAig","aiguilles"],["tSec","secondes"],
-                    ["tDate","dateSousHeure"]];
+                    ["tMac","boutonMac"],["tCourt","court"],
+                    ["tVign","vignettes"],["tSec","secondes"],
+                    ["tChiffres","chiffresCadran"],["tDate","dateSousHeure"]];
   for (const [id, champ] of bascules) {
     const b = $(id);
     b.classList.toggle("on", !!R[champ]);
@@ -899,8 +966,8 @@ function construireReglages() {
       if (champ === "vignettes") dessinerRaccourcis();
       // Ces trois-là changent l'heure : on la redessine tout de suite, sinon on
       // coche et il ne se passe rien pendant une seconde entière.
-      if (champ === "aiguilles" || champ === "secondes" || champ === "dateSousHeure"
-          || champ === "format24") { appliquerHorloge(); battre(); }
+      if (champ === "secondes" || champ === "chiffresCadran"
+          || champ === "dateSousHeure") { appliquerHorloge(); battre(); }
     };
   }
   $("prenom").value = R.prenom || "";
@@ -982,7 +1049,7 @@ $("testerCle").addEventListener("click", async () => {
 // -- Demarrage ---------------------------------------------------------------
 (async function () {
   const v = await Rangement.lire(Object.keys(PAR_DEFAUT));
-  R = { ...PAR_DEFAUT, ...v };
+  R = reprendreLesAnciens({ ...PAR_DEFAUT, ...v });
   appliquer();
   dessinerRaccourcis();
   construireReglages();

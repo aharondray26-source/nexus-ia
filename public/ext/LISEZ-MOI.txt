@@ -4,7 +4,7 @@ SI TU AVAIS DEJA UNE VERSION DE NEXUS : supprime-la d'abord.
 Sur chrome://extensions, sur la carte « Nexus », clique « Supprimer ».
 Recharger par-dessus ne remplace pas les anciens fichiers.
 
-1. Decompresse ce fichier : tu obtiens un dossier « nexus-extension ».
+1. Decompresse ce fichier : tu obtiens un dossier « Nexus-extension-Chrome ».
 2. Ouvre ton navigateur sur  chrome://extensions
 3. Active « Mode developpeur » (interrupteur en haut a droite).
 4. Clique « Charger l'extension non empaquetee » et choisis le dossier.

@@ -35,12 +35,23 @@ body.ouvert main{transform:translateY(-9vh)}
 body.ouvert #tete{opacity:0;transform:translateY(-30px) scale(.94);pointer-events:none}
 /* L'horloge a aiguilles. Dessinee, pas une image : elle pese quelques lignes,
    s'affiche instantanement et suit la couleur d'ambiance choisie. */
-#cadran{display:none;margin:0 auto;width:132px;height:132px}
+#cadran{display:none;margin:0 auto;width:var(--cadran,132px);height:var(--cadran,132px);
+  filter:drop-shadow(0 10px 26px rgba(0,0,0,.45));
+  animation:cadranNait .62s var(--ressort) backwards}
+@keyframes cadranNait{from{opacity:0;transform:scale(.86) rotate(-8deg)}
+                      to{opacity:1;transform:none}}
+#cadran .fondCadran{fill:rgba(255,255,255,.045);stroke:rgba(255,255,255,.10);stroke-width:.8}
+#cadran .chiffre{fill:rgba(255,255,255,.72);font:600 7px/1 -apple-system,BlinkMacSystemFont,
+  "SF Pro Text",Inter,system-ui,sans-serif;text-anchor:middle;dominant-baseline:central}
 body.aiguilles #heure{display:none}
 body.aiguilles #cadran{display:block}
 #cadran circle.bord{fill:none;stroke:rgba(255,255,255,.16);stroke-width:2}
+/* Les aiguilles des heures et des minutes avancent d'un petit rebond ; celle
+   des SECONDES glisse sans a-coup — une trotteuse qui saute fait mecanique,
+   une trotteuse qui balaie fait horlogerie. */
 #cadran line{stroke-linecap:round;transform-origin:50% 50%;
-  transition:transform .18s cubic-bezier(.2,1.4,.4,1)}
+  transition:transform .32s var(--appui)}
+#cadran line.s{transition:transform .95s linear}
 #cadran line.h{stroke:#fff;stroke-width:5}
 #cadran line.m{stroke:#fff;stroke-width:3.4;opacity:.92}
 #cadran line.s{stroke:var(--acc,#6366f1);stroke-width:1.8}
@@ -371,8 +382,10 @@ body.reglages #panneau > *{opacity:1}
      le script : douze lignes ecrites en dur, ce serait douze occasions de se
      tromper. -->
 <svg id="cadran" viewBox="0 0 100 100" aria-hidden="true">
+  <circle class="fondCadran" cx="50" cy="50" r="46"></circle>
   <circle class="bord" cx="50" cy="50" r="46"></circle>
   <g id="grad"></g>
+  <g id="chiffres"></g>
   <line class="h" id="aigH" x1="50" y1="50" x2="50" y2="27"></line>
   <line class="m" id="aigM" x1="50" y1="50" x2="50" y2="18"></line>
   <line class="s" id="aigS" x1="50" y1="56" x2="50" y2="14"></line>
@@ -440,9 +453,12 @@ body.reglages #panneau > *{opacity:1}
     <div class="bascule">Raccourcis de sites<button class="inter" id="tEsp"><i></i></button></div>
     <div class="bascule">Halos animés<button class="inter" id="tHalo"><i></i></button></div>
     <div class="bascule">Bouton macOS<button class="inter" id="tMac"><i></i></button></div>
-    <div class="bascule">Format 24 h<button class="inter" id="t24"><i></i></button></div>
-    <div class="bascule">Horloge à aiguilles<button class="inter" id="tAig"><i></i></button></div>
+    <div class="sec">Format de l'heure</div>
+    <div class="rangee" id="formats"></div>
+    <div class="sec">Taille de l'horloge</div>
+    <div class="rangee" id="taillesHeure"></div>
     <div class="bascule">Secondes<button class="inter" id="tSec"><i></i></button></div>
+    <div class="bascule">Chiffres sur le cadran<button class="inter" id="tChiffres"><i></i></button></div>
     <div class="bascule">Date sous l'heure<button class="inter" id="tDate"><i></i></button></div>
 
     <div class="sec">École</div>
