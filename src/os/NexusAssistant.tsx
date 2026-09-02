@@ -193,6 +193,63 @@ export default function NexusAssistant() {
   // s'installer dans le coin le plus dégagé — d'un mouvement souple, jamais
   // pendant qu'on la tient, jamais quand son panneau est ouvert.
   const [deplaceeAuto, setDeplaceeAuto] = useState(false);
+  // ── DÉPOSER UN FICHIER : TOUTE LA FENÊTRE ACCEPTE ───────────────────────
+  //
+  // Aharon : « quand je glisse un fichier ça marche une fois sur cinq ».
+  // Normal : la cible était la mascotte elle-même — 46 pixels de côté, qui se
+  // déplacent toute seule, avec un système de glisser-déposer par-dessus. Viser
+  // ça à la souris en tenant un fichier, c'est un jeu d'adresse.
+  //
+  // Maintenant c'est TOUTE la fenêtre qui accepte. On lâche où l'on veut, le
+  // fichier va au chat. Un voile apparaît dès qu'un fichier entre, pour qu'on
+  // sache qu'on peut lâcher — et il ne se déclenche QUE pour des fichiers,
+  // jamais quand on fait glisser du texte ou une fenêtre de Nexus.
+  const [depotEnCours, setDepotEnCours] = useState(false);
+  const compteurDepot = useRef(0);
+
+  useEffect(() => {
+    const estUnFichier = (e: DragEvent) =>
+      Array.from(e.dataTransfer?.types ?? []).includes("Files");
+
+    const entre = (e: DragEvent) => {
+      if (!estUnFichier(e)) return;
+      // `dragenter` part et revient à chaque élément survolé : sans ce compteur
+      // le voile clignote sur toute la traversée de l'écran.
+      compteurDepot.current += 1;
+      setDepotEnCours(true);
+    };
+    const sort = (e: DragEvent) => {
+      if (!estUnFichier(e)) return;
+      compteurDepot.current = Math.max(0, compteurDepot.current - 1);
+      if (compteurDepot.current === 0) setDepotEnCours(false);
+    };
+    const survole = (e: DragEvent) => {
+      if (!estUnFichier(e)) return;
+      e.preventDefault();                       // sans ça, le navigateur refuse le lâcher
+      if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
+    };
+    const lache = (e: DragEvent) => {
+      if (!estUnFichier(e)) return;
+      e.preventDefault();
+      compteurDepot.current = 0;
+      setDepotEnCours(false);
+      const f = e.dataTransfer?.files;
+      if (f && f.length) { handleFileSelect(f); setOpen(true); }
+    };
+
+    window.addEventListener("dragenter", entre);
+    window.addEventListener("dragleave", sort);
+    window.addEventListener("dragover", survole);
+    window.addEventListener("drop", lache);
+    return () => {
+      window.removeEventListener("dragenter", entre);
+      window.removeEventListener("dragleave", sort);
+      window.removeEventListener("dragover", survole);
+      window.removeEventListener("drop", lache);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Quand l'assistant s'ouvre, il l'ANNONCE. La carte de bienvenue de l'accueil
   // se posait devant lui : on glissait un fichier sur la mascotte, le chat
   // s'ouvrait avec le fichier dedans, et l'on ne voyait qu'un voile noir.
@@ -215,17 +272,31 @@ export default function NexusAssistant() {
     }
     chargeaitAvant.current = loading;
   }, [loading]);
-  const enDeplacement = useRef(false);
+  // ── LE VERROU QUI RESTAIT FERMÉ ────────────────────────────────────────
+  //
+  // C'était un booléen levé par la FIN de l'animation. Quand celle-ci ne se
+  // terminait pas — un rendu au mauvais moment, une commande détachée — le
+  // verrou restait fermé et la mascotte ne se replaçait PLUS JAMAIS. C'est
+  // exactement ce qu'Aharon décrivait : « elle ne se déplace pas, ça ne marche
+  // pas ». Un instant qui expire tout seul ne peut pas rester coincé.
+  const finDuMouvement = useRef(0);
+  /// Ou on l'a envoyee la derniere fois : sans ça, le rendez-vous periodique
+  /// relancerait l'animation vers le meme point toutes les deux secondes.
+  const dernierX = useRef(Number.NaN);
+  const dernierY = useRef(Number.NaN);
+  /// Elle est posée sur une fenêtre faute de mieux : elle s'efface.
+  const [gene, setGene] = useState(false);
 
   useEffect(() => {
     if (open || isDocked) return;
+    // (le verrou de mouvement est un instant, pas un booléen : voir plus haut)
     // On REESSAIE. Le premier jet mesurait une fois, et si la page n'etait pas
     // encore disposee — largeur 0, onglet masque — il renonçait pour toujours :
     // la mascotte restait posee sur une fenetre, sans jamais se rattraper. Elle
     // se replace donc aussi quand l'ecran change de taille, c'est-a-dire aussi
     // quand la page devient enfin visible.
     const placer = () => {
-      if (enDeplacement.current) return;
+      if (Date.now() < finDuMouvement.current) return;
       const vw = window.innerWidth, vh = window.innerHeight;
       if (vw < 600 || vh < 400) return;           // téléphone, ou page pas encore mesurée
       // On MESURE la mascotte au lieu de supposer sa taille : elle change avec
@@ -239,18 +310,37 @@ export default function NexusAssistant() {
       // relatifs au bureau, qui commence sous la barre du haut et à droite de
       // la barre latérale : sans ce décalage on cherchait le vide au mauvais
       // endroit, et la mascotte se posait tranquillement sur une fenêtre.
-      const z0 = zoneBureau();
-      // Une zone qui vaut exactement l'ecran, c'est la valeur de repli : la
-      // vraie n'a pas encore ete mesuree. On ne place rien sur une supposition.
-      if (z0.left === 0 && z0.top === 0) return;
+      // La zone bureau, si elle est connue. Le premier jet refusait de placer
+      // quoi que ce soit tant qu'elle valait la valeur de repli — mais un
+      // bureau qui COMMENCE vraiment en (0, 0) existe : barre latérale en bas,
+      // ou masquée. La mascotte ne bougeait alors jamais, sans rien dire.
+      // On se contente donc de l'écran quand la zone n'est pas mesurée.
+      const z = zoneBureau();
+      const z0 = (z.width >= 320 && z.height >= 240)
+        ? z : { left: 0, top: 44, width: vw, height: vh - 44 };
       const zones = windows
         .filter((w) => !w.minimized)
         .map((w) => ({ x: z0.left + w.x, y: z0.top + w.y, w: w.width, h: w.height }));
 
       // Les quatre coins, plus les deux milieux verticaux : six places
       // possibles, toutes en bordure pour ne jamais couper le travail en deux.
+      // Les marges LAISSÉES par les fenêtres. Six coins fixes, ça ne suffit
+      // pas : une fenêtre peut s'arrêter à 73 px du bord droit — de la place en
+      // masse pour la mascotte — et déborder quand même sur le coin choisi de
+      // trois malheureux pixels. Alors on regarde où les fenêtres s'arrêtent
+      // VRAIMENT, et on se glisse juste à côté.
+      const bordDroit = zones.length ? Math.max(...zones.map((z) => z.x + z.w)) : 0;
+      const bordGauche = zones.length ? Math.min(...zones.map((z) => z.x)) : vw;
+      const margeDroite = { nom: "marge-droite",
+        left: Math.min(bordDroit + 10, vw - taille - 6),
+        top: vh - taille - basDuDock };
+      const margeGauche = { nom: "marge-gauche",
+        left: Math.max(bordGauche - taille - 10, z0.left + 6),
+        top: vh - taille - basDuDock };
+
       const places = [
         { nom: "bas-droite", left: vw - taille - marge, top: vh - taille - basDuDock },
+        margeDroite, margeGauche,
         { nom: "bas-gauche", left: z0.left + marge, top: vh - taille - basDuDock },
         { nom: "haut-droite", left: vw - taille - marge, top: z0.top + marge },
         { nom: "haut-gauche", left: z0.left + marge, top: z0.top + marge },
@@ -280,7 +370,30 @@ export default function NexusAssistant() {
       const notes = places.map((p) => ({ p, sc: degagement(p) }));
       const maison = notes[0];
       const meilleur = notes.reduce((a, b) => (b.sc > a.sc ? b : a));
-      const meilleure = meilleur.sc > maison.sc + 40 ? meilleur.p : maison.p;
+      // La règle, en français : si la maison est POSÉE SUR une fenêtre et
+      // qu'il existe ailleurs le moindre coin libre, on y va — même s'il ne
+      // gagne que neuf pixels. Neuf pixels de dégagement valent mieux que zéro,
+      // et zéro veut dire « en plein milieu du travail ».
+      // Sinon — la maison est déjà libre — on ne déménage que si l'on gagne
+      // vraiment quelque chose : une mascotte qui saute d'un coin à l'autre est
+      // plus agaçante qu'une mascotte immobile.
+      const meilleure = (maison.sc <= 0 && meilleur.sc > 0)
+        ? meilleur.p
+        : (meilleur.sc > maison.sc + 40 ? meilleur.p : maison.p);
+      // Et quand AUCUNE place n'est libre — ça arrive, un grand espace ouvert
+      // couvre tout — elle ne peut pas s'écarter. Alors elle s'efface : à
+      // moitié transparente, elle laisse lire ce qu'il y a dessous, et elle
+      // redevient franche dès qu'on l'approche. « Gêner le moins possible »,
+      // ce n'est pas toujours se déplacer.
+      setGene(Math.max(meilleur.sc, maison.sc) < 8);
+      // Une trace, pour pouvoir REGARDER ce que le calcul décide au lieu de le
+      // deviner. `window.nexusMascotte` n'existe que pour ça.
+      (window as any).nexusMascotte = {
+        zone: z0, ecran: { vw, vh }, taille,
+        fenetres: zones,
+        places: notes.map((n) => ({ nom: (n.p as any).nom, sc: Math.round(n.sc) })),
+        choisie: (meilleure as any).nom,
+      };
 
       // De la position naturelle (bas-droite) vers la place choisie.
       // ABSOLU, jamais relatif. Un premier jet ajoutait l'ecart au decalage
@@ -297,12 +410,18 @@ export default function NexusAssistant() {
       const x = Math.round(meilleure.left - naturelLeft);
       const y = Math.round(meilleure.top - naturelTop);
 
-      enDeplacement.current = true;
+      // Deja au bon endroit ? On ne rejoue pas l'animation : la mascotte
+      // tremblerait toutes les deux secondes.
+      if (Math.abs(x - dernierX.current) < 6 && Math.abs(y - dernierY.current) < 6) return;
+      dernierX.current = x; dernierY.current = y;
+
+      // On se donne 900 ms pour arriver. Passé ce délai on réessaie, quoi
+      // qu'il soit advenu de l'animation.
+      finDuMouvement.current = Date.now() + 900;
       setDeplaceeAuto(true);
       pillControls
         .start({ x, y, transition: { type: "spring", stiffness: 190, damping: 21, mass: 0.9 } })
         .finally(() => {
-          enDeplacement.current = false;
           // Le halo s'éteint APRÈS l'arrivée : un déplacement qu'on n'a pas vu
           // partir donne l'impression d'un bug, pas d'une intention.
           window.setTimeout(() => setDeplaceeAuto(false), 260);
@@ -310,9 +429,17 @@ export default function NexusAssistant() {
     };
     // On laisse la fenêtre finir de naître avant de juger de la place.
     const t = window.setTimeout(placer, 420);
+    // ET ON REESSAIE. Aharon : « la mascotte ne se déplace pas, ça ne marche
+    // pas ». Un seul essai, et il suffit qu'il tombe pendant que la fenêtre
+    // s'ouvre, que l'onglet soit encore masqué, ou que l'animation précédente
+    // ne soit pas finie, pour qu'elle reste plantée là POUR TOUJOURS. Un
+    // rendez-vous toutes les deux secondes ne coûte rien — le calcul est
+    // quelques soustractions — et il n'anime que si la place a changé.
+    const battement = window.setInterval(placer, 2000);
     window.addEventListener("resize", placer);
     return () => {
       window.clearTimeout(t);
+      window.clearInterval(battement);
       window.removeEventListener("resize", placer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -867,6 +994,19 @@ export default function NexusAssistant() {
       )}
     </AnimatePresence>
 
+    {/* Le voile du dépôt. Sans lui, on ne sait pas qu'on peut lâcher — et on
+        va chercher la mascotte à la souris, ce qui rate quatre fois sur cinq. */}
+    {depotEnCours && (
+      <div className="nx-entre pointer-events-none fixed inset-0 z-[999998] flex items-center justify-center bg-cyan-950/45 backdrop-blur-[3px]">
+        <div className="rounded-3xl border-2 border-dashed border-cyan-400/70 bg-slate-950/80 px-10 py-8 text-center shadow-2xl">
+          <div className="text-[15px] font-semibold text-cyan-200">Lâche, je m'en occupe</div>
+          <div className="mt-1 text-[12px] text-slate-400">
+            N'importe où sur l'écran — le fichier arrive dans le chat.
+          </div>
+        </div>
+      </div>
+    )}
+
     {/* Floating Trigger Pill - Fully Draggable with Magnetic Side Snapping & No Overshoot */}
     {!isDocked && (
       <motion.div
@@ -917,7 +1057,9 @@ export default function NexusAssistant() {
         }}
         className={`fixed bottom-24 sm:bottom-16 right-3 sm:right-6 z-[999999] touch-none cursor-grab active:cursor-grabbing select-none ${
           surLaMascotte ? "nx-mascotte-recoit" : ""
-        } ${deplaceeAuto ? "nx-mascotte-file" : ""}`}
+        } ${deplaceeAuto ? "nx-mascotte-file" : ""} ${
+          gene && !open && !surLaMascotte && !depotEnCours ? "nx-mascotte-discrete" : ""
+        }`}
       >
         {/* La mascotte remplace l'ancienne pastille : le corps ouvre l'assistant,
             l'oeil gauche ajoute un fichier, l'oeil droit ouvre la cle API. */}
@@ -927,7 +1069,7 @@ export default function NexusAssistant() {
             // Son humeur suit ce qui se passe : elle écarquille les yeux quand
             // un fichier arrive sur elle, elle se plisse pendant qu'elle
             // réfléchit, et elle sourit quand elle vient de répondre.
-            humeur={surLaMascotte ? "surprise" : loading ? "pense"
+            humeur={(surLaMascotte || depotEnCours) ? "surprise" : loading ? "pense"
                     : vientDeRepondre ? "content" : "normal"}
             size={pillSize === "compact" ? 46 : pillSize === "normal" ? 58 : 70}
             onBody={() => handleToggle()}
