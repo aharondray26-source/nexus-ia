@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { APPS } from "./appsRegistry";
 import { useWindows } from "./useWindows";
 import Icon from "./Icons";
+import { queryNexusAIObject } from "../lib/nexusBrain";
+import { NexusMessageRenderer } from "./NexusMessageRenderer";
 import { Sparkles, Search, Calculator, ArrowRight } from "lucide-react";
 
 /// Minuscules et sans accents : « Réglages », « reglages » et « RÉGLAGES »
@@ -19,6 +21,19 @@ export default function CommandPalette() {
   // Quand la liste deborde, elle est tranchee net contre le bord du panneau :
   // on ne voit pas qu'elle defile, on voit un element coupe. Un degrade en bas
   // dit « ça continue » — et il s'efface des qu'on est arrive au bout.
+  // ── LA BARRE QUI REPOND ─────────────────────────────────────────────────
+  //
+  // Aharon : « il faut que tous les éléments du site soient intelligents. »
+  // On tapait une question, on choisissait « Demander à l'IA », le chat
+  // s'ouvrait, et on attendait. Maintenant la barre répond ELLE-MÊME, sous ce
+  // qu'on écrit, sans rien ouvrir. Entrée ouvre le chat si on veut continuer.
+  //
+  // On ne demande pas à chaque lettre : on attend que la frappe s'arrête, et
+  // seulement si ça ressemble à une question. Sinon chaque nom d'espace tapé
+  // déclencherait une requête pour rien.
+  const [reponse, setReponse] = useState<{ texte: string; moteur: string } | null>(null);
+  const [cherche, setCherche] = useState(false);
+  const demandeEnCours = useRef(0);
   const [resteEnBas, setResteEnBas] = useState(false);
   const listeRef = useRef<HTMLUListElement>(null);
   const mesurerDefilement = useCallback(() => {
@@ -130,6 +145,38 @@ export default function CommandPalette() {
   // apres, il n'est appele que lorsque la palette est ouverte — le nombre de
   // hooks change d'un rendu a l'autre et React s'arrete net (erreur 310,
   // ecran noir). Le nombre de resultats change a chaque frappe : on remesure.
+  // Est-ce une question, ou juste le nom d'un espace ?
+  const ressembleAUneQuestion = (t: string) => {
+    const q = t.trim();
+    if (q.length < 8) return false;
+    if (q.endsWith("?")) return true;
+    // Un mot interrogatif au début, ou une vraie phrase (quatre mots ou plus).
+    if (/^(qui|que|quoi|quel|quelle|quels|quelles|quand|où|ou|comment|pourquoi|combien|explique|résume|resume|traduis|calcule|donne|écris|ecris|fais|aide)\b/i.test(q)) return true;
+    return q.split(/\s+/).length >= 4;
+  };
+
+  useEffect(() => {
+    setReponse(null);
+    const q = query.trim();
+    if (!open || !ressembleAUneQuestion(q)) { setCherche(false); return; }
+    const mien = ++demandeEnCours.current;
+    const t = window.setTimeout(async () => {
+      setCherche(true);
+      try {
+        const r = await queryNexusAIObject(q, []);
+        // Une réponse arrivée après qu'on a continué à taper n'intéresse plus
+        // personne : on la jette plutôt que d'écraser la suivante.
+        if (mien !== demandeEnCours.current) return;
+        setReponse({ texte: r.reply, moteur: r.modelUsed });
+      } catch {
+        if (mien === demandeEnCours.current) setReponse(null);
+      } finally {
+        if (mien === demandeEnCours.current) setCherche(false);
+      }
+    }, 700);
+    return () => window.clearTimeout(t);
+  }, [query, open]);
+
   useEffect(mesurerDefilement, [mesurerDefilement, items, open]);
 
   if (!open) return null;
@@ -200,6 +247,30 @@ export default function CommandPalette() {
             </button>
           )}
         </div>
+
+        {/* La réponse, sous le champ. Elle ne pousse pas la liste : elle se
+            met AVANT, parce que c'est ce qu'on est venu chercher quand on pose
+            une question. */}
+        {(cherche || reponse) && (
+          <div className="nx-entre border-b border-white/10 px-5 py-3.5">
+            {cherche && !reponse ? (
+              <div className="flex items-center gap-2 text-[12px] text-nexus-muted">
+                <Sparkles className="h-3.5 w-3.5 animate-pulse text-purple-400" />
+                Nexus réfléchit…
+              </div>
+            ) : reponse ? (
+              <>
+                <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-nexus-muted">
+                  <Sparkles className="h-3 w-3 text-purple-400" />
+                  {reponse.moteur}
+                </div>
+                <div className="max-h-[220px] overflow-y-auto pr-1 text-[13px] leading-relaxed">
+                  <NexusMessageRenderer content={reponse.texte} />
+                </div>
+              </>
+            ) : null}
+          </div>
+        )}
 
         <ul
           ref={listeRef}
