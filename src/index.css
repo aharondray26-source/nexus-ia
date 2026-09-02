@@ -50,7 +50,8 @@ body {
     Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
-  transition: background-color 300ms ease, color 300ms ease;
+  transition: background-color var(--t-moyen) var(--doux),
+              color var(--t-moyen) var(--doux);
 }
 
 /* ============================================================================
@@ -73,6 +74,11 @@ body {
      calmement. C'est cet ecart qui donne le geste qu'Aharon a aime dans le
      panneau des reglages de l'extension. */
   --carre:   cubic-bezier(.3, .9, .2, 1);
+  /* Le flottement : les mouvements lents qui tournent en boucle (les halos du
+     fond). Ils ont besoin d'une courbe SYMETRIQUE — sinon la boucle se voit,
+     elle accelere toujours au meme endroit. Les autres courbes du vocabulaire
+     sont faites pour un geste qui commence et qui finit. */
+  --flotte:  cubic-bezier(.45, 0, .55, 1);
   --t-grand: .58s;
   --t-moyen: .32s;
   --t-petit: .17s;
@@ -81,8 +87,11 @@ body {
 /* Fluid transition on theme change */
 *, *::before, *::after {
   transition-property: background-color, border-color, color, fill, stroke, box-shadow;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
+  /* La transition la plus vue du site : chaque survol, chaque changement de
+     theme. Elle employait la courbe par defaut de Tailwind — donc PAS la
+     notre. Tout le reste bougeait dans le vocabulaire, et elle non. */
+  transition-timing-function: var(--doux);
+  transition-duration: var(--t-petit);
 }
 
 /* Light Mode Refinement Rules */
@@ -236,8 +245,10 @@ html.light-mode .nx-palette {
   opacity: 0;
   pointer-events: none;
   transition: transform .62s var(--ressort),
-              border-radius .58s var(--doux) .06s,
-              opacity .3s ease;
+              /* Les coins se carrent avec --carre, pas avec --doux : c'est
+                 la loi du rayon, celle qui fait le geste. */
+              border-radius var(--t-grand) var(--carre) .06s,
+              opacity var(--t-moyen) var(--doux);
 }
 .nx-bulle.nx-ouvert {
   transform: scale(1);
@@ -245,7 +256,7 @@ html.light-mode .nx-palette {
   opacity: 1;
   pointer-events: auto;
 }
-.nx-bulle > * { opacity: 0; transition: opacity .28s ease .3s; }
+.nx-bulle > * { opacity: 0; transition: opacity var(--t-moyen) var(--doux) .3s; }
 .nx-bulle.nx-ouvert > * { opacity: 1; }
 
 /* UNE FENETRE NAIT. Elle part petite et un peu ronde, puis grandit et ses
@@ -327,7 +338,7 @@ button:active {
 }
 
 .liquid-ripple:active {
-  animation: liquid-ripple 400ms ease-out;
+  animation: liquid-ripple var(--t-moyen) var(--doux);
 }
 
 /* --- Epuration visuelle : un seul degrade, derive de la couleur d'accent.
@@ -631,17 +642,17 @@ html.light-mode .nx-widget {
 }
 .nx-aurora span:nth-child(1) {
   background: var(--accent); top: -18%; left: -12%;
-  animation: nx-drift-a 26s ease-in-out infinite;
+  animation: nx-drift-a 26s var(--flotte) infinite;
 }
 .nx-aurora span:nth-child(2) {
   background: color-mix(in srgb, var(--accent) 55%, #0e7490);
-  bottom: -22%; right: -10%; animation: nx-drift-b 32s ease-in-out infinite;
+  bottom: -22%; right: -10%; animation: nx-drift-b 32s var(--flotte) infinite;
 }
 .nx-aurora span:nth-child(3) {
   /* Teinte profonde (indigo/ardoise) au lieu du rose : plus adulte, moins sucre. */
   background: color-mix(in srgb, var(--accent) 55%, #1e293b);
   top: 30%; left: 40%; width: 44vw; height: 44vw; opacity: .22;
-  animation: nx-drift-c 38s ease-in-out infinite;
+  animation: nx-drift-c 38s var(--flotte) infinite;
 }
 @keyframes nx-drift-a {
   0%,100% { transform: translate(0,0) scale(1); }
@@ -718,7 +729,10 @@ html.light-mode .nx-widget {
    d'apparaitre en fondu : ils SE PRECIPITENT chacun depuis son propre cote,
    avec un vrai mouvement (elan, leger depassement, puis calage). */
 .nx-fly { will-change: transform, opacity; }   /* JAMAIS opacity:0 ici */
-.nx-fly-in { animation: nx-fly-in 620ms cubic-bezier(.16,1.02,.28,1) backwards; }
+/* La courbe etait « .16,1.02,.28,1 » : presque --ressort, mais pas tout a
+   fait. Une derive d'un centieme qu'on ne voit pas isolement, et qui se voit
+   des qu'un ressort et un vol-plane jouent cote a cote. */
+.nx-fly-in { animation: nx-fly-in var(--t-grand) var(--ressort) backwards; }
 
 @keyframes nx-fly-in {
   0%   { opacity: 0; transform: translate(var(--fx), var(--fy)) scale(.82) rotate(var(--fr)); filter: blur(6px); }
@@ -738,7 +752,7 @@ html.light-mode .nx-widget {
 
 /* Indice « descends » qui respire doucement */
 @keyframes nx-hint { 0%,100% { transform: translateY(0); opacity: .55; } 50% { transform: translateY(6px); opacity: 1; } }
-.nx-hint { animation: nx-hint 2.1s ease-in-out infinite; }
+.nx-hint { animation: nx-hint 2.1s var(--flotte) infinite; }
 .reduce-motion .nx-hint, .reduce-motion .nx-fly-in { animation: none !important; opacity: 1 !important; transform: none !important; }
 
 /* Une barre d'outils qui ne tient pas dans la largeur doit DEFILER, pas sortir.
@@ -919,7 +933,9 @@ html.light-mode .nx-dock {
 
 /* Mascotte : respiration douce + reaction au survol */
 @keyframes nx-breathe { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-2.5px) scale(1.02); } }
-.nx-mascotte .nx-mascotte-body { animation: nx-breathe 3.4s ease-in-out infinite; transform-origin: 50px 50px; }
+/* Sa respiration : une boucle, donc --flotte. Une courbe asymetrique se
+   verrait a chaque tour, toujours au meme endroit. */
+.nx-mascotte .nx-mascotte-body { animation: nx-breathe 3.4s var(--flotte) infinite; transform-origin: 50px 50px; }
 .nx-mascotte:hover .nx-mascotte-body { animation-duration: 1.9s; }
 .nx-mascotte g[onclick], .nx-mascotte g { cursor: pointer; }
 .reduce-motion .nx-mascotte .nx-mascotte-body { animation: none; }

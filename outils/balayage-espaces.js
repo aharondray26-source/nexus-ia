@@ -70,6 +70,35 @@ window.__bal = async function (id) {
   }
   if (coupes) pb.push(`${coupes} element(s) au texte coupe`);
 
+  // LE VOCABULAIRE DE MOUVEMENT. Une courbe ecrite a la main, c'est l'unite
+  // qui se defait — et c'est exactement ce qu'Aharon reproche. On regarde ce
+  // qui est REELLEMENT applique, pas ce qui est ecrit dans les fichiers.
+  const horsVocabulaire = [];
+  {
+    const r = getComputedStyle(document.documentElement);
+    const connues = ['--ressort', '--appui', '--doux', '--carre', '--flotte']
+      .map(n => r.getPropertyValue(n).trim().replace(/\s+/g, ''))
+      .filter(Boolean);
+    const vues = new Set();
+    for (const e of fen.querySelectorAll("*")) {
+      const s = getComputedStyle(e);
+      for (const c of [s.transitionTimingFunction, s.animationTimingFunction]) {
+        for (const un of (c || '').split(/,(?![^(]*\))/)) {
+          const t = un.trim().replace(/\s+/g, '');
+          if (!t || t === 'linear' || vues.has(t)) continue;
+          vues.add(t);
+          // « ease » est la valeur par defaut : elle apparait partout ou l'on
+          // n'a rien demande, ce n'est pas une faute.
+          if (t === 'ease' || connues.includes(t)) continue;
+          horsVocabulaire.push(t);
+        }
+      }
+    }
+  }
+  if (horsVocabulaire.length) {
+    pb.push('courbe(s) hors vocabulaire : ' + horsVocabulaire.slice(0, 4).join(', '));
+  }
+
   // Accents manquants dans le texte VU par Aharon.
   const txt = fen.innerText || '';
   const fautes = [];
