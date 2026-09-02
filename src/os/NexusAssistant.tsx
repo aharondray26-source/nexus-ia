@@ -193,6 +193,13 @@ export default function NexusAssistant() {
   // s'installer dans le coin le plus dégagé — d'un mouvement souple, jamais
   // pendant qu'on la tient, jamais quand son panneau est ouvert.
   const [deplaceeAuto, setDeplaceeAuto] = useState(false);
+  // Quand l'assistant s'ouvre, il l'ANNONCE. La carte de bienvenue de l'accueil
+  // se posait devant lui : on glissait un fichier sur la mascotte, le chat
+  // s'ouvrait avec le fichier dedans, et l'on ne voyait qu'un voile noir.
+  useEffect(() => {
+    if (open) window.dispatchEvent(new CustomEvent("nexus:quelque-chose-souvre"));
+  }, [open]);
+
   /// Un fichier survole la mascotte : elle s'ouvre en grand pour dire « donne ».
   const [surLaMascotte, setSurLaMascotte] = useState(false);
   /// Elle vient de répondre : elle sourit deux secondes, puis reprend son air

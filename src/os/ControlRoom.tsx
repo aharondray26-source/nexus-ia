@@ -515,6 +515,9 @@ const ALL: { id: WidgetId; label: string }[] = [
 export default function ControlRoom() {
   const openApp = useWindows((s) => s.openApp);
   const setPaletteOpen = useWindows((s) => s.setPaletteOpen);
+  // Combien d'espaces sont ouverts : la carte de bienvenue s'efface des qu'il
+  // y en a un, pour ne jamais cacher ce qu'on vient de demander.
+  const fenetresOuvertes = useWindows((s) => s.windows.filter((w) => !w.minimized).length);
   const userName = useSettings((s) => s.userName);
   const iconColors = useSettings((s) => s.iconColors);
   const switchEffort = useSettings((s) => s.switchEffort);
@@ -667,6 +670,25 @@ export default function ControlRoom() {
     try { localStorage.setItem("nexus.welcomed", "1"); } catch {}
     setWelcome(false);
   }
+
+  // TOUT CE QUI S'OUVRE la fait disparaitre. Elle etait deja ecartee quand on
+  // arrivait par un lien, mais elle restait posee DEVANT dans tous les autres
+  // cas : glisser un fichier sur la mascotte ouvrait bien le chat, avec le
+  // fichier dedans… et l'on ne voyait rien, parce qu'un voile noir couvrait
+  // l'ecran. Une carte de bienvenue ne doit jamais cacher ce qu'on vient de
+  // demander.
+  useEffect(() => {
+    if (!welcome) return;
+    if (fenetresOuvertes > 0) { dismissWelcome(); return; }
+    const partir = () => dismissWelcome();
+    window.addEventListener("nexus:quelque-chose-souvre", partir);
+    window.addEventListener("nexus:open-ai", partir);
+    return () => {
+      window.removeEventListener("nexus:quelque-chose-souvre", partir);
+      window.removeEventListener("nexus:open-ai", partir);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [welcome, fenetresOuvertes]);
 
   // Menu du site au clic droit : ecoute au niveau du document (plus fiable
   // que le gestionnaire React sur un conteneur qui defile).
