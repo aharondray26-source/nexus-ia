@@ -50,15 +50,5 @@
       },
       "description": "Ouvrir la Loupe Nexus sur cette page"
     }
-  },
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "loupe-page.js"
-      ],
-      "matches": [
-        "<all_urls>"
-      ]
-    }
-  ]
+  }
 }
