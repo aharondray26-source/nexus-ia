@@ -69,13 +69,35 @@ type Avancement = { etape: string; part: number };
 /// WebLLM annonce son avancement en anglais, avec du jargon. On dit la même
 /// chose en français, et on dit ce qui se passe VRAIMENT : ce n'est pas
 /// « fetching param cache », c'est un téléchargement, et il est long.
-function enFrancais(t: string): string {
-  const mo = t.match(/(\d+)\s*MB fetched/i);
-  if (mo) return `Téléchargement du modèle · ${mo[1]} Mo reçus`;
-  if (/fetch|cache/i.test(t)) return "Téléchargement du modèle…";
-  if (/loading|shader|compil/i.test(t)) return "Mise en route sur la carte graphique…";
-  if (/finish|complete|ready/i.test(t)) return "Prêt.";
-  return t.trim() || "Préparation…";
+// La part d'avancement ne vient PAS du champ `progress` de la bibliotheque :
+// pendant tout le telechargement il reste a zero, et la jauge restait donc
+// collee a 2 % pendant plusieurs minutes — exactement l'impression de panne
+// qu'on voulait eviter. Je l'ai vu en la regardant tourner. Le vrai avancement
+// est ecrit dans la phrase anglaise (« 94% completed ») : c'est celui-la qu'on
+// lit, et on le repartit pour que la fin ne fasse pas un bond.
+function enFrancais(t: string, part: number): { etape: string; part: number } {
+  const m = t.match(/\[(\d+)\/(\d+)\]/);
+  const pc = t.match(/(\d+(?:\.\d+)?)%\s*complet/i);
+  const mo = t.match(/([\d.]+)\s*MB\s*(?:fetched|loaded)/i);
+  const p = pc ? Math.min(1, parseFloat(pc[1]) / 100)
+               : (m ? Number(m[1]) / Number(m[2]) : part);
+
+  if (/fetch|download/i.test(t)) {
+    return { etape: mo ? `Téléchargement du modèle · ${Math.round(parseFloat(mo[1]))} Mo reçus`
+                       : "Téléchargement du modèle…", part: p * 0.8 };
+  }
+  if (/cache/i.test(t)) {
+    return { etape: mo ? `Chargement du modèle · ${Math.round(parseFloat(mo[1]))} Mo`
+                       : "Chargement du modèle…", part: 0.8 + p * 0.15 };
+  }
+  if (/shader|gpu/i.test(t)) {
+    return { etape: "Mise en route sur la carte graphique…", part: 0.95 + p * 0.05 };
+  }
+  if (/finish|complete|ready/i.test(t)) return { etape: "Prêt.", part: 1 };
+  if (/loading|init|compil/i.test(t)) {
+    return { etape: "Mise en route du modèle…", part: Math.max(p, 0.8) };
+  }
+  return { etape: t.trim() || "Préparation…", part };
 }
 
 let moteur: any = null;
@@ -106,8 +128,8 @@ export async function preparer(
         avance?.({
           // WebLLM parle anglais. Aharon non — et « Fetching param cache[6/8] »
           // ne veut rien dire pour personne.
-          etape: enFrancais(String(r?.text ?? "")),
-          part: typeof r?.progress === "number" ? r.progress : 0,
+          ...enFrancais(String(r?.text ?? ""),
+                        typeof r?.progress === "number" ? r.progress : 0),
         });
       },
     });

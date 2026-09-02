@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useEtroit } from "../lib/useEtroit";
 import {
   Sparkles,
@@ -132,7 +132,14 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
   const historiqueReplie = sidebarCollapsed || tropEtroit;
   /// Le téléchargement du modèle du navigateur, quand il a lieu. Un gigaoctet
   /// sans le moindre signe, c'est une application qui a l'air plantée.
-  const [progresModele, setProgresModele] = useState<{ etape: string; part: number } | null>(null);
+  const [progresModele, poserProgres] = useState<{ etape: string; part: number } | null>(null);
+  // Une jauge qui RECULE se lit comme une panne. La bibliotheque annonce parfois
+  // un avancement plus petit que le precedent en changeant d'etape ; on ne
+  // redescend jamais.
+  const setProgresModele = useCallback((a: { etape: string; part: number } | null) => {
+    if (!a) { poserProgres(null); return; }
+    poserProgres((v) => ({ etape: a.etape, part: Math.max(v?.part ?? 0, a.part) }));
+  }, []);
   const [installe, setInstalle] = useState<boolean>(() => !!dejaInstalle());
   const [sandboxCollapsed, setSandboxCollapsed] = useState<boolean>(false);
   // Les DEUX panneaux se replient quand la place manque. Sans cela, dans une
@@ -387,11 +394,19 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
         }
       }
 
-      // 3 bis. LE MODÈLE DU NAVIGATEUR. Ni clé, ni installation, ni compte :
-      //    le modèle a été téléchargé une fois et vit dans ce navigateur. On
-      //    ne le lance QUE s'il est déjà là — on ne déclenche jamais un
-      //    téléchargement d'un gigaoctet sans qu'Aharon l'ait demandé.
-      if (!replyText && dejaInstalle()) {
+      // 3 bis. LE MODÈLE DU NAVIGATEUR — DE LUI-MÊME.
+      //
+      //    Aharon : « il faut que par défaut, partout, SANS AUCUNE MANIPULATION
+      //    de l'utilisateur, il puisse bénéficier d'un modèle intelligent ». Il
+      //    a raison : quelqu'un qui reçoit le lien et pose une question ne doit
+      //    pas avoir à comprendre ce qu'est un modèle.
+      //
+      //    Alors on le prépare TOUT SEUL, à la première question, quand il n'y
+      //    a ni serveur ni clé ni Ollama. On l'annonce, on montre la
+      //    progression, et on peut l'arrêter — un gigaoctet pris en silence sur
+      //    un partage de connexion serait impardonnable ; le prendre en
+      //    l'annonçant, c'est simplement rendre service.
+      if (!replyText && (dejaInstalle() || gpuPossible())) {
         try {
           const nav = await demanderAuNavigateur(
             userText, [],
@@ -831,16 +846,20 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
           <div className="mx-3 mb-2 rounded-2xl border border-cyan-500/30 bg-cyan-950/20 p-3">
             <div className="flex items-center gap-2 text-[12px] font-semibold text-cyan-200">
               <Sparkles className="h-3.5 w-3.5" />
-              Réponds-moi sans clé et sans internet
+              Pose ta question : je m'occupe du reste
             </div>
             <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
-              Ton navigateur télécharge un modèle <b>une seule fois</b> et le garde.
-              Ensuite, plus rien ne sort de cette machine.
+              À ta première question, ton navigateur téléchargera un modèle{" "}
+              <b>une seule fois</b> et le gardera. Ensuite, plus rien ne sort de
+              cette machine — et ça marche même sans internet.
               <br />
+              <span className="text-slate-500">
+                Tu peux aussi choisir dès maintenant :
+              </span>{" "}
               {/* Un modèle trop petit se trompe, et un lycéen qui révise ne peut
                   pas le savoir. On le dit avant, pas après. */}
               <span className="text-amber-300/80">
-                Prends le premier : le léger se trompe sur les cours.
+                le léger va plus vite mais se trompe sur les cours.
               </span>
             </p>
             <div className="mt-2.5 flex flex-wrap gap-2">

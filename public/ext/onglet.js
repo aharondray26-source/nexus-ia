@@ -70,6 +70,9 @@ const PAR_DEFAUT = {
   tailleHeure: "moyen",     // "petit" · "moyen" · "grand"
   secondes: false, chiffresCadran: false, dateSousHeure: true,
   moteur: "google", prenom: "", cle: "", court: true, ecole: true,
+  // Le modele qui tourne dans ce navigateur, sans cle et sans installation.
+  modeleLocal: "",           // celui qu'il a choisi ; vide = le recommande
+  modeleLocalInstalle: "",   // celui deja telecharge ici ; vide = aucun
   vignettes: true,
   // Quelques raccourcis pour demarrer. Il les change comme il veut.
   raccourcis: [
@@ -667,6 +670,101 @@ async function demanderALocal(question, court) {
   } catch (e) { return null; }
 }
 
+// ── LE MODÈLE QUI VIT DANS CET ONGLET ───────────────────────────────────────
+//
+// Aharon : « il faut que par défaut, PARTOUT, sans même la manipulation de
+// l'utilisateur, il y ait un modèle intelligent local ». Ollama demande une
+// installation ; une clé demande un compte. Ici, rien : le navigateur
+// télécharge le modèle une seule fois, le garde, et répond ensuite hors ligne.
+//
+// La bibliothèque est LIVRÉE AVEC L'EXTENSION (`modele.js`). Chrome interdit à
+// une extension de charger un script depuis internet — c'est pour ça qu'elle
+// est là, en entier, et pas appelée à distance.
+const MODELES = [
+  { id: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC", nom: "Nexus local", poids: "environ 1,1 Go" },
+  { id: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC", nom: "Nexus léger", poids: "environ 380 Mo" },
+];
+let cerveau = null;          // le moteur, une fois prêt
+let cerveauEnRoute = null;   // la promesse en cours, pour ne jamais en lancer deux
+
+function cerveauPossible() { return typeof navigator !== "undefined" && !!navigator.gpu; }
+
+// Traduire l'avancement, qui arrive en anglais. Un lycéen qui voit
+// « Fetching param cache[12/38]: 252MB loaded. 94% completed » ne sait pas si
+// ça marche ou si ça plante.
+//
+// La part d'avancement ne vient PAS du champ `progress` de la bibliothèque :
+// pendant tout le téléchargement il reste à zéro, et la jauge restait donc
+// collée à 2 % pendant plusieurs minutes — exactement l'impression de panne
+// qu'on voulait éviter. Le vrai avancement est écrit dans la phrase anglaise
+// (« 94% completed ») : c'est celui-là qu'on lit.
+function enFrancais(t, part) {
+  const rien = { texte: "Préparation…", part: part || 0 };
+  if (!t) return rien;
+  const m = t.match(/\[(\d+)\/(\d+)\]/);
+  const pc = t.match(/(\d+(?:\.\d+)?)%\s*complet/i);
+  const mo = t.match(/([\d.]+)\s*MB\s+loaded/i);
+  let p = pc ? Math.min(1, parseFloat(pc[1]) / 100)
+             : (m ? Number(m[1]) / Number(m[2]) : (part || 0));
+
+  if (/fetch|download/i.test(t)) {
+    // La phase de téléchargement est la longue : on lui donne les 4/5 de la
+    // jauge, pour que la mise en route ne fasse pas un bond a la fin.
+    return { texte: mo ? `Téléchargement du modèle… ${Math.round(parseFloat(mo[1]))} Mo`
+                       : "Téléchargement du modèle…", part: p * 0.8 };
+  }
+  if (/cache/i.test(t)) {
+    return { texte: mo ? `Chargement du modèle… ${Math.round(parseFloat(mo[1]))} Mo`
+                       : "Chargement du modèle…", part: 0.8 + p * 0.15 };
+  }
+  if (/shader|gpu/i.test(t)) return { texte: "Mise en route sur la carte graphique…", part: 0.95 + p * 0.05 };
+  if (/finish|complet|ready/i.test(t)) return { texte: "Prêt.", part: 1 };
+  if (/load|init|compil/i.test(t)) return { texte: "Mise en route du modèle…", part: Math.max(p, 0.8) };
+  return rien;
+}
+
+async function preparerCerveau(avance) {
+  if (cerveau) return cerveau;
+  if (cerveauEnRoute) return cerveauEnRoute;
+  cerveauEnRoute = (async () => {
+    const lib = await import("./modele.js");
+    const id = (R.modeleLocal && MODELES.some(m => m.id === R.modeleLocal))
+      ? R.modeleLocal : MODELES[0].id;
+    const moteur = await lib.CreateMLCEngine(id, {
+      initProgressCallback: (p) => {
+        if (!avance) return;
+        const e = enFrancais(p && p.text, typeof p?.progress === "number" ? p.progress : 0);
+        avance(e.texte, e.part);
+      },
+    });
+    cerveau = { moteur, id };
+    // On note QUEL modele est deja dans ce navigateur : au prochain onglet on
+    // sait qu'il n'y a plus rien a telecharger, et on peut le dire.
+    R.modeleLocalInstalle = id;
+    Rangement.ecrire({ modeleLocalInstalle: id });
+    return cerveau;
+  })();
+  try { return await cerveauEnRoute; }
+  finally { cerveauEnRoute = null; }
+}
+
+async function demanderAuCerveau(question, court, avance) {
+  if (!cerveauPossible()) return null;
+  const c = await preparerCerveau(avance);
+  const r = await c.moteur.chat.completions.create({
+    messages: [
+      { role: "system", content: "Tu es Nexus. Réponds en français, avec justesse"
+        + (court ? ", en trois phrases au plus." : ", sans bavardage.")
+        + " Si c'est un exercice, montre les étapes." },
+      { role: "user", content: question },
+    ],
+    temperature: 0.25,
+  });
+  const t = r?.choices?.[0]?.message?.content;
+  return (typeof t === "string" && t.trim())
+    ? { texte: t.trim(), modele: "Nexus local · dans ton navigateur" } : null;
+}
+
 async function demanderALIA(question, court) {
   const f = devinerFournisseur(R.cle);
   if (!f) throw new Error("aucune clé");
@@ -749,8 +847,46 @@ async function demander() {
       res.appendChild(d); res.scrollTop = res.scrollHeight;
       return;
     }
-    // Sans cle ni modele local : on ne rédige pas, on vise. Et on dit ou
-    // trouver mieux.
+    // Ni cle, ni Ollama. Reste le modele de CE navigateur : il se telecharge
+    // une fois, tout seul, et repond ensuite hors ligne. C'est ce qu'Aharon
+    // voulait — que celui a qui il donne l'extension n'ait RIEN a faire.
+    if (cerveauPossible()) {
+      enCours = true;
+      const boite = poserReponse();
+      const barre = document.createElement("div");
+      barre.className = "jauge";
+      barre.innerHTML = '<i></i>';
+      boite.textContent = "Je prépare mon modèle — une seule fois, ensuite c'est immédiat.";
+      boite.appendChild(barre);
+      try {
+        let vue = 0;   // une jauge qui recule se lit comme une panne
+        const rep = await demanderAuCerveau(t, R.court, (texte, part) => {
+          boite.firstChild.nodeValue = texte;
+          vue = Math.max(vue, Math.max(0.02, part));
+          barre.firstChild.style.width = Math.round(vue * 100) + "%";
+        });
+        barre.remove();
+        if (rep) {
+          boite.textContent = rep.texte;
+          const sig = boite.parentElement && boite.parentElement.querySelector(".sig");
+          if (sig) sig.textContent = "✦ " + rep.modele;
+        } else {
+          boite.textContent = "Je n'ai rien à ajouter.";
+        }
+      } catch (e) {
+        barre.remove();
+        boite.innerHTML = "Je n'ai pas pu préparer le modèle : " + ech(e.message)
+          + "<br><span style='opacity:.7;font-size:12.5px'>Voici au moins les bonnes sources.</span>";
+      } finally {
+        enCours = false;
+        poserLiens(cibler(t));
+        res.scrollTop = res.scrollHeight;
+      }
+      return;
+    }
+
+    // Ce navigateur ne sait pas faire tourner de modele : on ne rédige pas, on
+    // vise. Et on dit ou trouver mieux.
     poserLiens(cibler(t));
     const d = document.createElement("div");
     d.className = "rep";

@@ -109,9 +109,12 @@ export default function MacIntegration() {
         return new Uint8Array(await r.arrayBuffer());
       };
 
-      const [manifestF, ongletHtmlF, ongletJsF, popupF, popupJsF, fondJsF, lisezMoiF,
-             i16, i48, i128] = await Promise.all([
+      const [manifestF, ongletHtmlF, ongletJsF, modeleJsF, popupF, popupJsF, fondJsF,
+             lisezMoiF, i16, i48, i128] = await Promise.all([
         lire("manifest.json"), lire("onglet.html"), lire("onglet.js"),
+        // La bibliotheque du modele, livree AVEC l'extension : Chrome interdit
+        // a une extension de charger un script depuis internet.
+        lire("modele.js"),
         lire("popup.html"), lire("popup.js"), lire("fond.js"), lire("LISEZ-MOI.txt"),
         fichierDistant("/ext/icone-16.png"),
         fichierDistant("/ext/icone-48.png"),
@@ -122,6 +125,7 @@ export default function MacIntegration() {
         { nom: "Nexus-extension-Chrome/manifest.json", donnees: manifestF },
         { nom: "Nexus-extension-Chrome/onglet.html", donnees: ongletHtmlF },
         { nom: "Nexus-extension-Chrome/onglet.js", donnees: ongletJsF },
+        { nom: "Nexus-extension-Chrome/modele.js", donnees: modeleJsF },
         { nom: "Nexus-extension-Chrome/popup.html", donnees: popupF },
         { nom: "Nexus-extension-Chrome/popup.js", donnees: popupJsF },
         { nom: "Nexus-extension-Chrome/fond.js", donnees: fondJsF },

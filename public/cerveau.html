@@ -1,0 +1,87 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Nexus — le modèle</title>
+<!--
+  LE CERVEAU DE L'APPLICATION MAC.
+
+  Aharon : « il faut que par défaut, PARTOUT, sans même la manipulation de
+  l'utilisateur, il y ait un modèle intelligent local ». Le site et l'extension
+  savent le faire ; l'application, elle, ne savait répondre qu'avec une clé ou
+  avec Ollama installé à la main.
+
+  Cette page ne s'affiche jamais. L'application la charge dans une vue web
+  invisible, servie par son propre petit serveur sur 127.0.0.1 — une origine
+  que WebKit considère comme sûre, donc WebGPU, le cache et les modules
+  fonctionnent. J'ai vérifié que WKWebView obtient bien une carte graphique.
+
+  Elle expose deux fonctions que Swift appelle avec `callAsyncJavaScript`.
+-->
+<body style="background:#0b1020">
+<script type="module">
+import { CreateMLCEngine } from "/ext/modele.js";
+
+const MODELES = {
+  normal: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
+  leger:  "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
+};
+
+let moteur = null;
+let enRoute = null;
+
+// Prévenir Swift de l'avancement. Un téléchargement d'un gigaoctet sans nouvelle
+// ressemble à une panne.
+function dire(objet) {
+  try { window.webkit.messageHandlers.avance.postMessage(objet); } catch (_) {}
+}
+
+// Le vrai avancement est écrit dans la phrase anglaise (« 94% completed ») :
+// le champ `progress` de la bibliothèque reste à zéro pendant tout le
+// téléchargement.
+function lire(t, brut) {
+  const m = t.match(/\[(\d+)\/(\d+)\]/);
+  const pc = t.match(/(\d+(?:\.\d+)?)%\s*complet/i);
+  const mo = t.match(/([\d.]+)\s*MB\s*(?:fetched|loaded)/i);
+  const p = pc ? Math.min(1, parseFloat(pc[1]) / 100)
+               : (m ? Number(m[1]) / Number(m[2]) : brut);
+  const q = mo ? " · " + Math.round(parseFloat(mo[1])) + " Mo" : "";
+  if (/fetch|download/i.test(t)) return { etape: "Téléchargement du modèle" + q, part: p * 0.8 };
+  if (/cache/i.test(t))          return { etape: "Chargement du modèle" + q, part: 0.8 + p * 0.15 };
+  if (/shader|gpu/i.test(t))     return { etape: "Mise en route sur la carte graphique", part: 0.95 + p * 0.05 };
+  if (/finish|complete|ready/i.test(t)) return { etape: "Prêt", part: 1 };
+  return { etape: "Préparation", part: Math.max(p, 0) };
+}
+
+window.nexusPossible = () => !!navigator.gpu;
+
+window.nexusPreparer = async (quel) => {
+  if (moteur) return "deja";
+  if (enRoute) { await enRoute; return "deja"; }
+  const id = MODELES[quel] || MODELES.normal;
+  enRoute = (async () => {
+    moteur = await CreateMLCEngine(id, {
+      initProgressCallback: (p) => {
+        dire(lire(String(p?.text ?? ""), typeof p?.progress === "number" ? p.progress : 0));
+      },
+    });
+  })();
+  try { await enRoute; } finally { enRoute = null; }
+  return "pret";
+};
+
+window.nexusDemander = async (question, consigne) => {
+  if (!moteur) throw new Error("le modèle n'est pas prêt");
+  const r = await moteur.chat.completions.create({
+    messages: [
+      { role: "system", content: consigne || "Tu es Nexus. Réponds en français, avec justesse et sans bavardage. Si c'est un exercice, montre les étapes." },
+      { role: "user", content: question },
+    ],
+    temperature: 0.25,
+  });
+  return String(r?.choices?.[0]?.message?.content ?? "").trim();
+};
+
+// Swift attend ce signal avant d'appeler quoi que ce soit.
+window.nexusPret = true;
+dire({ etape: "Page prête", part: 0 });
+</script>
+</body>

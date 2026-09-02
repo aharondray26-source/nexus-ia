@@ -192,6 +192,14 @@ body.ouvert #res{max-height:min(58vh,520px);opacity:1;overflow-y:auto;
   animation-delay:.06s}
 .rep .sig{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:600;
   letter-spacing:.07em;text-transform:uppercase;color:var(--vifTxt,#a5aaff);margin-bottom:7px}
+/* La jauge du modele qui se telecharge. Un gigaoctet, c'est long : sans barre
+   on croit que ça a plante. Elle avance doucement (--doux) pour ne pas donner
+   l'impression de sauter en arriere quand un morceau arrive plus vite. */
+.jauge{margin-top:9px;height:5px;border-radius:99px;overflow:hidden;
+  background:rgba(255,255,255,.10)}
+.jauge i{display:block;height:100%;width:2%;border-radius:99px;
+  background:linear-gradient(90deg,var(--vifTxt,#a5aaff),#7ee7ff);
+  transition:width .45s var(--doux,cubic-bezier(.4,0,.2,1))}
 .pense{display:inline-flex;gap:4px;align-items:center}
 .pense i{width:5px;height:5px;border-radius:50%;background:var(--vifTxt,#a5aaff);
   animation:bat 1.1s ease-in-out infinite}
