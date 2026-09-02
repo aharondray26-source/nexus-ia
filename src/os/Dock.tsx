@@ -66,8 +66,12 @@ export default function Dock({ horizontal = false, pos = "left" }: { horizontal?
 
         <div className="my-1.5 h-px w-full bg-nexus-border shrink-0" />
 
-        {/* App List */}
-        <div className="flex-1 space-y-1">
+        {/* App List
+            La liste etait un simple bloc : les boutons de 44 px se posaient a
+            GAUCHE d'une barre de 64 px, avec vingt pixels de vide a droite. Ils
+            avaient l'air de vouloir sortir de la barre. Une colonne centree
+            quand elle est fermee, alignee a gauche quand elle s'ouvre. */}
+        <div className={`flex-1 space-y-1 flex flex-col ${isHovered ? "items-start" : "items-center"}`}>
           {APPS.filter((a) => !a.hidden).map((app) => {
             const isOpen = windows.some((w) => w.appId === app.id);
             return (
@@ -77,17 +81,25 @@ export default function Dock({ horizontal = false, pos = "left" }: { horizontal?
                 title={isHovered ? "" : app.title}
                 className={`group/btn relative flex items-center rounded-2xl border transition-all duration-[220ms] [transition-timing-function:var(--appui)] active:scale-95 ${
                   isHovered
-                    ? "w-52 shrink-0 gap-3.5 justify-start px-3 py-2.5 self-start ml-2"
-                    : "h-11 w-11 shrink-0 justify-center gap-0 px-0 py-0 self-center"
+                    ? "w-52 shrink-0 gap-3.5 justify-start px-3 py-2.5 ml-2"
+                    : "h-11 w-11 shrink-0 justify-center gap-0 px-0 py-0"
                 } ${
                   isOpen
                     ? "border-cyan-400/50 bg-cyan-500/15 text-nexus-text shadow-lg shadow-cyan-500/10 font-semibold"
                     : "border-transparent text-nexus-muted hover:border-nexus-border hover:bg-nexus-card hover:text-nexus-text"
                 }`}
               >
-                {/* Active Indicator */}
+                {/* Le point qui dit « cet espace est ouvert ».
+                    Il etait toujours a 6 px du bord GAUCHE, a l'interieur du
+                    bouton. Barre fermee, le bouton fait 44 px et l'icone est au
+                    milieu : le point tombait donc DESSUS. Il passe sous l'icone
+                    quand la barre est fermee — comme le fait le Dock de macOS —
+                    et redevient une barre a gauche quand elle s'ouvre, la ou il
+                    y a la place. */}
                 {isOpen && (
-                  <span className="absolute left-1.5 h-2.5 w-1 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400" />
+                  isHovered
+                    ? <span className="absolute left-1.5 h-2.5 w-1 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400" />
+                    : <span className="absolute bottom-[3px] left-1/2 -translate-x-1/2 h-1 w-1.5 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400" />
                 )}
 
                 <span

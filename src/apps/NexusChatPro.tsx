@@ -34,6 +34,8 @@ import {
 import { GoogleGenAI } from "@google/genai";
 import { generateNexusResponse } from "../lib/nexusBrain";
 import { demanderALocal, ollamaDisponible, commentInstaller } from "../lib/iaLocale";
+import { MODELES, CLE_CHOIX, dejaInstalle, possible as gpuPossible,
+         demanderAuNavigateur } from "../lib/iaNavigateur";
 import { NexusMessageRenderer } from "../os/NexusMessageRenderer";
 import { addNexusTask } from "../lib/persist";
 
@@ -128,6 +130,10 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
   // manque, et se rouvre quand elle revient.
   const { ref: racine, etroit: tropEtroit } = useEtroit<HTMLDivElement>(560);
   const historiqueReplie = sidebarCollapsed || tropEtroit;
+  /// Le téléchargement du modèle du navigateur, quand il a lieu. Un gigaoctet
+  /// sans le moindre signe, c'est une application qui a l'air plantée.
+  const [progresModele, setProgresModele] = useState<{ etape: string; part: number } | null>(null);
+  const [installe, setInstalle] = useState<boolean>(() => !!dejaInstalle());
   const [sandboxCollapsed, setSandboxCollapsed] = useState<boolean>(false);
   // Les DEUX panneaux se replient quand la place manque. Sans cela, dans une
   // fenetre etroite, l'historique (200 px) et le bac a sable (300 px) se
@@ -381,6 +387,32 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
         }
       }
 
+      // 3 bis. LE MODÈLE DU NAVIGATEUR. Ni clé, ni installation, ni compte :
+      //    le modèle a été téléchargé une fois et vit dans ce navigateur. On
+      //    ne le lance QUE s'il est déjà là — on ne déclenche jamais un
+      //    téléchargement d'un gigaoctet sans qu'Aharon l'ait demandé.
+      if (!replyText && dejaInstalle()) {
+        try {
+          const nav = await demanderAuNavigateur(
+            userText, [],
+            "Tu es Nexus IA. Réponds en français, avec justesse et sans bavardage.",
+            (a) => setProgresModele(a),
+          );
+          if (nav) {
+            replyText = nav.reponse;
+            moteur = nav.modele;
+            if (thinkingMode) {
+              thinkingText = `Répondu par le modèle qui vit dans ce navigateur : `
+                + `aucune clé, aucun serveur, rien n'est sorti d'ici.`;
+            }
+          }
+        } catch (e) {
+          console.warn("[Nexus] modèle du navigateur indisponible", e);
+        } finally {
+          setProgresModele(null);
+        }
+      }
+
       // 4. Rien du tout. On ne fait pas semblant : on dit ce qui manque et
       //    comment y remédier, en plus de ce qu'on sait répondre tout seul.
       if (!replyText) {
@@ -392,11 +424,15 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
         const marche = commentInstaller(etat);
         replyText = generateNexusResponse(userText)
           + (marche.length
-            ? "\n\n---\n\n**Aucune intelligence artificielle n'est branchée.** "
-              + "Deux façons de m'en donner une :\n\n"
-              + "**A · Gratuite, sur ta machine, sans compte**\n"
+            ? "\n\n---\n\n**Aucune intelligence artificielle n'est branchée pour l'instant.**"
+              + (gpuPossible()
+                ? "\n\nLe plus simple : le bouton juste en dessous. Ton navigateur "
+                  + "télécharge un petit modèle **une seule fois**, et Nexus répond "
+                  + "ensuite sans clé, sans compte et sans internet."
+                : "")
+              + "\n\nSinon, sur ta machine :\n"
               + marche.map((l) => (/^(launchctl|ollama)/.test(l) ? "\n```\n" + l + "\n```\n" : "- " + l)).join("\n")
-              + "\n\n**B · Une clé** — Réglages → Clé d'intelligence artificielle."
+              + "\n\nOu une clé — Réglages → Clé d'intelligence artificielle."
             : "");
       }
       }
@@ -782,6 +818,81 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
 
           <div ref={messagesEndRef} />
         </div>
+
+        {/* ── LE MODÈLE DU NAVIGATEUR ─────────────────────────────────────
+            Ni clé, ni compte, ni installation : le navigateur télécharge un
+            petit modèle UNE FOIS, le garde, et le fait tourner sur la carte
+            graphique. C'est ce qu'Aharon demandait — « l'utilisateur arrive,
+            il n'a vraiment rien à faire ».
+            On ne le télécharge JAMAIS tout seul : un gigaoctet pris sans
+            prévenir sur un partage de connexion, c'est impardonnable. Un clic,
+            une fois, et plus jamais. */}
+        {!installe && gpuPossible() && !progresModele && (
+          <div className="mx-3 mb-2 rounded-2xl border border-cyan-500/30 bg-cyan-950/20 p-3">
+            <div className="flex items-center gap-2 text-[12px] font-semibold text-cyan-200">
+              <Sparkles className="h-3.5 w-3.5" />
+              Réponds-moi sans clé et sans internet
+            </div>
+            <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
+              Ton navigateur télécharge un modèle <b>une seule fois</b> et le garde.
+              Ensuite, plus rien ne sort de cette machine.
+              <br />
+              {/* Un modèle trop petit se trompe, et un lycéen qui révise ne peut
+                  pas le savoir. On le dit avant, pas après. */}
+              <span className="text-amber-300/80">
+                Prends le premier : le léger se trompe sur les cours.
+              </span>
+            </p>
+            <div className="mt-2.5 flex flex-wrap gap-2">
+              {MODELES.map((m) => (
+                <button
+                  key={m.id}
+                  onClick={async () => {
+                    try { localStorage.setItem(CLE_CHOIX, m.id); } catch { /* refusé */ }
+                    setProgresModele({ etape: "Préparation…", part: 0 });
+                    try {
+                      await demanderAuNavigateur("Bonjour", [], undefined,
+                        (a) => setProgresModele(a));
+                      setInstalle(true);
+                    } catch (e) {
+                      setProgresModele(null);
+                      alert("Le modèle n'a pas pu être préparé : " + (e as Error).message);
+                    } finally {
+                      setProgresModele(null);
+                    }
+                  }}
+                  className={`nx-btn flex-col !items-start gap-0.5 !py-2 ${
+                    m.fiable ? "nx-btn-primary" : "nx-btn-secondary"
+                  }`}
+                  title={m.detail}
+                >
+                  <span className="text-[12px] font-bold">{m.nom}</span>
+                  <span className="text-[10px] font-normal opacity-70">{m.poids}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {progresModele && (
+          <div className="mx-3 mb-2 rounded-2xl border border-cyan-500/30 bg-cyan-950/20 p-3">
+            <div className="flex items-center justify-between text-[11px] text-cyan-200">
+              <span className="truncate pr-3">{progresModele.etape}</span>
+              <span className="tabular-nums font-semibold shrink-0">
+                {Math.round(progresModele.part * 100)} %
+              </span>
+            </div>
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full rounded-full bg-cyan-400 transition-[width] duration-[var(--t-moyen)] [transition-timing-function:var(--doux)]"
+                style={{ width: `${Math.round(progresModele.part * 100)}%` }}
+              />
+            </div>
+            <p className="mt-1.5 text-[10px] text-slate-400">
+              Une seule fois. Tu peux continuer à te servir de Nexus pendant ce temps.
+            </p>
+          </div>
+        )}
 
         {/* Bottom Input Field */}
         <div className="p-3 sm:p-4 border-t border-slate-800/80 bg-slate-900/60 backdrop-blur-md space-y-2">
