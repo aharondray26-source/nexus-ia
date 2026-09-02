@@ -76,3 +76,15 @@ chrome.storage.local.get(["brouillon", "mode"], (d) => {
 $("texte").addEventListener("input", () => {
   chrome.storage.local.set({ brouillon: $("texte").value, mode });
 });
+
+// La Loupe : on ferme la fenetre AVANT d'injecter, sinon Chrome la garde
+// ouverte par-dessus la page et l'on ne voit pas ce qu'on selectionne.
+document.getElementById("loupe")?.addEventListener("click", () => {
+  chrome.tabs.query({ active: true, currentWindow: true }, ([o]) => {
+    if (!o) return;
+    chrome.runtime.sendMessage({ k: "ouvrir-loupe", tabId: o.id }, () => {
+      void chrome.runtime.lastError;
+      window.close();
+    });
+  });
+});

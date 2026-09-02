@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<title>Loupe Nexus</title>
+<style>
+  /* Le vocabulaire de mouvement de Nexus, le même dans les trois surfaces :
+     un ressort qui repart, un appui qui s'enfonce, un fondu qui ne traîne pas. */
+  :root{
+    --ressort:cubic-bezier(.34,1.4,.5,1);
+    --appui:cubic-bezier(.32,.72,0,1);
+    --doux:cubic-bezier(.4,0,.2,1);
+    --t-grand:.42s; --t-moyen:.26s; --t-petit:.16s;
+    --acc:#6366f1; --txt:#f2f2f7; --faible:#8e8e9c;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:#0b0b12;color:var(--txt);width:100%;min-height:100vh;
+    font:13.5px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;
+    display:flex;flex-direction:column;overflow:hidden}
+  /* Le halo d'ambiance, comme sur le nouvel onglet. */
+  #lueur{position:fixed;inset:-30%;z-index:0;pointer-events:none;
+    background:radial-gradient(46% 42% at 22% 8%,rgba(99,102,241,.30),transparent 62%),
+               radial-gradient(40% 40% at 88% 92%,rgba(56,189,248,.18),transparent 60%);
+    filter:blur(38px)}
+  header{position:relative;z-index:1;display:flex;align-items:center;gap:9px;
+    padding:13px 15px 10px}
+  header .marque{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13.5px;
+    letter-spacing:-.01em}
+  header .marque svg{width:17px;height:17px;fill:none;stroke:#a5a6ff;stroke-width:1.8;
+    stroke-linecap:round;stroke-linejoin:round}
+  header .source{flex:1;min-width:0;font-size:11px;color:var(--faible);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+
+  main{position:relative;z-index:1;flex:1;min-height:0;overflow-y:auto;
+    padding:0 15px 15px;display:flex;flex-direction:column;gap:11px}
+
+  /* La photo du bout d'écran choisi : c'est elle qui fait qu'on RECONNAÎT ce
+     qu'on a pris. Sans elle, on doute d'avoir attrapé la bonne chose. */
+  .cliche{border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.04);max-height:170px;display:flex;
+    animation:clicheEntre var(--t-grand) var(--ressort) both}
+  @keyframes clicheEntre{from{opacity:0;transform:scale(.965) translateY(8px)}
+                         to{opacity:1;transform:none}}
+  .cliche img{width:100%;object-fit:contain;object-position:top;display:block}
+
+  .actes{display:flex;flex-wrap:wrap;gap:7px}
+  .acte{appearance:none;border:1px solid rgba(255,255,255,.11);cursor:pointer;
+    background:rgba(255,255,255,.06);color:var(--txt);
+    padding:8px 12px;border-radius:10px;font-size:12.5px;display:flex;
+    align-items:center;gap:7px;
+    transition:background var(--t-petit) var(--doux),
+               border-color var(--t-petit) var(--doux),
+               transform var(--t-petit) var(--ressort)}
+  .acte:hover{background:rgba(99,102,241,.24);border-color:rgba(139,139,245,.5)}
+  .acte:active{transform:scale(.965)}
+  .acte.fort{background:rgba(99,102,241,.85);border-color:transparent;font-weight:500}
+  .acte.fort:hover{background:rgba(99,102,241,.95)}
+  .acte[disabled]{opacity:.42;pointer-events:none}
+
+  .bloc{border-radius:13px;border:1px solid rgba(255,255,255,.09);
+    background:rgba(255,255,255,.045);padding:11px 13px}
+  .bloc .sig{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+    color:#8b8bf5;margin-bottom:6px}
+  .txt{font-size:12.5px;line-height:1.55;color:#c9c9d4;white-space:pre-wrap;
+    max-height:150px;overflow-y:auto}
+  .rep{font-size:13.5px;line-height:1.62;white-space:pre-wrap}
+  .rep b{font-weight:600}
+
+  /* CE QUE NEXUS SAIT AVEC CERTITUDE.
+     Le modèle se trompe en calcul, et il se trompe avec aplomb. Quand Nexus
+     peut calculer lui-même, il le dit ICI, au-dessus, et le dit autrement :
+     ce bloc-là ne se discute pas. */
+  .sur{border-radius:13px;padding:12px 14px;
+    background:linear-gradient(150deg,rgba(52,211,153,.16),rgba(56,189,248,.10));
+    border:1px solid rgba(52,211,153,.34);
+    animation:surEntre var(--t-grand) var(--ressort) both}
+  @keyframes surEntre{from{opacity:0;transform:translateY(8px) scale(.98)}
+                      to{opacity:1;transform:none}}
+  .sur .sig{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+    color:#6ee7b7;margin-bottom:7px;display:flex;align-items:center;gap:6px}
+  .sur .val{font-size:21px;font-weight:600;letter-spacing:-.02em;
+    font-variant-numeric:tabular-nums}
+  .sur ol{margin:9px 0 0;padding-left:19px;font-size:12.5px;line-height:1.65;
+    color:#c9c9d4}
+  .sur .verif{margin-top:8px;font-size:11.5px;color:#8fd8bb;line-height:1.5}
+
+  .jauge{margin-top:9px;height:5px;border-radius:99px;overflow:hidden;
+    background:rgba(255,255,255,.10)}
+  .jauge i{display:block;height:100%;width:2%;border-radius:99px;
+    background:linear-gradient(90deg,#8f9bff,#7ee7ff);
+    transition:width .45s var(--doux)}
+  .pense{display:inline-flex;gap:4px;align-items:center;padding:2px 0}
+  .pense i{width:5px;height:5px;border-radius:50%;background:#a5aaff;
+    animation:pt 1.15s infinite}
+  .pense i:nth-child(2){animation-delay:.15s}.pense i:nth-child(3){animation-delay:.3s}
+  @keyframes pt{0%,60%,100%{opacity:.28;transform:translateY(0)}
+                30%{opacity:1;transform:translateY(-3px)}}
+  .vide{padding:26px 8px;text-align:center;color:var(--faible);font-size:12.5px;
+    line-height:1.6}
+</style></head>
+<body>
+  <div id="lueur"></div>
+  <header>
+    <div class="marque">
+      <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.8"/><path d="M15.6 15.6 21 21"/></svg>
+      Loupe Nexus
+    </div>
+    <div class="source" id="source"></div>
+  </header>
+  <main id="c">
+    <div class="vide">Sélection en cours…</div>
+  </main>
+  <script src="maths.js"></script>
+  <script src="modele-pont.js"></script>
+  <script src="loupe.js"></script>
+</body></html>

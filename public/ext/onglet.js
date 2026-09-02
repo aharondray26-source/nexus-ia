@@ -603,6 +603,30 @@ function poserCalcul(c) {
   d.innerHTML = ech(c.valeur) + "<small>" + ech(c.calcul) + "</small>";
   res.appendChild(d);
 }
+/// Ce que Nexus sait AVEC CERTITUDE : une équation résolue en code, pas par un
+/// modèle. Présenté autrement, parce que ça ne se discute pas.
+function poserCertain(r) {
+  const d = document.createElement("div");
+  d.className = "rep sur";
+  d.innerHTML = '<div class="sig">✓ Résolu exactement</div>';
+  const v = document.createElement("div");
+  v.className = "valSure"; v.textContent = r.texte;
+  d.appendChild(v);
+  if (r.etapes) {
+    const ol = document.createElement("ol");
+    for (const e of r.etapes) {
+      const li = document.createElement("li"); li.textContent = e; ol.appendChild(li);
+    }
+    d.appendChild(ol);
+  }
+  if (r.verif) {
+    const p = document.createElement("div");
+    p.className = "verif"; p.textContent = r.verif;
+    d.appendChild(p);
+  }
+  res.appendChild(d); res.scrollTop = res.scrollHeight;
+}
+
 function poserReponse() {
   const d = document.createElement("div");
   d.className = "rep";
@@ -651,158 +675,13 @@ async function permissionSiBesoin(f) {
   } catch (_) { return true; }
 }
 
-// ── L'IA QUI TOURNE CHEZ TOI (Ollama) ───────────────────────────────────────
-// La meme cascade que sur le site : la cle d'abord si elle existe, sinon le
-// modele installe sur cette machine, gratuit et hors ligne. Aharon voulait les
-// trois surfaces — le site, l'application Mac et l'extension — capables de
-// repondre sans cle.
+// ── L'IA QUI TOURNE CHEZ TOI ────────────────────────────────────────────────
 //
-// Une extension Chrome a un avantage sur un site : elle n'est pas soumise aux
-// memes regles d'origine, elle peut donc parler a Ollama directement, sans que
-// tu aies rien a regler.
-const OLLAMA = "http://127.0.0.1:11434";
-let ollamaConnu = null;                       // null = pas encore regarde
-
-async function ollamaModele() {
-  if (ollamaConnu !== null) return ollamaConnu;
-  // Une extension doit DEMANDER le droit de parler a une adresse. On le fait
-  // ici, sans fenetre modale : `contains` ne derange personne, et `request`
-  // n'est tente que si l'on a le droit de le faire (une frappe compte comme
-  // un geste de l'utilisateur).
-  try {
-    const regle = { origins: ["http://127.0.0.1:11434/*"] };
-    const dejaLa = await new Promise(r => chrome.permissions.contains(regle, r));
-    if (!dejaLa) {
-      const donne = await new Promise(r => chrome.permissions.request(regle, r));
-      if (!donne) { ollamaConnu = false; return false; }
-    }
-  } catch (e) { /* pas d'API des permissions : on tente quand meme */ }
-  try {
-    const c = new AbortController();
-    const t = setTimeout(() => c.abort(), 1500);
-    const r = await fetch(OLLAMA + "/api/tags", { signal: c.signal });
-    clearTimeout(t);
-    if (!r.ok) { ollamaConnu = false; return false; }
-    const d = await r.json();
-    const noms = (d.models || []).map(m => m.name).filter(Boolean);
-    const prefs = ["llama3.2","llama3.1","llama3","qwen2.5","mistral","gemma2","gemma3","phi3"];
-    ollamaConnu = noms.find(n => prefs.some(p => n.startsWith(p))) || noms[0] || false;
-  } catch (e) { ollamaConnu = false; }
-  return ollamaConnu;
-}
-
-async function demanderALocal(question, court) {
-  const m = await ollamaModele();
-  if (!m) return null;
-  try {
-    const r = await fetch(OLLAMA + "/api/chat", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: m, stream: false, messages: [
-        { role: "system", content: "Tu es Nexus. Réponds en français, avec justesse"
-          + (court ? ", en trois phrases au plus." : ", sans bavardage.") },
-        { role: "user", content: question }] }),
-    });
-    if (!r.ok) return null;
-    const d = await r.json();
-    const t = d && d.message && d.message.content;
-    return (typeof t === "string" && t.trim()) ? { texte: t, modele: m } : null;
-  } catch (e) { return null; }
-}
-
-// ── LE MODÈLE QUI VIT DANS CET ONGLET ───────────────────────────────────────
-//
-// Aharon : « il faut que par défaut, PARTOUT, sans même la manipulation de
-// l'utilisateur, il y ait un modèle intelligent local ». Ollama demande une
-// installation ; une clé demande un compte. Ici, rien : le navigateur
-// télécharge le modèle une seule fois, le garde, et répond ensuite hors ligne.
-//
-// La bibliothèque est LIVRÉE AVEC L'EXTENSION (`modele.js`). Chrome interdit à
-// une extension de charger un script depuis internet — c'est pour ça qu'elle
-// est là, en entier, et pas appelée à distance.
-const MODELES = [
-  { id: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC", nom: "Nexus local", poids: "environ 1,1 Go" },
-  { id: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC", nom: "Nexus léger", poids: "environ 380 Mo" },
-];
-let cerveau = null;          // le moteur, une fois prêt
-let cerveauEnRoute = null;   // la promesse en cours, pour ne jamais en lancer deux
-
-function cerveauPossible() { return typeof navigator !== "undefined" && !!navigator.gpu; }
-
-// Traduire l'avancement, qui arrive en anglais. Un lycéen qui voit
-// « Fetching param cache[12/38]: 252MB loaded. 94% completed » ne sait pas si
-// ça marche ou si ça plante.
-//
-// La part d'avancement ne vient PAS du champ `progress` de la bibliothèque :
-// pendant tout le téléchargement il reste à zéro, et la jauge restait donc
-// collée à 2 % pendant plusieurs minutes — exactement l'impression de panne
-// qu'on voulait éviter. Le vrai avancement est écrit dans la phrase anglaise
-// (« 94% completed ») : c'est celui-là qu'on lit.
-function enFrancais(t, part) {
-  const rien = { texte: "Préparation…", part: part || 0 };
-  if (!t) return rien;
-  const m = t.match(/\[(\d+)\/(\d+)\]/);
-  const pc = t.match(/(\d+(?:\.\d+)?)%\s*complet/i);
-  const mo = t.match(/([\d.]+)\s*MB\s+loaded/i);
-  let p = pc ? Math.min(1, parseFloat(pc[1]) / 100)
-             : (m ? Number(m[1]) / Number(m[2]) : (part || 0));
-
-  if (/fetch|download/i.test(t)) {
-    // La phase de téléchargement est la longue : on lui donne les 4/5 de la
-    // jauge, pour que la mise en route ne fasse pas un bond a la fin.
-    return { texte: mo ? `Téléchargement du modèle… ${Math.round(parseFloat(mo[1]))} Mo`
-                       : "Téléchargement du modèle…", part: p * 0.8 };
-  }
-  if (/cache/i.test(t)) {
-    return { texte: mo ? `Chargement du modèle… ${Math.round(parseFloat(mo[1]))} Mo`
-                       : "Chargement du modèle…", part: 0.8 + p * 0.15 };
-  }
-  if (/shader|gpu/i.test(t)) return { texte: "Mise en route sur la carte graphique…", part: 0.95 + p * 0.05 };
-  if (/finish|complet|ready/i.test(t)) return { texte: "Prêt.", part: 1 };
-  if (/load|init|compil/i.test(t)) return { texte: "Mise en route du modèle…", part: Math.max(p, 0.8) };
-  return rien;
-}
-
-async function preparerCerveau(avance) {
-  if (cerveau) return cerveau;
-  if (cerveauEnRoute) return cerveauEnRoute;
-  cerveauEnRoute = (async () => {
-    const lib = await import("./modele.js");
-    const id = (R.modeleLocal && MODELES.some(m => m.id === R.modeleLocal))
-      ? R.modeleLocal : MODELES[0].id;
-    const moteur = await lib.CreateMLCEngine(id, {
-      initProgressCallback: (p) => {
-        if (!avance) return;
-        const e = enFrancais(p && p.text, typeof p?.progress === "number" ? p.progress : 0);
-        avance(e.texte, e.part);
-      },
-    });
-    cerveau = { moteur, id };
-    // On note QUEL modele est deja dans ce navigateur : au prochain onglet on
-    // sait qu'il n'y a plus rien a telecharger, et on peut le dire.
-    R.modeleLocalInstalle = id;
-    Rangement.ecrire({ modeleLocalInstalle: id });
-    return cerveau;
-  })();
-  try { return await cerveauEnRoute; }
-  finally { cerveauEnRoute = null; }
-}
-
-async function demanderAuCerveau(question, court, avance) {
-  if (!cerveauPossible()) return null;
-  const c = await preparerCerveau(avance);
-  const r = await c.moteur.chat.completions.create({
-    messages: [
-      { role: "system", content: "Tu es Nexus. Réponds en français, avec justesse"
-        + (court ? ", en trois phrases au plus." : ", sans bavardage.")
-        + " Si c'est un exercice, montre les étapes." },
-      { role: "user", content: question },
-    ],
-    temperature: 0.25,
-  });
-  const t = r?.choices?.[0]?.message?.content;
-  return (typeof t === "string" && t.trim())
-    ? { texte: t.trim(), modele: "Nexus local · dans ton navigateur" } : null;
-}
+// Ollama s'il tourne deja, sinon le modele du navigateur : la cascade entiere
+// vit dans `modele-pont.js`, UNE SEULE FOIS pour le nouvel onglet et pour la
+// Loupe. Elle etait recopiee ici ; deux copies, c'est une correction faite
+// d'un cote qui manque de l'autre sans que rien ne le dise.
+const cerveauPossible = () => NexusModele.possible();
 
 async function demanderALIA(question, court) {
   const f = devinerFournisseur(R.cle);
@@ -873,47 +752,52 @@ async function demander() {
 
   const c = calculer(t);
   if (c) poserCalcul(c);
+  // Une ÉQUATION, elle, se résout exactement — et Nexus la résout LUI-MÊME.
+  // Le modèle se trompe en calcul avec aplomb : je l'ai vu répondre « x = -5 »
+  // à « 3x + 7 = 22 » en six étapes bien présentées. Aharon est en première ;
+  // il recopierait.
+  else {
+    const e = NexusMaths.resoudre(t);
+    if (e && e.genre !== "calcul") poserCertain(e);
+  }
 
   if (!R.cle) {
-    // Avant de renoncer : le modele de CETTE machine, s'il y en a un. Gratuit,
-    // hors ligne, et rien de ce qui est ecrit ne sort d'ici.
-    const local = await demanderALocal(t, R.court);
-    if (local) {
-      const d = document.createElement("div");
-      d.className = "rep";
-      d.innerHTML = '<div class="sig">✦ ' + ech(local.modele) + ' · sur ta machine</div>';
-      d.appendChild(document.createTextNode(local.texte));
-      res.appendChild(d); res.scrollTop = res.scrollHeight;
-      return;
-    }
-    // Ni cle, ni Ollama. Reste le modele de CE navigateur : il se telecharge
-    // une fois, tout seul, et repond ensuite hors ligne. C'est ce qu'Aharon
-    // voulait — que celui a qui il donne l'extension n'ait RIEN a faire.
-    if (cerveauPossible()) {
+    // Ni cle : on ne renonce plus. Ollama s'il tourne deja, sinon le modele du
+    // navigateur — telecharge une fois, tout seul, puis hors ligne. C'est ce
+    // qu'Aharon voulait : que celui a qui il donne l'extension n'ait RIEN a
+    // faire.
+    if (cerveauPossible() || await NexusModele.ollama()) {
       enCours = true;
       const boite = poserReponse();
-      const barre = document.createElement("div");
-      barre.className = "jauge";
-      barre.innerHTML = '<i></i>';
-      boite.textContent = "Je prépare mon modèle — une seule fois, ensuite c'est immédiat.";
-      boite.appendChild(barre);
+      let barre = null, vue = 0;
+      const avance = (texte, part) => {
+        if (!barre) {
+          boite.textContent = "";
+          barre = document.createElement("div");
+          barre.className = "jauge"; barre.innerHTML = "<i></i>";
+          boite.appendChild(document.createTextNode(""));
+          boite.appendChild(barre);
+        }
+        boite.firstChild.nodeValue = texte;
+        // Une jauge qui recule se lit comme une panne.
+        vue = Math.max(vue, Math.max(0.02, part));
+        barre.firstChild.style.width = Math.round(vue * 100) + "%";
+      };
+      const consigne = "Tu es Nexus. Réponds en français, avec justesse"
+        + (R.court ? ", en trois phrases au plus." : ", sans bavardage.")
+        + " Si c'est un exercice, montre les étapes.";
       try {
-        let vue = 0;   // une jauge qui recule se lit comme une panne
-        const rep = await demanderAuCerveau(t, R.court, (texte, part) => {
-          boite.firstChild.nodeValue = texte;
-          vue = Math.max(vue, Math.max(0.02, part));
-          barre.firstChild.style.width = Math.round(vue * 100) + "%";
-        });
-        barre.remove();
+        const rep = await NexusModele.demander(consigne, t, avance, R.modeleLocal);
+        if (barre) barre.remove();
         if (rep) {
           boite.textContent = rep.texte;
           const sig = boite.parentElement && boite.parentElement.querySelector(".sig");
-          if (sig) sig.textContent = "✦ " + rep.modele;
+          if (sig) sig.textContent = "✦ " + rep.moteur;
         } else {
           boite.textContent = "Je n'ai rien à ajouter.";
         }
       } catch (e) {
-        barre.remove();
+        if (barre) barre.remove();
         boite.innerHTML = "Je n'ai pas pu préparer le modèle : " + ech(e.message)
           + "<br><span style='opacity:.7;font-size:12.5px'>Voici au moins les bonnes sources.</span>";
       } finally {
@@ -923,7 +807,6 @@ async function demander() {
       }
       return;
     }
-
     // Ce navigateur ne sait pas faire tourner de modele : on ne rédige pas, on
     // vise. Et on dit ou trouver mieux.
     poserLiens(cibler(t));

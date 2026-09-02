@@ -1,4 +1,4 @@
-EXTENSION NEXUS 2.7 — installation gratuite, 4 clics
+EXTENSION NEXUS 2.9 — installation gratuite, 4 clics
 
 SI TU AVAIS DEJA UNE VERSION DE NEXUS : supprime-la d'abord.
 Sur chrome://extensions, sur la carte « Nexus », clique « Supprimer ».
@@ -8,6 +8,30 @@ Recharger par-dessus ne remplace pas les anciens fichiers.
 2. Ouvre ton navigateur sur  chrome://extensions
 3. Active « Mode developpeur » (interrupteur en haut a droite).
 4. Clique « Charger l'extension non empaquetee » et choisis le dossier.
+
+LA LOUPE NEXUS  (la nouveaute)
+
+  Glisse sur n'importe quel bout de page, et Nexus l'explique.
+
+    · Clic droit  ->  « Analyser avec la Loupe Nexus »
+    · ou le bouton « Loupe Nexus » dans la petite fenetre de l'extension
+    · ou Cmd/Ctrl + Maj + L
+
+  Tu traces un rectangle sur ce que tu veux comprendre. Nexus en prend une
+  photo ET lit le VRAI texte qui se trouve dessous — pas une lecture d'image
+  approximative, le texte lui-meme, exact, accents compris. Puis :
+
+    Expliquer · Resumer · Traduire · Resoudre · Copier · Chercher l'image
+
+  Une equation est RESOLUE EXACTEMENT, en code, avant meme que le modele ne
+  parle : un petit modele se trompe en calcul, et il se trompe avec aplomb.
+
+UN MODELE POUR TOI, SANS RIEN INSTALLER
+
+  Sans cle et sans Ollama, Nexus telecharge UNE FOIS un modele dans ton
+  navigateur (environ 1,1 Go), puis repond hors ligne. Rien de ce que tu ecris
+  ne sort de ta machine. La premiere question prend quelques minutes : c'est
+  le telechargement, et la jauge te le dit.
 
 LA PAGE D'ACCUEIL (chaque nouvel onglet)
 

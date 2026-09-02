@@ -244,6 +244,16 @@ body.ouvert #res{max-height:min(58vh,520px);opacity:1;overflow-y:auto;
 .jauge i{display:block;height:100%;width:2%;border-radius:99px;
   background:linear-gradient(90deg,var(--vifTxt,#a5aaff),#7ee7ff);
   transition:width .45s var(--doux,cubic-bezier(.4,0,.2,1))}
+/* Ce que Nexus sait AVEC CERTITUDE : resolu en code, pas par un modele.
+   Une autre couleur, parce que ça ne se discute pas. */
+.rep.sur{background:linear-gradient(150deg,rgba(52,211,153,.15),rgba(56,189,248,.09));
+  border:1px solid rgba(52,211,153,.32)}
+.rep.sur .sig{color:#6ee7b7}
+.rep.sur .valSure{font-size:20px;font-weight:600;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;margin-top:2px}
+.rep.sur ol{margin:8px 0 0;padding-left:19px;font-size:12.5px;line-height:1.6;
+  color:var(--texte-doux,#a5a5b2)}
+.rep.sur .verif{margin-top:7px;font-size:11.5px;color:#8fd8bb;line-height:1.5}
 .pense{display:inline-flex;gap:4px;align-items:center}
 .pense i{width:5px;height:5px;border-radius:50%;background:var(--vifTxt,#a5aaff);
   animation:bat 1.1s ease-in-out infinite}
@@ -619,5 +629,8 @@ body.reglages #panneau > *{opacity:1}
   <div id="pied"><span></span>Nexus — conçu par Aharon Dray</div>
 </aside>
 
+<!-- Le moteur du modele, partage avec la Loupe : une seule source. -->
+<script src="maths.js"></script>
+<script src="modele-pont.js"></script>
 <script src="onglet.js"></script>
 </body></html>

@@ -19,12 +19,16 @@ SRC=public/ext
 # se suivent dans le Finder, et le nom dit a quoi ça sert.
 DEST=~/Downloads/Nexus-extension-Chrome
 
-for f in manifest.json onglet.html onglet.js modele.js popup.html popup.js fond.js LISEZ-MOI.txt; do
+for f in manifest.json onglet.html onglet.js maths.js modele-pont.js loupe.html loupe.js loupe-page.js popup.html popup.js fond.js LISEZ-MOI.txt; do
   [ -f "$SRC/$f" ] || { echo "  ✗ $SRC/$f manque"; exit 1; }
 done
 
 mkdir -p "$DEST/icones"
-for f in manifest.json onglet.html onglet.js modele.js popup.html popup.js fond.js LISEZ-MOI.txt; do
+# La bibliotheque du modele, livree AVEC l'extension : Chrome interdit a une
+# extension de charger un script depuis internet. On la copie a part parce que
+# c'est un module ES que `node --check` refuserait sous ce nom.
+cp "$SRC/modele.js" "$DEST/modele.js"
+for f in manifest.json onglet.html onglet.js maths.js modele-pont.js loupe.html loupe.js loupe-page.js popup.html popup.js fond.js LISEZ-MOI.txt; do
   cp "$SRC/$f" "$DEST/$f"
 done
 # Le manifeste nomme les icones « icones/16.png » ; dans public/ elles sont a
