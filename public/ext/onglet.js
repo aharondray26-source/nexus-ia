@@ -161,6 +161,16 @@ function appliquer() {
   // Le panneau, la roue et les cartes doivent s'eclaircir avec le fond.
   document.body.classList.toggle("clair", clair);
   $("lueur").style.display = R.halos && !R.fondImage ? "" : "none";
+  // L'HORLOGE AUSSI.
+  //
+  // Elle manquait ici, et c'est ce qui faisait qu'Aharon ne voyait jamais son
+  // horloge ronde : `appliquerHorloge()` ne tournait qu'une fois au chargement
+  // du script — donc AVANT que les reglages ne reviennent du rangement — et
+  // ensuite seulement quand on touchait au panneau. Un nouvel onglet repartait
+  // donc toujours en chiffres, quel que soit le reglage enregistre.
+  // `appliquer` pose d'abord la classe « clair » : l'horloge se redessine donc
+  // avec la bonne encre.
+  appliquerHorloge();
   battre();
   dessinerRaccourcis();
 }
@@ -175,39 +185,58 @@ function salut(h) {
   if (h < 18) return "Bon après-midi";
   return "Bonsoir";
 }
-// Les douze graduations du cadran, posées par le script : douze lignes écrites
-// en dur, ce seraient douze occasions de se tromper d'un degré.
+// Les graduations : SOIXANTE traits, un par minute, dont douze plus francs.
+// Les ecrire a la main, ce seraient soixante occasions de se tromper d'un degre.
 function dessinerGraduations() {
   const g = document.getElementById("grad");
-  if (!g || g.childElementCount) return;
-  for (let i = 0; i < 12; i++) {
-    const a = (i * 30) * Math.PI / 180;
-    const r1 = i % 3 === 0 ? 36 : 39.5, r2 = 43;
-    const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  if (!g) return;
+  // Sur fond clair l'encre s'inverse : on REDESSINE au lieu de garder les
+  // traits blancs, qui disparaissaient purement et simplement.
+  const clair = document.body.classList.contains("clair");
+  if (g.childElementCount && g.dataset.clair === String(clair)) return;
+  g.innerHTML = ""; g.dataset.clair = String(clair);
+  const NS = "http://www.w3.org/2000/svg";
+  const encre = (a) => clair ? `rgba(18,18,30,${a})` : `rgba(255,255,255,${a})`;
+  for (let i = 0; i < 60; i++) {
+    const a = (i * 6) * Math.PI / 180;
+    const heure = i % 5 === 0;
+    const cardinal = i % 15 === 0;         // 12, 3, 6, 9 : les quatre reperes
+    const r2 = 41.6;
+    const r1 = cardinal ? 35.4 : heure ? 37.2 : 39.8;
+    const l = document.createElementNS(NS, "line");
     l.setAttribute("x1", (50 + r1 * Math.sin(a)).toFixed(2));
     l.setAttribute("y1", (50 - r1 * Math.cos(a)).toFixed(2));
     l.setAttribute("x2", (50 + r2 * Math.sin(a)).toFixed(2));
     l.setAttribute("y2", (50 - r2 * Math.cos(a)).toFixed(2));
-    l.setAttribute("stroke", i % 3 === 0 ? "rgba(255,255,255,.55)" : "rgba(255,255,255,.22)");
-    l.setAttribute("stroke-width", i % 3 === 0 ? "2.2" : "1.4");
+    l.setAttribute("stroke", encre(cardinal ? .82 : heure ? .5 : .22));
+    l.setAttribute("stroke-width", cardinal ? "2.1" : heure ? "1.5" : ".8");
     l.setAttribute("stroke-linecap", "round");
+    // Les traits n'arrivent pas d'un bloc : ils se posent en tournant, une
+    // seule fois, a l'ouverture de l'onglet.
+    l.style.animation = "gradArrive .5s var(--doux) both";
+    l.style.animationDelay = (0.12 + i * 0.006).toFixed(3) + "s";
     g.appendChild(l);
   }
 }
 
-/// Les chiffres du cadran, quand on les veut. Douze textes places au compas :
-/// les ecrire en dur, ce seraient douze occasions de se tromper d'un degre.
+/// Les chiffres du cadran, quand on les veut. Douze textes places au compas.
+/// Avec les soixante graduations, on n'ecrit plus que les heures paires : douze
+/// nombres serres sur un cadran de 96 px, c'est illisible.
 function dessinerChiffres() {
   const g = document.getElementById("chiffres");
   if (!g) return;
   g.innerHTML = "";
   if (!R.chiffresCadran) return;
+  const petit = R.tailleHeure === "petit";
   for (let i = 1; i <= 12; i++) {
+    if (petit && i % 3 !== 0) continue;
     const a = (i * 30 - 90) * Math.PI / 180;
     const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    t.setAttribute("class", "chiffre");
-    t.setAttribute("x", (50 + 31 * Math.cos(a)).toFixed(2));
-    t.setAttribute("y", (50 + 31 * Math.sin(a)).toFixed(2));
+    t.setAttribute("class", i % 3 === 0 ? "chiffre fort" : "chiffre");
+    // Plus pres du centre qu'avant : les graduations descendent maintenant
+    // jusqu'a 35, les chiffres les toucheraient.
+    t.setAttribute("x", (50 + 28.4 * Math.cos(a)).toFixed(2));
+    t.setAttribute("y", (50 + 28.4 * Math.sin(a)).toFixed(2));
     t.textContent = String(i);
     g.appendChild(t);
   }
@@ -285,9 +314,12 @@ const FIXES = [
 function vignette(url, nom, r) {
   const p = document.createElement("span");
   p.className = "p";
-  // Une icone a nous : on s'arrete la.
+  // Une icone a nous : on s'arrete la. Mais si elle ne vient pas — un fichier
+  // deplace, une image cassee — on ne laisse JAMAIS la vignette brisee du
+  // navigateur : on retombe sur l'initiale, comme pour les autres.
   if (r && r.icone) {
     const i = new Image(); i.width = 30; i.height = 30; i.alt = "";
+    i.onerror = () => { p.replaceChildren(); poserLInitiale(p, url, nom); };
     i.src = r.icone; p.appendChild(i); return p;
   }
   if (r && r.glyphe) {
@@ -296,6 +328,14 @@ function vignette(url, nom, r) {
     p.style.background = "linear-gradient(150deg,#5b8def,#3457a8)";
     p.appendChild(g); return p;
   }
+  poserLInitiale(p, url, nom);
+  return p;
+}
+
+/// La pastille de repli : l'initiale sur une couleur tiree du nom. C'est ce
+/// qu'on voit tant que la vraie icone n'est pas arrivee — et pour toujours si
+/// elle n'arrive jamais. Rien ne casse.
+function poserLInitiale(p, url, nom) {
   let hote = "";
   try { hote = new URL(url).hostname; } catch (_) {}
   const lettre = document.createElement("span");
@@ -309,7 +349,6 @@ function vignette(url, nom, r) {
   // On passe l'ADRESSE COMPLETE : Chrome retrouve l'icone d'une page precise,
   // pas seulement celle d'un domaine.
   if (hote && R.vignettes) poserLaVignette(p, hote, url);
-  return p;
 }
 
 // ── Trouver la BONNE icone d'un site ────────────────────────────────────────

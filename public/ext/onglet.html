@@ -33,29 +33,73 @@ body.ouvert main{transform:translateY(-9vh)}
 #tete{display:flex;flex-direction:column;align-items:center;gap:6px;
   transition:opacity .35s,transform .45s var(--doux)}
 body.ouvert #tete{opacity:0;transform:translateY(-30px) scale(.94);pointer-events:none}
-/* L'horloge a aiguilles. Dessinee, pas une image : elle pese quelques lignes,
-   s'affiche instantanement et suit la couleur d'ambiance choisie. */
+/* L'HORLOGE À AIGUILLES.
+   Aharon : « pour l'horloge de l'extension ce n'est pas du tout assez beau ;
+   une horloge ronde, il faut que tu sois vraiment très joli, très animation ».
+   Il avait raison : c'était un disque gris avec trois traits. Tout est dessiné
+   — aucune image — donc elle s'affiche instantanément, reste nette à toutes
+   les tailles et suit la couleur d'ambiance choisie. */
 #cadran{display:none;margin:0 auto;width:var(--cadran,132px);height:var(--cadran,132px);
-  filter:drop-shadow(0 10px 26px rgba(0,0,0,.45));
-  animation:cadranNait .62s var(--ressort) backwards}
-@keyframes cadranNait{from{opacity:0;transform:scale(.86) rotate(-8deg)}
+  overflow:visible;
+  filter:drop-shadow(0 14px 30px rgba(0,0,0,.5));
+  animation:cadranNait .75s var(--ressort) backwards}
+@keyframes cadranNait{from{opacity:0;transform:scale(.82) rotate(-10deg)}
                       to{opacity:1;transform:none}}
-#cadran .fondCadran{fill:rgba(255,255,255,.045);stroke:rgba(255,255,255,.10);stroke-width:.8}
-#cadran .chiffre{fill:rgba(255,255,255,.72);font:600 7px/1 -apple-system,BlinkMacSystemFont,
-  "SF Pro Text",Inter,system-ui,sans-serif;text-anchor:middle;dominant-baseline:central}
 body.aiguilles #heure{display:none}
 body.aiguilles #cadran{display:block}
-#cadran circle.bord{fill:none;stroke:rgba(255,255,255,.16);stroke-width:2}
-/* Les aiguilles des heures et des minutes avancent d'un petit rebond ; celle
-   des SECONDES glisse sans a-coup — une trotteuse qui saute fait mecanique,
-   une trotteuse qui balaie fait horlogerie. */
-#cadran line{stroke-linecap:round;transform-origin:50% 50%;
-  transition:transform .32s var(--appui)}
-#cadran line.s{transition:transform .95s linear}
-#cadran line.h{stroke:#fff;stroke-width:5}
-#cadran line.m{stroke:#fff;stroke-width:3.4;opacity:.92}
-#cadran line.s{stroke:var(--acc,#6366f1);stroke-width:1.8}
-#cadran .pt{fill:rgba(255,255,255,.35)}
+
+/* Le halo derriere le verre : il respire tres lentement. On ne le remarque pas,
+   on le sent — c'est ce qui separe un objet d'un dessin. */
+#cadran .halo{fill:var(--acc,#6366f1);opacity:.13;
+  transform-origin:50% 50%;animation:cadranRespire 7s ease-in-out infinite}
+@keyframes cadranRespire{0%,100%{opacity:.10;transform:scale(1)}
+                         50%{opacity:.19;transform:scale(1.045)}}
+/* Les soixante traits se posent en tournant, une seule fois, a l'ouverture. */
+@keyframes gradArrive{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:none}}
+#cadran #grad line{transform-origin:50% 50%}
+body.calme #cadran .halo{animation:none;opacity:.10}
+
+#cadran .verre{fill:url(#vitre)}
+#cadran .lisere{fill:none;stroke:url(#rebord);stroke-width:1.5}
+#cadran .reflet{fill:url(#lueurHaute);opacity:.55}
+#cadran .chiffre{fill:rgba(255,255,255,.62);
+  font:400 6.2px/1 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;
+  letter-spacing:.04em;text-anchor:middle;dominant-baseline:central}
+/* Les quatre reperes se lisent d'abord ; les huit autres accompagnent. */
+#cadran .chiffre.fort{fill:rgba(255,255,255,.9);font-weight:500;font-size:7px}
+
+/* Les aiguilles : des formes effilees, pas des batons. Une aiguille d'horloge
+   est large au moyeu et fine a la pointe ; c'est ce qui la fait lire comme une
+   piece de metal. */
+#cadran .aig{transform-origin:50% 50%;transition:transform .38s var(--appui);
+  filter:drop-shadow(0 1px 1.6px rgba(0,0,0,.55))}
+/* La trotteuse BALAIE au lieu de sauter : une trotteuse qui saute fait
+   mecanique, une trotteuse qui balaie fait horlogerie. */
+#cadran #aigS{transition:transform .95s linear}
+#cadran .creux{fill:url(#creux);pointer-events:none}
+#cadran .aigH{fill:url(#metal)}
+#cadran .aigM{fill:url(#metal);opacity:.95}
+#cadran .traitS{stroke:var(--acc,#6366f1);stroke-width:1.35;stroke-linecap:round}
+#cadran .queueS{fill:var(--acc,#6366f1)}
+#cadran .anneauS{fill:none;stroke:var(--acc,#6366f1);stroke-width:1.1}
+#cadran .moyeu{fill:#12121a;stroke:rgba(255,255,255,.55);stroke-width:1.1}
+#cadran .rubis{fill:var(--acc,#6366f1)}
+
+/* SUR FOND CLAIR, on inverse l'encre.
+   Sans ça l'horloge devient un fantôme : aiguilles blanches et graduations
+   blanches sur un fond pâle, on ne lit plus l'heure. Je l'ai vu en essayant le
+   fond « neige ». Les graduations sont posées par le script : c'est lui qui
+   choisit leur couleur (voir `dessinerGraduations`). */
+body.clair #cadran{filter:drop-shadow(0 12px 26px rgba(40,40,70,.22))}
+body.clair #cadran .verre{fill:url(#vitreClair)}
+body.clair #cadran .lisere{stroke:rgba(30,30,50,.22)}
+body.clair #cadran .reflet{opacity:.5}
+body.clair #cadran .creux{opacity:.35}
+body.clair #cadran .chiffre{fill:rgba(20,20,34,.55)}
+body.clair #cadran .chiffre.fort{fill:rgba(16,16,28,.86)}
+body.clair #cadran .aigH,
+body.clair #cadran .aigM{fill:url(#metalSombre)}
+body.clair #cadran .moyeu{fill:#f6f6fa;stroke:rgba(20,20,34,.5)}
 #heure{font-size:78px;font-weight:200;letter-spacing:-.045em;line-height:1;
   font-variant-numeric:tabular-nums}
 #bonjour{font-size:16.5px;color:var(--texte-doux,#a5a5b2);letter-spacing:-.01em}
@@ -386,18 +430,85 @@ body.reglages #panneau > *{opacity:1}
 <main>
   <div id="tete">
     <div id="heure">--:--</div>
-<!-- L'horloge a aiguilles, dessinee a la main. Les graduations sont posees par
-     le script : douze lignes ecrites en dur, ce serait douze occasions de se
-     tromper. -->
+<!-- L'horloge a aiguilles, entierement dessinee. Les graduations et les
+     chiffres sont poses par le script : soixante traits ecrits a la main, ce
+     seraient soixante occasions de se tromper d'un degre. -->
 <svg id="cadran" viewBox="0 0 100 100" aria-hidden="true">
-  <circle class="fondCadran" cx="50" cy="50" r="46"></circle>
-  <circle class="bord" cx="50" cy="50" r="46"></circle>
+  <defs>
+    <!-- Le verre : plus clair en haut a gauche, comme une lumiere de piece. -->
+    <radialGradient id="vitre" cx="34%" cy="26%" r="82%">
+      <stop offset="0%"   stop-color="rgba(255,255,255,.115)"/>
+      <stop offset="55%"  stop-color="rgba(255,255,255,.045)"/>
+      <stop offset="100%" stop-color="rgba(8,8,14,.30)"/>
+    </radialGradient>
+    <!-- Le rebord : eclaire en haut, eteint en bas. Un cercle d'epaisseur
+         constante fait plat ; celui-ci a une arete. -->
+    <linearGradient id="rebord" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="rgba(255,255,255,.42)"/>
+      <stop offset="48%"  stop-color="rgba(255,255,255,.13)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,.05)"/>
+    </linearGradient>
+    <linearGradient id="lueurHaute" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="rgba(255,255,255,.16)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </linearGradient>
+    <!-- Le metal des aiguilles : une arete claire d'un cote, l'ombre de
+         l'autre. Un blanc plat fait autocollant ; ceci fait piece. -->
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#ffffff"/>
+      <stop offset="52%"  stop-color="#f4f4f8"/>
+      <stop offset="53%"  stop-color="#c9c9d6"/>
+      <stop offset="100%" stop-color="#aeaebd"/>
+    </linearGradient>
+    <!-- L'ombre portee du rebord SUR le cadran : c'est elle qui creuse le
+         verre. Sans elle le disque reste un aplat. -->
+    <!-- Les memes matieres, en clair. -->
+    <radialGradient id="vitreClair" cx="34%" cy="26%" r="82%">
+      <stop offset="0%"   stop-color="rgba(255,255,255,.92)"/>
+      <stop offset="60%"  stop-color="rgba(255,255,255,.66)"/>
+      <stop offset="100%" stop-color="rgba(190,190,215,.42)"/>
+    </radialGradient>
+    <linearGradient id="metalSombre" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#3a3a4c"/>
+      <stop offset="52%"  stop-color="#26263a"/>
+      <stop offset="53%"  stop-color="#14141f"/>
+      <stop offset="100%" stop-color="#0d0d15"/>
+    </linearGradient>
+    <radialGradient id="creux" cx="50%" cy="50%" r="50%">
+      <stop offset="72%"  stop-color="rgba(0,0,0,0)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,.42)"/>
+    </radialGradient>
+  </defs>
+
+  <circle class="halo" cx="50" cy="50" r="47"></circle>
+  <circle class="verre" cx="50" cy="50" r="45.2"></circle>
+  <circle class="lisere" cx="50" cy="50" r="45.2"></circle>
+  <!-- Le reflet du haut : une calotte, pas un cercle entier. -->
+  <path class="reflet" d="M50 6.5A43.5 43.5 0 0 1 91 36 Q50 26 9 36A43.5 43.5 0 0 1 50 6.5Z"></path>
+  <circle class="creux" cx="50" cy="50" r="45.2"></circle>
+
   <g id="grad"></g>
   <g id="chiffres"></g>
-  <line class="h" id="aigH" x1="50" y1="50" x2="50" y2="27"></line>
-  <line class="m" id="aigM" x1="50" y1="50" x2="50" y2="18"></line>
-  <line class="s" id="aigS" x1="50" y1="56" x2="50" y2="14"></line>
-  <circle class="pt" cx="50" cy="50" r="2.6"></circle>
+
+  <!-- Aiguilles effilees : larges au moyeu, fines a la pointe. L'heure est
+       nettement plus COURTE et plus EPAISSE que la minute — sans cet ecart on
+       lit l'heure de travers, et c'est ce qui n'allait pas. -->
+  <g class="aig" id="aigH">
+    <path class="aigH" d="M47.75 53 L49.15 31.5 Q50 29.6 50.85 31.5 L52.25 53 Z"></path>
+  </g>
+  <g class="aig" id="aigM">
+    <path class="aigM" d="M48.75 54 L49.55 16.6 Q50 15.2 50.45 16.6 L51.25 54 Z"></path>
+  </g>
+  <!-- La trotteuse : contrepoids discret, et le petit anneau pres de la pointe
+       que portent les vraies. -->
+  <g class="aig" id="aigS">
+    <circle class="queueS" cx="50" cy="59.2" r="2"></circle>
+    <line class="traitS" x1="50" y1="60.4" x2="50" y2="13"></line>
+    <circle class="anneauS" cx="50" cy="21.5" r="2.1"></circle>
+  </g>
+
+  <circle class="moyeu" cx="50" cy="50" r="3.1"></circle>
+  <circle class="rubis" cx="50" cy="50" r="1.15"></circle>
 </svg>
     <div id="bonjour"></div>
   </div>
