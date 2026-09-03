@@ -1,0 +1,50 @@
+# ============================================================================
+#  Comment Netlify doit publier Nexus.
+#
+#  Sans ce fichier, glisser le dossier « dist » ne publiait QUE le visuel :
+#  le serveur intelligent restait sur le Mac d'Aharon et le site en ligne
+#  réclamait une clé à chaque visiteur. Avec lui, le modèle part avec le site.
+#
+#  À FAIRE UNE SEULE FOIS, dans Netlify :
+#    Site configuration → Environment variables → Add a variable
+#    Nom : GEMINI_API_KEY      Valeur : ta clé
+#  (ou GROQ_API_KEY, OPENAI_API_KEY, MISTRAL_API_KEY, OPENROUTER_API_KEY)
+#  Ensuite plus personne n'a jamais rien à faire.
+# ============================================================================
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Le modèle répond ici. Ces règles doivent passer AVANT le renvoi vers
+# index.html, sinon /api/... rend la page d'accueil et le site croit que le
+# serveur est muet.
+[[redirects]]
+  from = "/api/gemini/chat"
+  to = "/.netlify/functions/ia"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/ai/chat"
+  to = "/.netlify/functions/ia"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/ai/generate"
+  to = "/.netlify/functions/ia"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/health"
+  to = "/.netlify/functions/sante"
+  status = 200
+  force = true

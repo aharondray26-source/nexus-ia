@@ -132,6 +132,25 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
   const historiqueReplie = sidebarCollapsed || tropEtroit;
   /// Le téléchargement du modèle du navigateur, quand il a lieu. Un gigaoctet
   /// sans le moindre signe, c'est une application qui a l'air plantée.
+  // Y A-T-IL UN MODÈLE EN LIGNE, hébergé avec le site ?
+  //
+  // Aharon : « dès que le site visuel est en ligne, le modèle intelligent doit
+  // être en ligne aussi, sans manipulation des utilisateurs ». Quand c'est le
+  // cas, Nexus ne propose JAMAIS de télécharger quoi que ce soit : le visiteur
+  // pose sa question, ça répond, point.
+  // `null` = on ne sait pas encore.
+  const [modeleEnLigne, setModeleEnLigne] = useState<boolean | null>(null);
+  useEffect(() => {
+    let vivant = true;
+    fetch("/api/health", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (vivant) setModeleEnLigne(!!(d && d.modeleEnLigne)); })
+      // Pas de serveur du tout (site posé en fichiers) : on se débrouillera
+      // avec le modèle du navigateur.
+      .catch(() => { if (vivant) setModeleEnLigne(false); });
+    return () => { vivant = false; };
+  }, []);
+
   const [progresModele, poserProgres] = useState<{ etape: string; part: number } | null>(null);
   // Une jauge qui RECULE se lit comme une panne. La bibliotheque annonce parfois
   // un avancement plus petit que le precedent en changeant d'etape ; on ne
@@ -406,7 +425,10 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
       //    progression, et on peut l'arrêter — un gigaoctet pris en silence sur
       //    un partage de connexion serait impardonnable ; le prendre en
       //    l'annonçant, c'est simplement rendre service.
-      if (!replyText && (dejaInstalle() || gpuPossible())) {
+      //    On ne télécharge JAMAIS un gigaoctet quand un modèle répond déjà en
+      //    ligne : si le serveur a eu un hoquet, on repose la question, on ne
+      //    prend pas la connexion de quelqu'un pour rien.
+      if (!replyText && (dejaInstalle() || (gpuPossible() && modeleEnLigne === false))) {
         try {
           const nav = await demanderAuNavigateur(
             userText, [],
@@ -428,27 +450,39 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
         }
       }
 
-      // 4. Rien du tout. On ne fait pas semblant : on dit ce qui manque et
-      //    comment y remédier, en plus de ce qu'on sait répondre tout seul.
+      // 4. Rien du tout.
+      //
+      //    Aharon : « je veux pas rester avec un site qui demande des
+      //    manipulations utilisateurs, c'est très décourageant. J'avais une
+      //    application comme ça avant, je l'ai désinstallée directement. »
+      //
+      //    On ne demande donc plus RIEN à personne. On dit ce qui se passe,
+      //    en une phrase, et on répond quand même de ce qu'on sait.
       if (!replyText) {
         moteur = "Nexus, sans modèle";
         if (thinkingMode) {
-          thinkingText = `Aucun modèle joignable : ni serveur, ni clé, ni IA locale.`;
+          thinkingText = `Aucun modèle joignable : ni serveur, ni modèle dans ce navigateur.`;
         }
-        const etat = await ollamaDisponible();
-        const marche = commentInstaller(etat);
-        replyText = generateNexusResponse(userText)
-          + (marche.length
-            ? "\n\n---\n\n**Aucune intelligence artificielle n'est branchée pour l'instant.**"
-              + (gpuPossible()
-                ? "\n\nLe plus simple : le bouton juste en dessous. Ton navigateur "
-                  + "télécharge un petit modèle **une seule fois**, et Nexus répond "
-                  + "ensuite sans clé, sans compte et sans internet."
-                : "")
-              + "\n\nSinon, sur ta machine :\n"
-              + marche.map((l) => (/^(launchctl|ollama)/.test(l) ? "\n```\n" + l + "\n```\n" : "- " + l)).join("\n")
-              + "\n\nOu une clé — Réglages → Clé d'intelligence artificielle."
-            : "");
+        const horsLigne = typeof navigator !== "undefined" && navigator.onLine === false;
+        replyText = generateNexusResponse(userText) + "\n\n---\n\n" + (
+          modeleEnLigne
+            // Un modèle EST en ligne : c'est une panne passagère, pas un manque.
+            ? "*Je n'ai pas réussi à joindre mon modèle à l'instant. Repose ta "
+              + "question : c'est presque toujours passager.*"
+          : horsLigne
+            // Il n'a pas internet ET pas encore de modèle : le seul cas où l'on
+            // ne peut vraiment rien. On le dit sans rien réclamer.
+            ? "*Je prépare mon propre modèle la première fois qu'on me parle, et "
+              + "ça demande internet une seule fois. Il n'y a pas de connexion "
+              + "pour l'instant — reconnecte-toi une minute, et ensuite je "
+              + "répondrai même hors ligne, pour toujours.*"
+          : gpuPossible()
+            ? "*Mon modèle n'a pas pu se mettre en route sur cette machine. "
+              + "Repose ta question : je réessaie.*"
+            // Vieux navigateur, sans carte graphique accessible.
+            : "*Ce navigateur ne sait pas faire tourner de modèle. Essaie depuis "
+              + "Chrome, Edge ou Safari à jour — Nexus s'occupe du reste.*"
+        );
       }
       }
 
@@ -842,7 +876,9 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
             On ne le télécharge JAMAIS tout seul : un gigaoctet pris sans
             prévenir sur un partage de connexion, c'est impardonnable. Un clic,
             une fois, et plus jamais. */}
-        {!installe && gpuPossible() && !progresModele && (
+        {/* Rien à proposer quand un modèle répond déjà en ligne : le visiteur
+            n'a alors strictement rien à faire, et c'est le but. */}
+        {!installe && gpuPossible() && modeleEnLigne === false && !progresModele && (
           <div className="mx-3 mb-2 rounded-2xl border border-cyan-500/30 bg-cyan-950/20 p-3">
             <div className="flex items-center gap-2 text-[12px] font-semibold text-cyan-200">
               <Sparkles className="h-3.5 w-3.5" />

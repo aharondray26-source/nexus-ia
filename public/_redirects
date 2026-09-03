@@ -1,1 +1,10 @@
-/*    /index.html   200
+# L'ORDRE COMPTE, et il coûtait cher : la règle « tout vers index.html » était
+# seule, donc /api/gemini/chat rendait la PAGE D'ACCUEIL. Le site lisait du
+# HTML là où il attendait une réponse, en concluait que le serveur était muet,
+# et réclamait une clé à chaque visiteur. Les adresses du modèle passent donc
+# devant.
+/api/gemini/chat   /.netlify/functions/ia      200
+/api/ai/chat       /.netlify/functions/ia      200
+/api/ai/generate   /.netlify/functions/ia      200
+/api/health        /.netlify/functions/sante   200
+/*                 /index.html                 200
