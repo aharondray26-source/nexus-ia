@@ -409,7 +409,9 @@ export default function Files() {
           </div>
         </div>
 
-        {/* Drop Zone & File/Folder Browser */}
+        {/* La zone de dépôt des fichiers. « data-depot-propre » dit à la
+            mascotte de ne PAS s'en mêler : cette zone sait déjà quoi faire
+            d'un fichier, et ouvrir le chat par-dessus serait une gêne. */}
         <div
           onDragOver={(e) => {
             e.preventDefault();
@@ -417,6 +419,7 @@ export default function Files() {
           }}
           onDragLeave={() => setDragOverTarget(null)}
           onDrop={(e) => handleDropOnFolder(e, currentFolder === "ALL" ? "General" : currentFolder)}
+          data-depot-propre
           className="flex-1 overflow-y-auto p-4 relative [scrollbar-width:thin]"
         >
           {/* Drag Overlay Alert */}

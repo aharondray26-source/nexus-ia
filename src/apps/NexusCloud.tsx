@@ -434,6 +434,7 @@ export default function NexusCloud() {
           e.preventDefault();
           setIsDragging(false);
         }}
+        data-depot-propre
         onDrop={handleDrop}
         className={`relative flex-1 rounded-2xl border p-2 overflow-y-auto min-h-[220px] transition-all ${
           isDragging

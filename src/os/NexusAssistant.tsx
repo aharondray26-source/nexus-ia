@@ -217,11 +217,19 @@ export default function NexusAssistant() {
       // le voile clignote sur toute la traversée de l'écran.
       compteurDepot.current += 1;
       setDepotEnCours(true);
+      // LES CADRES AVALENT LE DÉPÔT. Un `iframe` — l'aperçu à droite, un jeu,
+      // une page générée — reçoit l'événement dans SON document et ne le
+      // repasse jamais au nôtre. Le temps du glissé, ils ne reçoivent plus la
+      // souris : le fichier tombe alors sur la page, comme partout ailleurs.
+      document.documentElement.classList.add("nx-depot-en-cours");
     };
     const sort = (e: DragEvent) => {
       if (!estUnFichier(e)) return;
       compteurDepot.current = Math.max(0, compteurDepot.current - 1);
-      if (compteurDepot.current === 0) setDepotEnCours(false);
+      if (compteurDepot.current === 0) {
+        setDepotEnCours(false);
+        document.documentElement.classList.remove("nx-depot-en-cours");
+      }
     };
     const survole = (e: DragEvent) => {
       if (!estUnFichier(e)) return;
@@ -230,22 +238,37 @@ export default function NexusAssistant() {
     };
     const lache = (e: DragEvent) => {
       if (!estUnFichier(e)) return;
-      e.preventDefault();
       compteurDepot.current = 0;
       setDepotEnCours(false);
+      document.documentElement.classList.remove("nx-depot-en-cours");
+      // UNE ZONE QUI SAIT DÉJÀ QUOI EN FAIRE garde son fichier : le Cloud, les
+      // Fichiers. On ne leur vole pas leur dépôt.
+      const cible = e.target as HTMLElement | null;
+      if (cible && cible.closest?.("[data-depot-propre]")) return;
+      e.preventDefault();
       const f = e.dataTransfer?.files;
       if (f && f.length) { handleFileSelect(f); setOpen(true); }
     };
 
-    window.addEventListener("dragenter", entre);
-    window.addEventListener("dragleave", sort);
-    window.addEventListener("dragover", survole);
-    window.addEventListener("drop", lache);
+    // EN PHASE DE CAPTURE, et c'est tout le sujet.
+    //
+    // Aharon : « quand je glisse un fichier, ça marche vraiment une fois sur
+    // cinq ». On écoutait en phase remontante : il suffisait qu'un élément
+    // survolé arrête l'événement — ou qu'on lâche au-dessus d'un cadre
+    // (l'aperçu à droite est un iframe, qui reçoit le dépôt à notre place et
+    // ne le repasse jamais) — pour que Nexus ne voie RIEN. Selon l'endroit où
+    // le fichier tombait, ça marchait ou pas : une fois sur cinq.
+    // En capture, Nexus voit tout passer avant les autres, et rend la main aux
+    // zones qui savent quoi en faire.
+    window.addEventListener("dragenter", entre, true);
+    window.addEventListener("dragleave", sort, true);
+    window.addEventListener("dragover", survole, true);
+    window.addEventListener("drop", lache, true);
     return () => {
-      window.removeEventListener("dragenter", entre);
-      window.removeEventListener("dragleave", sort);
-      window.removeEventListener("dragover", survole);
-      window.removeEventListener("drop", lache);
+      window.removeEventListener("dragenter", entre, true);
+      window.removeEventListener("dragleave", sort, true);
+      window.removeEventListener("dragover", survole, true);
+      window.removeEventListener("drop", lache, true);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

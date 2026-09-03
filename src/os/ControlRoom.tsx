@@ -470,9 +470,19 @@ const Slot = React.memo(function Slot({
       draggable
       onDragStart={(e) => { onDragStartId(id); e.currentTarget.classList.add("nx-dragging"); }}
       onDragEnd={(e) => e.currentTarget.classList.remove("nx-dragging")}
-      onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add("nx-drop-target"); }}
+      // Un FICHIER qui traverse le bureau n'est pas une tuile qu'on réordonne :
+      // sans ce garde, lâcher un fichier sur l'accueil déplaçait un raccourci
+      // au lieu de l'ouvrir dans le chat.
+      onDragOver={(e) => {
+        if (Array.from(e.dataTransfer?.types ?? []).includes("Files")) return;
+        e.preventDefault(); e.currentTarget.classList.add("nx-drop-target");
+      }}
       onDragLeave={(e) => e.currentTarget.classList.remove("nx-drop-target")}
-      onDrop={(e) => { e.preventDefault(); e.currentTarget.classList.remove("nx-drop-target"); onDropOn(id); }}
+      onDrop={(e) => {
+        e.currentTarget.classList.remove("nx-drop-target");
+        if (Array.from(e.dataTransfer?.types ?? []).includes("Files")) return;
+        e.preventDefault(); onDropOn(id);
+      }}
       className={`group/slot relative flex nx-w-${size} ${animate ? "nx-fly nx-fly-in" : ""}`}
       style={animate ? {
         ["--fx" as string]: d[0], ["--fy" as string]: d[1], ["--fr" as string]: d[2],
