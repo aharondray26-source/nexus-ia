@@ -290,6 +290,9 @@ body.ouvert #res{max-height:min(58vh,520px);opacity:1;overflow-y:auto;
 .calc small{display:block;font-size:11.5px;color:var(--faible,#8a8a95);margin-top:3px}
 
 /* ---- coins ---- */
+#mac #version{margin-left:7px;padding:1px 6px;border-radius:6px;
+  font-size:10px;font-weight:600;letter-spacing:.02em;
+  background:rgba(255,255,255,.10);color:var(--texte-doux,#a5a5b2)}
 #mac{position:fixed;left:20px;bottom:18px;z-index:3;display:flex;align-items:center;gap:7px;
   padding:7px 12px;border-radius:11px;border:1px solid transparent;background:transparent;
   color:var(--faible,#6a6a74);font:inherit;font-size:12px;cursor:pointer;
@@ -552,6 +555,11 @@ body.reglages #panneau > *{opacity:1}
 <button id="mac" title="Nexus pour macOS">
   <svg viewBox="0 0 24 24"><path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.2-2.8.8-3.5.8-.7 0-1.8-.8-3-.8-1.5 0-2.9.9-3.7 2.3-1.6 2.7-.4 6.8 1.1 9 .8 1.1 1.6 2.3 2.8 2.2 1.1 0 1.6-.7 2.9-.7 1.3 0 1.7.7 2.9.7 1.2 0 2-1.1 2.7-2.2.9-1.3 1.2-2.5 1.2-2.6 0 0-2.3-.9-2.3-3.4zM14.2 5.6c.6-.8 1-1.8.9-2.9-.9 0-2 .6-2.6 1.4-.6.7-1.1 1.7-.9 2.8 1 0 2-.5 2.6-1.3z"/></svg>
   Nexus pour macOS
+  <!-- LA VERSION, LA OU IL S'EN SERT.
+       Aharon : « je veux voir une différence ». Le Finder ne la montre pas
+       vraiment ; ici, un coup d'oeil suffit — et si Chrome affiche autre
+       chose que le dernier numéro, c'est qu'un ancien dossier est chargé. -->
+  <b id="version"></b>
 </button>
 
 <button id="roue" title="Réglages">

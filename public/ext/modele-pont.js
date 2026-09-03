@@ -126,13 +126,60 @@ const NexusModele = (() => {
       ? { texte: t.trim(), moteur: "Nexus local · dans ton navigateur" } : null;
   }
 
-  /// La cascade complète : Ollama s'il tourne déjà (plus rapide, rien à
-  /// télécharger), sinon le modèle du navigateur, qui n'exige rien de personne.
+  /// LE MODÈLE EN LIGNE, hébergé avec le site.
+  ///
+  /// C'est le meilleur chemin de tous : rien à télécharger, rien à installer,
+  /// une vraie réponse tout de suite. Aharon : « je veux que les utilisateurs
+  /// n'aient simplement rien à faire ». L'extension s'adresse donc au même
+  /// serveur que le site, à la même seconde où il est publié.
+  // Ecrit ici en toutes lettres, PAS repris d'une variable d'un autre fichier :
+  // ce fichier est charge AVANT « onglet.js », et la Loupe ne le charge pas du
+  // tout. Sans barre a la fin, toujours.
+  const SITE_IA = "https://nexus-espace.netlify.app";
+  let enLigneConnu = null;
+
+  async function enLigneDisponible() {
+    if (enLigneConnu !== null) return enLigneConnu;
+    try {
+      const c = new AbortController();
+      const t = setTimeout(() => c.abort(), 2500);
+      const r = await fetch(SITE_IA + "/api/health", { signal: c.signal, cache: "no-store" });
+      clearTimeout(t);
+      const d = r.ok ? await r.json() : null;
+      enLigneConnu = !!(d && d.modeleEnLigne);
+    } catch (e) { enLigneConnu = false; }
+    return enLigneConnu;
+  }
+
+  async function parLeSite(consigne, question) {
+    if (!(await enLigneDisponible())) return null;
+    try {
+      const r = await fetch(SITE_IA + "/api/gemini/chat", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: question, history: [],
+                               context: { systemCtx: consigne } }),
+      });
+      if (!r.ok) return null;
+      const d = await r.json();
+      return (d && d.reply)
+        ? { texte: String(d.reply).trim(), moteur: "Nexus en ligne" } : null;
+    } catch (e) { return null; }
+  }
+
+  /// La cascade complète, du plus simple au plus autonome :
+  ///   1. le modèle EN LIGNE, hébergé avec le site — rien à faire, rien à
+  ///      télécharger, c'est le chemin normal ;
+  ///   2. Ollama, s'il tourne déjà sur cette machine ;
+  ///   3. le modèle du navigateur, qui n'exige rien de personne mais se
+  ///      télécharge une fois.
   async function demander(consigne, question, avance, quel) {
+    const s = await parLeSite(consigne, question);
+    if (s) return s;
     const o = await parOllama(consigne, question);
     if (o) return o;
     return parLeNavigateur(consigne, question, avance, quel);
   }
 
-  return { MODELES, possible, demander, preparer, dejaLa, enFrancais, ollama };
+  return { MODELES, possible, demander, preparer, dejaLa, enFrancais, ollama,
+           enLigneDisponible };
 })();

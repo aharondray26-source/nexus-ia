@@ -146,6 +146,41 @@ for (const page of ["onglet.html", "loupe.html", "popup.html"]) {
   }
 }
 
+// ── 4. Le modèle EN LIGNE part-il avec le site ? ────────────────────────────
+//
+// C'est le piège qui a coûté le plus cher : le site était publié sans son
+// serveur, donc il réclamait une clé à chaque visiteur alors qu'Aharon voulait
+// que personne n'ait jamais rien à faire.
+const toml = path.join(RACINE, "netlify.toml");
+if (!fs.existsSync(toml)) {
+  mal("netlify.toml manque : le modèle ne partira pas avec le site");
+} else {
+  const t = fs.readFileSync(toml, "utf8");
+  if (!/functions\s*=\s*"netlify\/functions"/.test(t)) {
+    mal("netlify.toml ne déclare pas le dossier des fonctions");
+  } else bon("netlify.toml déclare les fonctions");
+}
+for (const f of ["ia.mjs", "sante.mjs"]) {
+  if (!fs.existsSync(path.join(RACINE, "netlify", "functions", f))) {
+    mal(`netlify/functions/${f} manque`);
+  }
+}
+// L'ORDRE des renvois. « /* → index.html » placé avant « /api/… » rendait la
+// page d'accueil à la place du modèle, et le site en concluait qu'il n'y avait
+// pas de serveur.
+const red = fs.readFileSync(path.join(RACINE, "public", "_redirects"), "utf8");
+const lignes = red.split("\n").filter((l) => l.trim() && !l.startsWith("#"));
+const iApi = lignes.findIndex((l) => l.startsWith("/api/"));
+const iTout = lignes.findIndex((l) => l.startsWith("/*"));
+if (iApi === -1) mal("_redirects n'envoie pas /api vers les fonctions");
+else if (iTout !== -1 && iTout < iApi) {
+  mal("_redirects : « /* » passe AVANT « /api » — le modèle sera injoignable");
+} else bon("les adresses du modèle passent avant le renvoi vers index.html");
+// Et dans le site construit, pas seulement dans les sources.
+if (!fs.existsSync(path.join(DIST, "_redirects"))) {
+  mal("dist/_redirects manque : les renvois ne seront pas publiés");
+} else bon("dist/_redirects est publié");
+
 console.log("-".repeat(64));
 if (soucis.length === 0) {
   console.log("Tous les téléchargements mènent à la dernière version.");

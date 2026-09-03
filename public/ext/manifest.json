@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Nexus",
-  "version": "2.9.0",
+  "version": "2.10.0",
   "description": "Ton espace Nexus a chaque onglet : page d'accueil personnalisable, recherche ciblee, assistant, et une note ou une tache en deux secondes.",
   "icons": {
     "16": "icones/16.png",
@@ -50,5 +50,8 @@
       },
       "description": "Ouvrir la Loupe Nexus sur cette page"
     }
-  }
+  },
+  "host_permissions": [
+    "https://nexus-espace.netlify.app/*"
+  ]
 }

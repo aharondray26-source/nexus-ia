@@ -1025,7 +1025,13 @@ function construireReglages() {
       // Ces trois-là changent l'heure : on la redessine tout de suite, sinon on
       // coche et il ne se passe rien pendant une seconde entière.
       if (champ === "secondes" || champ === "chiffresCadran"
-          || champ === "dateSousHeure") { appliquerHorloge(); battre(); }
+          || champ === "dateSousHeure") { // La version, ecrite depuis le manifeste : impossible qu'elle mente.
+try {
+  const v = chrome.runtime.getManifest().version;
+  const e = document.getElementById("version");
+  if (e) e.textContent = v;
+} catch (err) { /* hors extension : on n'affiche rien */ }
+appliquerHorloge(); battre(); }
     };
   }
   $("prenom").value = R.prenom || "";
