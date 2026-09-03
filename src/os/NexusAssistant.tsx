@@ -282,8 +282,6 @@ export default function NexusAssistant() {
   const finDuMouvement = useRef(0);
   /// Ou on l'a envoyee la derniere fois : sans ça, le rendez-vous periodique
   /// relancerait l'animation vers le meme point toutes les deux secondes.
-  const dernierX = useRef(Number.NaN);
-  const dernierY = useRef(Number.NaN);
   /// Elle est posée sur une fenêtre faute de mieux : elle s'efface.
   const [gene, setGene] = useState(false);
 
@@ -410,15 +408,51 @@ export default function NexusAssistant() {
       const x = Math.round(meilleure.left - naturelLeft);
       const y = Math.round(meilleure.top - naturelTop);
 
-      // Deja au bon endroit ? On ne rejoue pas l'animation : la mascotte
-      // tremblerait toutes les deux secondes.
-      if (Math.abs(x - dernierX.current) < 6 && Math.abs(y - dernierY.current) < 6) return;
-      dernierX.current = x; dernierY.current = y;
+      // DÉJÀ AU BON ENDROIT ? On compare à SA POSITION RÉELLE, pas à ce
+      // qu'on avait l'intention de faire la dernière fois.
+      //
+      // C'était le bug : on mémorisait la destination AVANT de lancer
+      // l'animation. Si celle-ci n'aboutissait pas — un onglet qui ne peint
+      // pas, un rendu au mauvais moment, un geste de l'utilisateur — Nexus
+      // croyait la mascotte arrivée et ne réessayait PLUS JAMAIS. Elle restait
+      // clouée dans son coin, sans la moindre erreur, exactement ce qu'Aharon
+      // décrivait : « la mascotte ne se déplace pas quand il y a une fenêtre,
+      // ça ne marche pas ».
+      //
+      // La position réelle, elle, ne peut pas mentir : `m41`/`m42` sont le
+      // décalage que le navigateur applique VRAIMENT à cette seconde. Si
+      // l'animation a échoué, l'écart est toujours là et l'on retente ; si
+      // elle a réussi, l'écart est nul et l'on se tait.
+      // `x`/`y` sont le décalage ABSOLU visé ; `m41`/`m42` celui qui est
+      // appliqué en ce moment. On compare les deux.
+      if (Math.abs(x - m.m41) < 6 && Math.abs(y - m.m42) < 6) return;
 
       // On se donne 900 ms pour arriver. Passé ce délai on réessaie, quoi
       // qu'il soit advenu de l'animation.
       finDuMouvement.current = Date.now() + 900;
       setDeplaceeAuto(true);
+
+      // LE FILET : elle finit toujours au bon endroit, animée si possible.
+      //
+      // Une animation à ressort a besoin que le navigateur PEIGNE la page.
+      // Onglet en arrière-plan, fenêtre réduite, « réduire les animations »
+      // dans les réglages du système : dans ces cas-là le ressort ne part
+      // jamais, et la mascotte reste plantée dans son coin — sans erreur,
+      // sans rien dire. C'est ce qu'Aharon voyait.
+      // On regarde donc une seconde plus tard : si elle n'a pas bougé POUR DE
+      // VRAI, on la pose sans animation. Mieux vaut un déplacement sec qu'une
+      // mascotte immobile.
+      window.setTimeout(() => {
+        const env = mascotRef.current?.parentElement;
+        if (!env) return;
+        const t = window.getComputedStyle(env).transform;
+        const mm = new DOMMatrixReadOnly(t === "none" ? "" : t);
+        if (Math.abs(x - mm.m41) > 6 || Math.abs(y - mm.m42) > 6) {
+          pillControls.set({ x, y });
+          setDeplaceeAuto(false);
+        }
+      }, 1000);
+
       pillControls
         .start({ x, y, transition: { type: "spring", stiffness: 190, damping: 21, mass: 0.9 } })
         .finally(() => {
