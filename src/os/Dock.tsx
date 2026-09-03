@@ -109,7 +109,16 @@ export default function Dock({ horizontal = false, pos = "left" }: { horizontal?
                   <Icon name={app.icon} size={20} />
                 </span>
 
-                <span className={`whitespace-nowrap text-xs font-medium transition-opacity duration-[320ms] [transition-timing-function:var(--doux)] truncate text-nexus-text ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+                {/* LE NOM DE L'ESPACE.
+                    Barre fermée il était seulement TRANSPARENT — et un élément
+                    transparent occupe toujours sa place. Le bouton centrait
+                    donc « icône + nom invisible », et l'icône se retrouvait
+                    ONZE PIXELS trop à gauche : c'est le « les icônes sont mal
+                    placées » d'Aharon, mesuré. Elle sort maintenant vraiment
+                    de la mise en page (largeur nulle), sans casser le fondu. */}
+                <span className={`whitespace-nowrap text-xs font-medium truncate text-nexus-text transition-[opacity,width] duration-[320ms] [transition-timing-function:var(--doux)] ${
+                  isHovered ? 'opacity-100' : 'opacity-0 w-0'
+                }`}>
                   {app.title}
                 </span>
 
