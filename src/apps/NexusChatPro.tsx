@@ -84,22 +84,35 @@ export default function NexusChatPro() {
             id: "m1",
             role: "assistant",
             timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-            thinking: "Analyse du profil de l'utilisateur. Activation du moteur Gemini 3.6 Flash avec mode réflexion approfondi.",
-            content: `### Bienvenue dans Nexus IA Pro Studio (Gemini 3.6 Flash)
+            thinking: "Je regarde ce qui est disponible : le modèle en ligne d'abord, sinon celui de cette machine, sinon celui du navigateur.",
+            content: `### Bonjour. Je suis Nexus.
 
-Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. Cette application vous offre un **espace de chat agrandi**, un **mode réflexion approfondi** et un **bac à sable multimédia** (Code HTML/JS, PDF, Audio, Vidéo).
+Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni clé, ni compte, ni installation à prévoir.**
 
-#### Moteur & Réflexion :
-1. **Gemini 3.6 Flash** : Le modèle de dernière génération ultra-rapide et multimodal.
-2. **Mode Réflexion (Thinking Mode)** : Activez le switch pour forcer l'IA à analyser étape par étape tes problèmes complexes.
-3. **Espace Chat XXL & Panneaux Ajustables** : Les panneaux latéraux sont réduits par défaut et redimensionnables pour laisser la priorité maximale à tes discussions.`,
+**Ce que je fais bien :**
+
+- **Un cours qu'on n'a pas compris** — « explique-moi les suites géométriques comme si j'étais en première »
+- **Un exercice** — je montre les étapes, et je **calcule à part** ce qui peut l'être : un modèle se trompe en calcul, pas moi
+- **Un texte** — résumer, corriger, traduire, reformuler
+- **Une page web ou un tableau** — décris ce que tu veux, je l'écris et tu le vois tourner à droite
+
+*Le mode réflexion, en haut, me fait raisonner étape par étape avant de répondre. Utile pour un problème ; inutile pour une question simple.*`,
             codeSnippet: {
               type: "html",
-              title: "Démo Widget Interactif Nexus",
-              code: `<div style="font-family: system-ui, sans-serif; padding: 24px; background: linear-gradient(135deg, #0f172a, #0284c7); color: white; border-radius: 16px; text-align: center;">
-  <h2 style="margin: 0 0 10px 0;">✨ Widget HTML Live Nexus</h2>
-  <p style="margin: 0 0 16px 0; opacity: 0.9;">Généré par Nexus IA Pro (Gemini 3.6 Flash)</p>
-  <button onclick="alert('Action exécutée depuis le lecteur Nexus !')" style="padding: 10px 20px; background: white; color: #0f172a; border: none; font-weight: bold; border-radius: 8px; cursor: pointer;">Tester l'interactivité</button>
+              title: "Ce que je peux dessiner pour toi",
+              code: `<div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',Inter,system-ui,sans-serif;
+     padding:26px;border-radius:18px;color:#eef;text-align:center;
+     background:radial-gradient(120% 100% at 20% 0%,#1b1b3a,#0b0b14)">
+  <div style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.55">Aperçu vivant</div>
+  <h2 style="margin:8px 0 6px;font-size:22px;letter-spacing:-.02em">Tout ce que j'écris, tu le vois tourner</h2>
+  <p style="margin:0 0 18px;opacity:.72;font-size:13.5px;line-height:1.55">
+    Une page, un tableau, un petit jeu, une animation :<br>demande, et ça s'affiche ici même.
+  </p>
+  <button onclick="this.textContent='Ça marche ✓';this.style.background='#34d399';this.style.color='#06281c'"
+    style="padding:11px 22px;border:0;border-radius:11px;cursor:pointer;font-weight:600;font-size:13.5px;
+           background:#a5a6ff;color:#14142a;transition:all .18s cubic-bezier(.34,1.4,.5,1)">
+    Essaie ce bouton
+  </button>
 </div>`,
             },
           },
@@ -179,11 +192,20 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
     title: string;
   } | null>({
     type: "html",
-    title: "Démo Widget Interactif Nexus",
-    code: `<div style="font-family: system-ui, sans-serif; padding: 24px; background: linear-gradient(135deg, #0f172a, #0284c7); color: white; border-radius: 16px; text-align: center;">
-  <h2 style="margin: 0 0 10px 0;">✨ Widget HTML Live Nexus</h2>
-  <p style="margin: 0 0 16px 0; opacity: 0.9;">Généré par Nexus IA Pro (Gemini 3.6 Flash)</p>
-  <button onclick="alert('Action exécutée depuis le lecteur Nexus !')" style="padding: 10px 20px; background: white; color: #0f172a; border: none; font-weight: bold; border-radius: 8px; cursor: pointer;">Tester l'interactivité</button>
+    title: "Ce que je peux dessiner pour toi",
+    code: `<div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',Inter,system-ui,sans-serif;
+     padding:26px;border-radius:18px;color:#eef;text-align:center;
+     background:radial-gradient(120% 100% at 20% 0%,#1b1b3a,#0b0b14)">
+  <div style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.55">Aperçu vivant</div>
+  <h2 style="margin:8px 0 6px;font-size:22px;letter-spacing:-.02em">Tout ce que j'écris, tu le vois tourner</h2>
+  <p style="margin:0 0 18px;opacity:.72;font-size:13.5px;line-height:1.55">
+    Une page, un tableau, un petit jeu, une animation :<br>demande, et ça s'affiche ici même.
+  </p>
+  <button onclick="this.textContent='Ça marche ✓';this.style.background='#34d399';this.style.color='#06281c'"
+    style="padding:11px 22px;border:0;border-radius:11px;cursor:pointer;font-weight:600;font-size:13.5px;
+           background:#a5a6ff;color:#14142a;transition:all .18s cubic-bezier(.34,1.4,.5,1)">
+    Essaie ce bouton
+  </button>
 </div>`,
   });
 
@@ -240,7 +262,7 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
           id: `m-${Date.now()}`,
           role: "assistant",
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          content: `Session Gemini 3.6 Flash initialisée (${selectedModel}). Comment puis-je t'aider ?`,
+          content: `Nouvelle discussion. Qu'est-ce qu'on regarde ?`,
         },
       ],
     };
@@ -357,7 +379,7 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
           if (data.reply) {
             replyText = data.reply;
             if (thinkingMode) {
-              thinkingText = `Analyse contextuelle et raisonnement pas à pas traités avec succès par le modèle Gemini 3.6 Flash (${data.modelUsed || selectedModel}).`;
+              thinkingText = `Répondu par le modèle en ligne, hébergé avec le site (${data.modelUsed || "modèle du serveur"}). Personne n'a eu à configurer quoi que ce soit.`;
             }
           }
         }
@@ -384,7 +406,7 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
             replyText = res.text || "";
             if (replyText) moteur = selectedModel;
             if (thinkingMode) {
-              thinkingText = `Analyse réalisée en direct avec ta clé API Gemini 3.6 Flash (${selectedModel}).`;
+              thinkingText = `Répondu avec la clé que TU as enregistrée dans ce navigateur (${selectedModel}).`;
             }
           } catch (clientKeyErr) {
             console.warn("Clé API client en échec, bascule sur le moteur autonome local", clientKeyErr);
@@ -652,9 +674,17 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
               <h2 className="text-xs font-extrabold text-white tracking-wide truncate max-w-[180px] sm:max-w-[320px]">
                 {activeSession?.title}
               </h2>
+              {/* On annonce le moteur qui a VRAIMENT répondu la dernière fois,
+                  et rien tant qu'il n'a pas répondu. Écrire « Gemini » en
+                  permanence était faux dès que la réponse venait d'ailleurs. */}
               <p className="text-[10px] text-cyan-400 font-semibold flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Moteur Gemini 3.6 Flash & Mode Réflexion
+                <span className={`w-1.5 h-1.5 rounded-full ${
+                  modeleEnLigne === false ? "bg-amber-400" : "bg-emerald-400 animate-pulse"}`} />
+                {moteurDuDernier
+                  ? moteurDuDernier
+                  : modeleEnLigne === true ? "Modèle en ligne · rien à installer"
+                  : modeleEnLigne === false ? "Modèle de cette machine"
+                  : "Je cherche un modèle…"}
               </p>
             </div>
           </div>
@@ -759,7 +789,10 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
                 >
                   <div className="flex items-center justify-between text-[11px] opacity-70 mb-1">
                     <span className="font-bold flex items-center gap-1.5">
-                      {isUser ? "Vous" : `Nexus IA — ${msg.moteur || selectedModel}`}
+                      {/* Le moteur RÉEL de CE message, ou rien. Écrire
+                          « gemini-3.6-flash » sous une réponse venue d'ailleurs
+                          était simplement faux. */}
+                      {isUser ? "Toi" : (msg.moteur ? `Nexus — ${msg.moteur}` : "Nexus")}
                     </span>
                     <span>{msg.timestamp}</span>
                   </div>
@@ -860,7 +893,7 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
               </div>
               <div className="px-4 py-3 rounded-2xl bg-slate-900 border border-slate-800 text-xs text-cyan-300 font-semibold flex items-center gap-3 shadow-lg">
                 <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
-                <span>Analyse Gemini 3.6 Flash ({selectedModel}) {thinkingMode ? "+ Mode Réflexion" : ""}...</span>
+                <span>Nexus réfléchit{thinkingMode ? " — pas à pas" : ""}…</span>
               </div>
             </div>
           )}
@@ -869,36 +902,27 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
         </div>
 
         {/* ── LE MODÈLE DU NAVIGATEUR ─────────────────────────────────────
-            Ni clé, ni compte, ni installation : le navigateur télécharge un
-            petit modèle UNE FOIS, le garde, et le fait tourner sur la carte
-            graphique. C'est ce qu'Aharon demandait — « l'utilisateur arrive,
-            il n'a vraiment rien à faire ».
-            On ne le télécharge JAMAIS tout seul : un gigaoctet pris sans
-            prévenir sur un partage de connexion, c'est impardonnable. Un clic,
-            une fois, et plus jamais. */}
-        {/* Rien à proposer quand un modèle répond déjà en ligne : le visiteur
-            n'a alors strictement rien à faire, et c'est le but. */}
+            Ni clé, ni compte, ni installation : à la première question, le
+            navigateur télécharge un petit modèle UNE FOIS, le garde, et le
+            fait tourner sur la carte graphique. C'est ce qu'Aharon demandait —
+            « l'utilisateur arrive, il n'a vraiment rien à faire ».
+
+            Ce n'était PAS ça avant : il fallait cliquer un bouton, et le
+            panneau qui le proposait occupait le quart de la conversation en
+            permanence. Maintenant que ça se fait tout seul, ce n'est plus une
+            action : c'est une phrase. On la garde discrète, on ne la montre
+            que s'il n'y a pas déjà un modèle en ligne, et elle disparaît dès
+            que le modèle est là. */}
         {!installe && gpuPossible() && modeleEnLigne === false && !progresModele && (
-          <div className="mx-3 mb-2 rounded-2xl border border-cyan-500/30 bg-cyan-950/20 p-3">
-            <div className="flex items-center gap-2 text-[12px] font-semibold text-cyan-200">
-              <Sparkles className="h-3.5 w-3.5" />
-              Pose ta question : je m'occupe du reste
-            </div>
-            <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
-              À ta première question, ton navigateur téléchargera un modèle{" "}
-              <b>une seule fois</b> et le gardera. Ensuite, plus rien ne sort de
-              cette machine — et ça marche même sans internet.
-              <br />
-              <span className="text-slate-500">
-                Tu peux aussi choisir dès maintenant :
-              </span>{" "}
-              {/* Un modèle trop petit se trompe, et un lycéen qui révise ne peut
-                  pas le savoir. On le dit avant, pas après. */}
-              <span className="text-amber-300/80">
-                le léger va plus vite mais se trompe sur les cours.
-              </span>
-            </p>
-            <div className="mt-2.5 flex flex-wrap gap-2">
+          <div className="mx-3 mb-2 flex flex-wrap items-center gap-x-2 gap-y-1
+                          rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2
+                          text-[11px] text-slate-400">
+            <Sparkles className="h-3 w-3 shrink-0 text-cyan-300/80" />
+            <span className="text-slate-300">Pose ta question : je m'occupe du reste.</span>
+            <span className="text-slate-500">
+              Je prépare mon modèle une seule fois, puis je réponds même hors ligne.
+            </span>
+            <span className="ml-auto flex items-center gap-1.5">
               {MODELES.map((m) => (
                 <button
                   key={m.id}
@@ -916,16 +940,21 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
                       setProgresModele(null);
                     }
                   }}
-                  className={`nx-btn flex-col !items-start gap-0.5 !py-2 ${
-                    m.fiable ? "nx-btn-primary" : "nx-btn-secondary"
+                  // Un modèle trop petit se trompe, et un lycéen qui révise ne
+                  // peut pas le savoir : le léger le dit dans son infobulle.
+                  title={m.fiable
+                    ? `${m.poids} — le bon choix`
+                    : `${m.poids} — plus rapide, mais il se trompe sur les cours`}
+                  className={`rounded-lg px-2 py-0.5 text-[10.5px] font-medium transition-colors ${
+                    m.fiable
+                      ? "bg-cyan-500/15 text-cyan-200 hover:bg-cyan-500/25"
+                      : "text-slate-500 hover:text-slate-300"
                   }`}
-                  title={m.detail}
                 >
-                  <span className="text-[12px] font-bold">{m.nom}</span>
-                  <span className="text-[10px] font-normal opacity-70">{m.poids}</span>
+                  {m.fiable ? "Commencer maintenant" : "Version légère"}
                 </button>
               ))}
-            </div>
+            </span>
           </div>
         )}
 
@@ -979,7 +1008,9 @@ Je suis ton assistant IA haute performance propulsé par **Gemini 3.6 Flash**. C
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder={`Posez ta question à Gemini 3.6 Flash (${selectedModel}) - Code, Analyse, HTML...`}
+              // Le nom d'un fournisseur n'a rien à faire ici : ce n'est pas
+              // toujours lui qui répond, et ça ne dit rien à personne.
+              placeholder="Pose ta question à Nexus — un cours, un exercice, un texte, une page…"
               className="flex-1 bg-transparent px-3 py-1.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none"
             />
 
