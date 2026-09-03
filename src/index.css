@@ -777,6 +777,32 @@ html.light-mode .nx-widget {
    fichier tombait, Nexus le voyait ou pas : « ça marche une fois sur cinq »,
    disait Aharon. Le temps du glissé, ils ne reçoivent plus la souris. */
 html.nx-depot-en-cours iframe { pointer-events: none !important; }
+
+/* CE QU'ELLE FAIT QUAND ON LA PROVOQUE.
+   Aharon : « j'ai rien découvert avec la mascotte ». Ses surprises étaient
+   toutes TIRÉES AU SORT — donc jamais liées à un geste, donc jamais
+   remarquées. Celles-ci, c'est lui qui les déclenche. */
+@keyframes nx-tourne {
+  0%   { transform: rotate(0deg)   scale(1); }
+  40%  { transform: rotate(200deg) scale(1.08); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+.nx-mascotte-tourne { animation: nx-tourne .9s var(--ressort) both; }
+
+@keyframes nx-tournis {
+  0%,100% { transform: rotate(0deg); }
+  20%     { transform: rotate(-7deg); }
+  45%     { transform: rotate(6deg); }
+  70%     { transform: rotate(-4deg); }
+}
+.nx-mascotte-tournis { animation: nx-tournis .55s var(--doux) 3; }
+
+@keyframes nx-salue {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  30%     { transform: translateY(-5px) rotate(-5deg); }
+  60%     { transform: translateY(-2px) rotate(4deg); }
+}
+.nx-mascotte-salue { animation: nx-salue .5s var(--ressort) 3; }
 /* Elle se déplace toute seule : un halo la suit le temps du trajet, pour qu'on
    VOIE qu'elle bouge d'elle-même. Un objet qui change de place sans prévenir
    ressemble à un bug ; le même, avec une traînée, ressemble à une intention. */

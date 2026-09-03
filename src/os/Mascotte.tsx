@@ -19,6 +19,12 @@ import React, { useEffect, useRef, useState } from "react";
 /// qu'on voit tous les jours n'est plus une surprise.
 export type Humeur = "normal" | "surprise" | "pense" | "content";
 
+/// Ce que l'utilisateur a déjà découvert. Gardé d'une visite à l'autre :
+/// une trouvaille qu'on oublie n'en est pas une.
+const CLE_TROUVAILLES = "nexus.mascotte.trouvailles";
+/// Tout ce qu'elle sait faire quand on la provoque. Sert au petit compteur.
+export const TOUTES_LES_TROUVAILLES = ["tourne", "tournis", "salue", "dort", "fichier"];
+
 export default function Mascotte({
   onBody, onLeftEye, onRightEye, active, size = 58, humeur = "normal",
 }: {
@@ -34,7 +40,10 @@ export default function Mascotte({
   const [blink, setBlink] = useState(false);
   const [hover, setHover] = useState<"none" | "left" | "right">("none");
   /// Ce qu'elle fait d'elle-même, en ce moment.
-  const [manege, setManege] = useState<"rien" | "dort" | "clin" | "baille" | "curieuse">("rien");
+  const [manege, setManege] = useState<
+    "rien" | "dort" | "clin" | "baille" | "curieuse"
+    | "tourne" | "tournis" | "salue"
+  >("rien");
 
   // Pourquoi ce n'est pas un simple onClick : la mascotte est deplaçable, et le
   // systeme de glisser-deposer CAPTURE le pointeur. Le relachement ne revient
@@ -100,7 +109,7 @@ export default function Mascotte({
     const reveiller = () => {
       setManege((m) => (m === "dort" ? "rien" : m));
       window.clearTimeout(t);
-      t = window.setTimeout(() => setManege("dort"), 120000);
+      t = window.setTimeout(() => { setManege("dort"); noter("dort"); }, 120000);
     };
     reveiller();
     for (const n of ["mousemove", "keydown", "pointerdown", "wheel"]) {
@@ -125,6 +134,119 @@ export default function Mascotte({
     }, 45000);
     return () => window.clearInterval(t);
   }, []);
+
+
+  // ── CE QU'ELLE FAIT QUAND ON LA PROVOQUE ────────────────────────────────
+  //
+  // Aharon : « j'ai rien découvert avec la mascotte ». Il avait raison, et la
+  // faute était de conception : toutes ses surprises étaient TIRÉES AU SORT.
+  // Un clin d'œil de quatre dixièmes de seconde sur un robot de 58 pixels dans
+  // un coin, pendant qu'on lit autre chose — on ne le voit jamais. Et comme
+  // rien ne le provoque, on n'a aucune raison de recommencer.
+  //
+  // Les réactions ci-dessous sont CAUSALES : c'est lui qui les déclenche, donc
+  // il les voit, et il peut les refaire pour les montrer.
+
+  /// Ce qu'il a déjà trouvé, gardé d'une visite à l'autre.
+  const [trouvailles, setTrouvailles] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem(CLE_TROUVAILLES) || "[]"); }
+    catch { return []; }
+  });
+  // On ÉCRIT DANS UN EFFET, pas dans la fonction de mise à jour.
+  //
+  // Ranger depuis l'intérieur d'un `setState` est un effet de bord au milieu
+  // d'un rendu : React peut rejouer la fonction, ou ne pas la jouer du tout.
+  // Vu en essayant : la mascotte faisait bien son tournis, et la trouvaille
+  // n'était PAS retenue. Rien n'avertit.
+  const noter = (quoi: string) => {
+    setTrouvailles((v) => (v.includes(quoi) ? v : [...v, quoi]));
+  };
+  useEffect(() => {
+    try { localStorage.setItem(CLE_TROUVAILLES, JSON.stringify(trouvailles)); }
+    catch { /* rangement refusé */ }
+  }, [trouvailles]);
+
+  /// La dernière trouvaille, le temps de l'annoncer. Aharon : « j'ai rien
+  /// découvert » — il faut donc qu'on lui DISE quand il vient de trouver, et
+  /// qu'il reste quelque chose à chercher.
+  const [annonce, setAnnonce] = useState<number | null>(null);
+  const connues = useRef<string[] | null>(null);
+  useEffect(() => {
+    // Au premier rendu on ne fête rien : ce sont les trouvailles d'avant.
+    if (connues.current === null) { connues.current = trouvailles; return; }
+    if (trouvailles.length > connues.current.length) {
+      connues.current = trouvailles;
+      setAnnonce(trouvailles.length);
+      const t = window.setTimeout(() => setAnnonce(null), 2600);
+      return () => window.clearTimeout(t);
+    }
+    connues.current = trouvailles;
+  }, [trouvailles]);
+
+  /// Deux appuis rapprochés : elle fait un tour sur elle-même, de joie.
+  const dernierAppui = useRef(0);
+  useEffect(() => {
+    const surAppui = () => {
+      const t = Date.now();
+      if (t - dernierAppui.current < 420) {
+        setManege("tourne");
+        noter("tourne");
+        window.setTimeout(() => setManege("rien"), 900);
+      }
+      dernierAppui.current = t;
+    };
+    const el = ref.current?.ownerSVGElement || ref.current;
+    el?.addEventListener("pointerdown", surAppui);
+    return () => el?.removeEventListener("pointerdown", surAppui);
+  }, []);
+
+  /// On la SECOUE : elle a le tournis. On regarde les changements de sens du
+  /// déplacement — quatre allers-retours en moins d'une seconde.
+  useEffect(() => {
+    let dernierX = 0, sens = 0, virages = 0, debut = 0;
+    const bouge = (e: PointerEvent) => {
+      if (!(e.buttons & 1)) { virages = 0; return; }
+      const d = e.clientX - dernierX;
+      dernierX = e.clientX;
+      if (Math.abs(d) < 6) return;
+      const s = Math.sign(d);
+      if (sens && s !== sens) {
+        if (!virages) debut = Date.now();
+        virages++;
+        if (virages >= 4 && Date.now() - debut < 1100) {
+          virages = 0;
+          setManege("tournis");
+          noter("tournis");
+          window.setTimeout(() => setManege("rien"), 1600);
+        }
+      }
+      sens = s;
+    };
+    window.addEventListener("pointermove", bouge);
+    return () => window.removeEventListener("pointermove", bouge);
+  }, []);
+
+  /// Elle salue quand on revient après être parti voir ailleurs.
+  useEffect(() => {
+    let partiA = 0;
+    const change = () => {
+      if (document.hidden) { partiA = Date.now(); return; }
+      // Moins de vingt secondes, ce n'est pas une absence : c'est un aller-retour.
+      if (partiA && Date.now() - partiA > 20000) {
+        setManege("salue");
+        noter("salue");
+        window.setTimeout(() => setManege("rien"), 1500);
+      }
+      partiA = 0;
+    };
+    document.addEventListener("visibilitychange", change);
+    return () => document.removeEventListener("visibilitychange", change);
+  }, []);
+
+  /// Un fichier qui arrive sur elle : ça compte aussi comme une découverte.
+  useEffect(() => {
+    if (humeur === "surprise") noter("fichier");
+  }, [humeur]);
 
   const EY = 42;                       // hauteur des yeux
 
@@ -151,7 +273,10 @@ export default function Mascotte({
     <svg
       ref={ref}
       width={size} height={size} viewBox="0 0 100 100"
-      className="nx-mascotte cursor-pointer select-none overflow-visible"
+      className={`nx-mascotte cursor-pointer select-none overflow-visible${
+        manege === "tourne" ? " nx-mascotte-tourne"
+        : manege === "tournis" ? " nx-mascotte-tournis"
+        : manege === "salue" ? " nx-mascotte-salue" : ""}`}
       aria-label="Nexus — assistant"
     >
       <defs>
@@ -254,6 +379,53 @@ export default function Mascotte({
       {/* Elle dort : trois « z » qui montent. C'est le comportement qu'on
           découvre le plus tard — deux minutes sans rien faire — et celui qui
           fait toujours sourire. */}
+      {/* LE TOURNIS : trois étoiles qui tournent au-dessus de la tête. On
+          l'obtient en la secouant — un geste que tout le monde essaie une
+          fois, et qui ne donnait rien jusqu'ici. */}
+      {manege === "tournis" && (
+        <g>
+          <g style={{ transformOrigin: "50px 10px" }}>
+            <animateTransform attributeName="transform" type="rotate"
+                              from="0 50 10" to="360 50 10" dur="1.1s" repeatCount="indefinite" />
+            {[0, 1, 2].map((i) => {
+              const a = (i * 120) * Math.PI / 180;
+              return (
+                <text key={i} x={50 + Math.cos(a) * 14} y={12 + Math.sin(a) * 7}
+                      fontSize="10" fill="#ffe082" textAnchor="middle">★</text>
+              );
+            })}
+          </g>
+        </g>
+      )}
+
+      {/* ELLE SALUE quand on revient après être parti un moment. */}
+      {manege === "salue" && (
+        <g stroke="color-mix(in srgb, var(--accent) 30%, white)" strokeWidth="4.2"
+           strokeLinecap="round" style={{ transformOrigin: "20px 62px" }}>
+          <line x1="20" y1="62" x2="12" y2="46" />
+          <animateTransform attributeName="transform" type="rotate"
+                            values="-16 20 62; 16 20 62; -16 20 62" dur=".42s"
+                            repeatCount="3" />
+        </g>
+      )}
+
+      {/* « ★ 2 sur 5 » : la seule façon de savoir qu'il y a autre chose à
+          trouver. Sans ça, une surprise trouvée reste un accident. */}
+      {annonce !== null && (
+        <g style={{ pointerEvents: "none" }}>
+          <rect x="8" y="-16" width="84" height="19" rx="9.5"
+                fill="rgba(12,12,20,.92)" stroke="rgba(255,255,255,.18)" strokeWidth="1">
+            <animate attributeName="opacity" values="0;1;1;0" dur="2.6s" fill="freeze" />
+          </rect>
+          <text x="50" y="-2.6" textAnchor="middle" fontSize="10" fontWeight="600"
+                fill="#ffe082"
+                style={{ fontFamily: "ui-sans-serif, system-ui, sans-serif" }}>
+            ★ trouvé · {annonce} sur {TOUTES_LES_TROUVAILLES.length}
+            <animate attributeName="opacity" values="0;1;1;0" dur="2.6s" fill="freeze" />
+          </text>
+        </g>
+      )}
+
       {zzz && (
         <g fill="#8be9ff" fontSize="11" fontWeight="700" opacity=".75"
            style={{ fontFamily: "ui-sans-serif, system-ui, sans-serif" }}>
