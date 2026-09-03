@@ -33,8 +33,17 @@ node outils/telechargements.cjs || echec=1
 echo
 if [ "$echec" = "0" ]; then
   echo "TU PEUX PUBLIER."
-  echo "  · glisse le dossier « dist » sur Netlify"
+  echo "  · git push          (Netlify publie le visuel ET le modèle)"
   echo "  · l'extension est dans Téléchargements/Nexus-extension-Chrome"
+  echo
+  echo "  NE GLISSE PLUS le dossier « dist » sur Netlify : ça ne publie que le"
+  echo "  visuel, le modèle reste sur ce Mac, et le site en ligne redemande une"
+  echo "  clé à chaque visiteur. Voir METTRE-EN-LIGNE.md — c'est deux réglages,"
+  echo "  une seule fois."
+  echo
+  echo "  Après la mise en ligne, vérifie d'un coup d'œil :"
+  echo "      https://nexus-espace.netlify.app/api/health"
+  echo "      → « modeleEnLigne: true » = tout le monde a un modèle, sans rien faire."
 else
   echo "NE PUBLIE PAS ENCORE : regarde les ✗ ci-dessus."
 fi
