@@ -34,6 +34,7 @@ import {
 import { GoogleGenAI } from "@google/genai";
 import { generateNexusResponse } from "../lib/nexusBrain";
 import { demanderALocal, ollamaDisponible, commentInstaller } from "../lib/iaLocale";
+import { modeVisiteur, poserModeVisiteur, raconter, type Etape } from "../lib/modeVisiteur";
 import { MODELES, CLE_CHOIX, dejaInstalle, possible as gpuPossible,
          demanderAuNavigateur } from "../lib/iaNavigateur";
 import { NexusMessageRenderer } from "../os/NexusMessageRenderer";
@@ -153,6 +154,7 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
   // pose sa question, ça répond, point.
   // `null` = on ne sait pas encore.
   const [modeleEnLigne, setModeleEnLigne] = useState<boolean | null>(null);
+  const [visiteurActif, setVisiteurActif] = useState(() => modeVisiteur());
   useEffect(() => {
     let vivant = true;
     fetch("/api/health", { cache: "no-store" })
@@ -324,6 +326,13 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
       let replyText = "";
       // Le moteur qui repondra vraiment. Par defaut : celui qu'on a choisi.
       let moteur: string = selectedModel;
+      // LE CHEMIN RÉELLEMENT EMPRUNTÉ.
+      //
+      // Aharon : « je n'ai pas la certitude que ça fonctionne, je peux toujours
+      // me dire que c'est ma clé ou mon modèle installé ». On note donc chaque
+      // étape et on la lui montre : plus de doute possible sur QUI a répondu.
+      const chemin: Etape[] = [];
+      const visiteur = modeVisiteur();
       let thinkingText = "";
       let codeSnippet: ChatMessage["codeSnippet"] = undefined;
 
@@ -378,17 +387,31 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
           const data = await backendRes.json();
           if (data.reply) {
             replyText = data.reply;
+            moteur = `${data.modelUsed || "modèle du serveur"} · en ligne`;
+            chemin.push({ nom: "Modèle en ligne (hébergé avec le site)", etat: "ok",
+                          detail: data.modelUsed });
             if (thinkingMode) {
               thinkingText = `Répondu par le modèle en ligne, hébergé avec le site (${data.modelUsed || "modèle du serveur"}). Personne n'a eu à configurer quoi que ce soit.`;
             }
           }
+        } else {
+          const d = await backendRes.json().catch(() => null);
+          chemin.push({ nom: "Modèle en ligne (hébergé avec le site)",
+                        etat: d?.code === "sans-modele" ? "absent" : "echec",
+                        detail: d?.error });
         }
       } catch (serverErr) {
+        chemin.push({ nom: "Modèle en ligne (hébergé avec le site)", etat: "absent",
+                      detail: "aucun serveur à cette adresse" });
         console.warn("Serveur distant indisponible, bascule sur la clé client ou le moteur local", serverErr);
       }
 
       // 2. Si pas de réponse serveur, vérifier si l'utilisateur a configuré une clé API client
-      if (!replyText) {
+      if (!replyText && visiteur) {
+        chemin.push({ nom: "Ta clé personnelle", etat: "saute" });
+        chemin.push({ nom: "Modèle installé sur cette machine", etat: "saute" });
+      }
+      if (!replyText && !visiteur) {
         const userApiKey = localStorage.getItem("nexus_gemini_api_key") || (import.meta as any).env?.VITE_GEMINI_API_KEY;
         if (userApiKey) {
           try {
@@ -404,13 +427,20 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
             });
 
             replyText = res.text || "";
-            if (replyText) moteur = selectedModel;
+            if (replyText) {
+              moteur = `${selectedModel} · ta clé`;
+              chemin.push({ nom: "Ta clé personnelle", etat: "ok", detail: selectedModel });
+            }
             if (thinkingMode) {
               thinkingText = `Répondu avec la clé que TU as enregistrée dans ce navigateur (${selectedModel}).`;
             }
           } catch (clientKeyErr) {
+            chemin.push({ nom: "Ta clé personnelle", etat: "echec",
+                          detail: (clientKeyErr as Error).message?.slice(0, 60) });
             console.warn("Clé API client en échec, bascule sur le moteur autonome local", clientKeyErr);
           }
+        } else {
+          chemin.push({ nom: "Ta clé personnelle", etat: "absent" });
         }
       }
 
@@ -418,7 +448,7 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
       //    ce qui est écrit ne quitte la machine. C'est ce qu'Aharon voulait :
       //    « sans clé, ça marche quand même » — pour de vrai, avec un vrai
       //    modèle, pas avec des réponses écrites d'avance.
-      if (!replyText) {
+      if (!replyText && !visiteur) {
         const local = await demanderALocal(
           userText,
           [],
@@ -428,10 +458,14 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
         if (local) {
           replyText = local.reponse;
           moteur = `${local.modele} · sur ta machine`;
+          chemin.push({ nom: "Modèle installé sur cette machine", etat: "ok",
+                        detail: local.modele });
           if (thinkingMode) {
             thinkingText = `Répondu par ${local.modele}, qui tourne sur cette machine : `
               + `aucune clé, aucun réseau, rien n'est sorti d'ici.`;
           }
+        } else {
+          chemin.push({ nom: "Modèle installé sur cette machine", etat: "absent" });
         }
       }
 
@@ -460,12 +494,16 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
           if (nav) {
             replyText = nav.reponse;
             moteur = nav.modele;
+            chemin.push({ nom: "Modèle du navigateur (téléchargé une fois)", etat: "ok",
+                          detail: nav.modele });
             if (thinkingMode) {
               thinkingText = `Répondu par le modèle qui vit dans ce navigateur : `
                 + `aucune clé, aucun serveur, rien n'est sorti d'ici.`;
             }
           }
         } catch (e) {
+          chemin.push({ nom: "Modèle du navigateur (téléchargé une fois)", etat: "echec",
+                        detail: (e as Error).message?.slice(0, 60) });
           console.warn("[Nexus] modèle du navigateur indisponible", e);
         } finally {
           setProgresModele(null);
@@ -518,6 +556,18 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
             code: match[1].trim(),
           };
         }
+      }
+
+      // LE CHEMIN, ÉCRIT NOIR SUR BLANC.
+      //
+      // En mode visiteur on le montre TOUJOURS : c'est le seul moyen pour
+      // Aharon d'être certain que ce n'est ni sa clé ni son modèle installé qui
+      // a répondu. Autrement, il n'apparaît que dans le mode réflexion.
+      const trace = chemin.length ? raconter(chemin) : "";
+      if (trace && (visiteur || thinkingMode)) {
+        thinkingText = (thinkingText ? thinkingText + "\n\n" : "")
+          + (visiteur ? "Mode visiteur — comme quelqu'un qui n'a rien installé :\n" : "Chemin suivi :\n")
+          + trace;
       }
 
       const assistantMsg: ChatMessage = {
@@ -733,6 +783,26 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
                 3.1 Pro
               </button>
             </div>
+
+            {/* LE MODE VISITEUR.
+                Aharon : « sur mon Mac il y a déjà une clé et un modèle de deux
+                gigas, donc je n'ai jamais la certitude que ça marche ». Ce
+                bouton fait comme s'il n'avait rien : ni clé, ni Ollama. Il ne
+                reste que ce qu'un inconnu a vraiment. */}
+            <button
+              onClick={() => { poserModeVisiteur(!visiteurActif); setVisiteurActif(!visiteurActif); }}
+              title={visiteurActif
+                ? "Nexus fait comme si tu n'avais ni clé ni modèle installé. Clique pour revenir à ton usage normal."
+                : "Tester comme quelqu'un qui n'a rien installé : ni clé, ni Ollama."}
+              className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-[11px] font-bold transition-all ${
+                visiteurActif
+                  ? "border-amber-400 bg-amber-500/20 text-amber-300 shadow-[0_0_12px_rgba(251,191,36,0.25)]"
+                  : "border-slate-800 bg-slate-950 text-slate-400 hover:text-white"
+              }`}
+            >
+              <Eye className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Visiteur</span>
+            </button>
 
             {/* Mode Réflexion Toggle */}
             <button

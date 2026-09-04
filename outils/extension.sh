@@ -17,13 +17,20 @@ SRC=public/ext
 # dossier nomme « nexus-extension », noye au milieu du reste et pas range a
 # cote de l'application. Les deux commencent maintenant par « Nexus », donc ils
 # se suivent dans le Finder, et le nom dit a quoi ça sert.
-DEST=~/Downloads/Nexus-extension-Chrome
+# LE NUMERO DE VERSION EST DANS LE NOM DU DOSSIER.
+#
+# Aharon, plusieurs fois : « je trouve rien, le fichier ne change pas, tu te
+# fous de ma tete ». Il avait raison sur le fond : le dossier s'appelait
+# toujours pareil, donc RIEN ne lui disait qu'il avait ete refait. Il ouvrait
+# le Finder, voyait le meme nom, et concluait que je n'avais rien fait.
+# Maintenant le nom change a chaque version : « Nexus-extension-Chrome-2.10.0 ».
+# On voit la difference sans ouvrir quoi que ce soit.
+V=$(grep '"version"' "$SRC/manifest.json" | sed 's/[^0-9.]//g' | sed 's/\.$//')
+DEST=~/Downloads/Nexus-extension-Chrome-$V
 
 for f in manifest.json onglet.html onglet.js maths.js modele-pont.js loupe.html loupe.js loupe-page.js popup.html popup.js fond.js LISEZ-MOI.txt; do
   [ -f "$SRC/$f" ] || { echo "  ✗ $SRC/$f manque"; exit 1; }
 done
-
-V=$(grep '"version"' "$SRC/manifest.json" | sed 's/[^0-9.]//g' | sed 's/\.$//')
 
 # UN SEUL DOSSIER dans les Telechargements, et RIEN d'autre.
 #
@@ -49,11 +56,9 @@ setopt NULL_GLOB 2>/dev/null || true   # un motif sans correspondance n'est pas 
 #
 # On garde LE DOSSIER (c'est ce que Chrome sait charger) et on efface tout le
 # reste qui porte ce nom.
-for vieux in ~/Downloads/nexus-extension ~/Downloads/nexus-extension-*.zip \
-             ~/Downloads/nexus-extension-[0-9]* ~/Downloads/Nexus-extension-Chrome.zip \
-             ~/Downloads/Nexus-extension-Chrome-[0-9]* ~/Downloads/"Nexus-extension-Chrome 2" \
-             ~/Downloads/Nexus-extension*.crx; do
-  [ -e "$vieux" ] && { rm -rf "$vieux"; echo "  · retire : $(basename "$vieux")"; }
+for vieux in ~/Downloads/nexus-extension* ~/Downloads/Nexus-extension*; do
+  [ "$vieux" = "$DEST" ] && continue
+  [ -e "$vieux" ] && { rm -rf "$vieux"; echo "  · SUPPRIME : $(basename "$vieux")"; }
 done
 # On repart d'un dossier NEUF : sans ça, un fichier qu'on a supprime du projet
 # resterait la, et sa date ne bougerait pas.
@@ -86,6 +91,18 @@ python3 -c "import json;json.load(open('$DEST/manifest.json'))"
 printf 'Extension Nexus %s\nPreparee le %s\n\nSi Chrome affiche une autre version, c est que tu as charge un\nancien dossier : supprime-la et recharge celui-ci.\n' \
   "$V" "$(date '+%d %B %Y a %H:%M')" > "$DEST/VERSION $V.txt"
 
-echo "  ✓ extension $V — un seul dossier : « $DEST »"
-echo "    Dans Chrome : chrome://extensions → Supprimer → Charger l'extension"
-echo "    non empaquetee → Telechargements/Nexus-extension-Chrome"
+echo ""
+echo "  ✓ EXTENSION $V"
+echo ""
+echo "     Elle est ICI, dans tes Telechargements :"
+echo "        Nexus-extension-Chrome-$V"
+echo ""
+echo "     Le numero est DANS LE NOM : si tu vois autre chose que $V,"
+echo "     c'est que tu regardes un ancien dossier."
+echo ""
+echo "     Dans Chrome : chrome://extensions → Supprimer l'ancienne Nexus,"
+echo "     puis « Charger l'extension non empaquetee » et choisis"
+echo "     Telechargements/Nexus-extension-Chrome-$V"
+echo ""
+echo "     Pour verifier SANS OUVRIR le Finder : ouvre un nouvel onglet,"
+echo "     le numero est ecrit en bas a gauche, a cote de « Nexus pour macOS »."
