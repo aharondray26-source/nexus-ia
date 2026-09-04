@@ -714,14 +714,20 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
       {/* Main Enlarged Chat Area (flex-1) */}
       <div className="flex-1 flex flex-col min-w-0 bg-slate-950/80 relative">
         {/* Top Header with Gemini 3.6 Flash Models & Thinking Mode Switch */}
-        <div className="nx-barre-outils flex items-center justify-between px-4 py-2.5 border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md gap-3">
-          <div className="flex items-center gap-3">
+        {/* L'EN-TÊTE NE DOIT PAS DÉBORDER.
+            En ajoutant le bouton « Visiteur », la rangée de droite est devenue
+            plus large que la fenêtre : les commandes sortaient du cadre. Le
+            balayage des 46 espaces l'a vu — « HORS : 3.6 Flash 3.1 Pro Visiteur
+            Mode Réflexion ». Le titre cède la place en premier (il peut se
+            tronquer), et les commandes ne rétrécissent jamais. */}
+        <div className="nx-barre-outils flex items-center justify-between gap-3 overflow-hidden border-b border-slate-800/80 bg-slate-900/60 px-4 py-2.5 backdrop-blur-md">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
             {historiqueReplie && <div className="w-6" />}
             <div className="p-2 rounded-xl nx-grad text-white shadow-md shadow-cyan-500/20">
               <Sparkles className="w-4 h-4" />
             </div>
-            <div>
-              <h2 className="text-xs font-extrabold text-white tracking-wide truncate max-w-[180px] sm:max-w-[320px]">
+            <div className="min-w-0">
+              <h2 className="truncate text-xs font-extrabold tracking-wide text-white">
                 {activeSession?.title}
               </h2>
               {/* On annonce le moteur qui a VRAIMENT répondu la dernière fois,
@@ -740,7 +746,7 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
           </div>
 
           {/* Model Selector & Thinking Mode Controls */}
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             {/* Export Chat Session */}
             <button
               onClick={() => {
