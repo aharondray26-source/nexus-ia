@@ -85,6 +85,76 @@ const FOURNISSEURS = [
   },
 ];
 
+// ============================================================================
+//  PROTÉGER LA CLÉ D'AHARON.
+//
+//  Lui : « j'ai pas envie que ma clé API soit open source, ou que tout le monde
+//  l'utilise, parce que si plus tard beaucoup de gens l'utilisent elle va être
+//  épuisée très rapidement. »
+//
+//  Deux choses différentes, et les deux comptent :
+//
+//  1. LA CLÉ N'EST JAMAIS PUBLIÉE. Elle vit dans les réglages de Netlify, elle
+//     est lue ICI, sur le serveur, et elle ne descend JAMAIS dans le
+//     navigateur de personne. Rien de ce fichier n'arrive chez le visiteur :
+//     il n'envoie qu'une question et reçoit qu'une réponse.
+//     `outils/telechargements.cjs` le VÉRIFIE avant chaque publication.
+//
+//  2. PERSONNE NE PEUT LA VIDER. Un plafond par visiteur, et un plafond par
+//     jour pour tout le site. Au-delà, on ne coupe pas Nexus : on répond
+//     « pas de modèle en ligne », et le site bascule tout seul sur le modèle
+//     du navigateur. Aharon : « enlever les choses, c'est diminuer la valeur
+//     de mon site » — donc on ne retire rien, on change de chemin.
+//
+//  Les compteurs vivent dans la mémoire de l'instance. Ce n'est pas un coffre-
+//  fort : une instance neuve repart à zéro. Mais c'est ce qui arrête ce qui
+//  arrive VRAIMENT — une boucle qui s'emballe, un onglet laissé ouvert, une
+//  classe entière qui essaie en même temps. Les réglages ci-dessous se
+//  changent dans Netlify, sans toucher au code.
+// ============================================================================
+const BUDGET_JOUR = Number(process.env.IA_BUDGET_JOUR || 400);
+const PAR_VISITEUR = Number(process.env.IA_PAR_VISITEUR || 15);
+const FENETRE_MIN = Number(process.env.IA_FENETRE_MINUTES || 30);
+
+let jour = "";
+let comptéAujourdhui = 0;
+const parVisiteur = new Map();   // clé → [instants]
+
+/// Rend `null` si la demande passe, ou la raison du refus.
+function trierLaDemande(cle) {
+  const maintenant = Date.now();
+  const aujourdhui = new Date().toISOString().slice(0, 10);
+  if (aujourdhui !== jour) { jour = aujourdhui; comptéAujourdhui = 0; parVisiteur.clear(); }
+
+  if (comptéAujourdhui >= BUDGET_JOUR) return "budget-jour";
+
+  const vus = (parVisiteur.get(cle) || [])
+    .filter((t) => maintenant - t < FENETRE_MIN * 60_000);
+  if (vus.length >= PAR_VISITEUR) return "trop-vite";
+
+  vus.push(maintenant);
+  parVisiteur.set(cle, vus);
+  comptéAujourdhui++;
+
+  // La carte ne doit pas gonfler indéfiniment sur une instance qui vit
+  // longtemps : on jette les visiteurs qu'on n'a plus vus.
+  if (parVisiteur.size > 2000) {
+    for (const [k, v] of parVisiteur) {
+      if (!v.length || maintenant - v[v.length - 1] > FENETRE_MIN * 60_000) parVisiteur.delete(k);
+    }
+  }
+  return null;
+}
+
+/// De qui vient la demande. On ne garde RIEN : l'adresse ne sert qu'à compter,
+/// en mémoire, et disparaît avec l'instance.
+function quiDemande(requete) {
+  const h = requete.headers;
+  return (h.get("x-nf-client-connection-ip")
+       || h.get("x-forwarded-for")?.split(",")[0]?.trim()
+       || "inconnu");
+}
+
 const CONSIGNE_PAR_DEFAUT =
   "Tu es Nexus, l'assistant d'Aharon, lycéen français. Réponds en français, "
   + "avec justesse, en Markdown, sans bavardage. Si c'est un exercice, montre "
@@ -119,6 +189,20 @@ export default async (requete) => {
     .filter((m) => m.content.trim());
 
   const messages = [...historique, { role: "user", content: message }];
+
+  // Le tri AVANT d'appeler quoi que ce soit : un refus ne doit rien coûter.
+  const refus = trierLaDemande(quiDemande(requete));
+  if (refus) {
+    // On ne dit pas « non ». On dit « pas par ici » — et le site prend l'autre
+    // chemin tout seul, sans que le visiteur ait quoi que ce soit à faire.
+    return reponse({
+      error: refus === "budget-jour"
+        ? "le modèle en ligne a atteint sa réserve du jour"
+        : "trop de questions d'affilée depuis cette connexion",
+      code: "sans-modele",
+      reprise: refus === "budget-jour" ? "demain" : `dans moins de ${FENETRE_MIN} minutes`,
+    }, 429);
+  }
 
   const dispo = FOURNISSEURS.filter((f) => f.cle());
   if (!dispo.length) {

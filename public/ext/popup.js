@@ -88,3 +88,14 @@ document.getElementById("loupe")?.addEventListener("click", () => {
     });
   });
 });
+
+// Le vrai raccourci, tel que Chrome l'a réglé : il peut être différent de
+// celui qu'on propose, ou absent si un autre l'occupait déjà. L'annoncer faux
+// serait pire que ne rien annoncer.
+chrome.commands?.getAll?.((liste) => {
+  const c = (liste || []).find((x) => x.name === "loupe");
+  const k = document.getElementById("raccourciLoupe");
+  if (!k) return;
+  if (c && c.shortcut) k.textContent = c.shortcut;
+  else k.remove();
+});

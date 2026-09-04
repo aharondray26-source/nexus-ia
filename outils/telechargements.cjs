@@ -181,6 +181,77 @@ if (!fs.existsSync(path.join(DIST, "_redirects"))) {
   mal("dist/_redirects manque : les renvois ne seront pas publiés");
 } else bon("dist/_redirects est publié");
 
+// ── 5. AUCUNE CLÉ NE DOIT PARTIR AVEC LE SITE ───────────────────────────────
+//
+// Aharon : « j'ai pas envie que ma clé API soit open source ». C'est la chose
+// à ne jamais rater : une clé publiée est une clé perdue, et on ne s'en aperçoit
+// qu'à la facture. On regarde donc, à chaque fois, TOUT ce qui va être publié.
+const MOTIFS = [
+  { nom: "clé Google/Gemini", re: /AIza[0-9A-Za-z_\-]{30,}/g },
+  { nom: "clé OpenAI", re: /\bsk-[A-Za-z0-9_\-]{20,}/g },
+  { nom: "clé Groq", re: /\bgsk_[A-Za-z0-9]{20,}/g },
+  { nom: "clé Anthropic", re: /\bsk-ant-[A-Za-z0-9_\-]{20,}/g },
+  { nom: "jeton GitHub", re: /\bgh[pousr]_[A-Za-z0-9]{30,}/g },
+  { nom: "clé de service Google", re: /"private_key"\s*:\s*"-----BEGIN/g },
+];
+function fouiller(dossier, trouvés, base) {
+  for (const n of fs.readdirSync(dossier)) {
+    if (n === "node_modules" || n === ".git") continue;
+    const p = path.join(dossier, n);
+    const st = fs.statSync(p);
+    if (st.isDirectory()) { fouiller(p, trouvés, base); continue; }
+    // Les images et les archives ne contiennent pas de clé lisible, et
+    // « modele.js » pèse six mégaoctets de bibliothèque : on ne le relit pas.
+    if (/\.(png|jpg|jpeg|webp|ico|zip|woff2?|ttf|svg|mp4)$/i.test(n)) continue;
+    if (st.size > 3_000_000) continue;
+    const t = fs.readFileSync(p, "utf8");
+    for (const m of MOTIFS) {
+      const trouvé = t.match(m.re);
+      if (!trouvé) continue;
+      // UNE CLÉ FIREBASE N'EST PAS UN SECRET.
+      //
+      // Elle identifie le projet, elle n'ouvre rien : Google la publie
+      // volontairement dans le code des pages. Confondre les deux, c'est
+      // crier au loup à chaque vérification — et le jour où une VRAIE clé
+      // fuit, on ne regarde plus.
+      // Elle mérite quand même une consigne : voir plus bas.
+      const firebase = /firebase|messagingSenderId|authDomain/i.test(t);
+      trouvés.push({ quoi: `${m.nom} dans ${path.relative(base, p)}`,
+                     grave: !firebase, firebase });
+    }
+  }
+}
+const fuites = [];
+fouiller(DIST, fuites, RACINE);
+// Et dans le code envoyé sur GitHub, pas seulement dans le site construit.
+for (const d of ["src", "netlify", "outils", "public"]) {
+  const dd = path.join(RACINE, d);
+  if (fs.existsSync(dd)) fouiller(dd, fuites, RACINE);
+}
+for (const f of [".env", ".env.local", ".env.production"]) {
+  const p = path.join(RACINE, f);
+  if (!fs.existsSync(p)) continue;
+  const ignore = fs.existsSync(path.join(RACINE, ".gitignore"))
+    && fs.readFileSync(path.join(RACINE, ".gitignore"), "utf8").includes(".env");
+  if (!ignore) mal(`${f} existe et n'est PAS ignoré par git : il partirait sur GitHub`);
+}
+// On ne montre JAMAIS la clé elle-même, même dans un message d'erreur.
+const graves = [...new Set(fuites.filter((f) => f.grave).map((f) => f.quoi))];
+const firebases = [...new Set(fuites.filter((f) => f.firebase).map((f) => f.quoi))];
+if (graves.length) {
+  for (const f of graves) mal("UNE CLÉ EST DANS LE CODE PUBLIÉ : " + f);
+} else {
+  bon("aucune clé secrète dans ce qui va être publié");
+}
+if (firebases.length) {
+  console.log("  · une clé Firebase est publiée (c'est NORMAL : elle identifie");
+  console.log("    ton projet, elle n'ouvre rien). Une seule précaution, une fois :");
+  console.log("    console.cloud.google.com → Identifiants → cette clé →");
+  console.log("    « Restrictions d'application » : sites web, nexus-espace.netlify.app");
+  console.log("    « Restrictions d'API » : coche Firebase, PAS Generative Language.");
+  console.log("    Et n'utilise JAMAIS cette clé-là comme GEMINI_API_KEY.");
+}
+
 console.log("-".repeat(64));
 if (soucis.length === 0) {
   console.log("Tous les téléchargements mènent à la dernière version.");

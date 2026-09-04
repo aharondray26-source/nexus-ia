@@ -109,6 +109,24 @@ textarea::placeholder{color:#6f6f7a}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
 }
+/* LA LOUPE : le geste principal de l'extension, donc l'element principal
+   de cette fenetre. */
+.loupe{display:flex;align-items:center;gap:11px;width:100%;text-align:left;
+  padding:11px 12px;border-radius:14px;cursor:pointer;
+  border:1px solid rgba(139,139,245,.42);
+  background:linear-gradient(135deg,rgba(99,102,241,.30),rgba(56,189,248,.16));
+  transition:transform var(--t-petit,.16s) var(--ressort,cubic-bezier(.34,1.4,.5,1)),
+             border-color .16s ease, background .16s ease}
+.loupe:hover{border-color:rgba(165,166,255,.85);
+  background:linear-gradient(135deg,rgba(99,102,241,.44),rgba(56,189,248,.24))}
+.loupe:active{transform:scale(.975)}
+.loupe .ic{font-size:19px;line-height:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
+.loupe .txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.loupe .txt b{font-size:13px;font-weight:650;letter-spacing:-.01em}
+.loupe .txt i{font-style:normal;font-size:11px;line-height:1.35;opacity:.72}
+.loupe kbd{flex:0 0 auto;font:600 10.5px/1 ui-monospace,SFMono-Regular,monospace;
+  padding:4px 6px;border-radius:6px;opacity:.7;
+  border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.25)}
 </style></head><body>
 <div id="carte">
   <div id="lueur"><i></i><i></i></div>
@@ -116,6 +134,19 @@ textarea::placeholder{color:#6f6f7a}
     <div class="haut"><img src="icones/48.png" alt="">
       <b>Nexus</b><span id="etat"></span></div>
     <div class="corps">
+      <!-- LA LOUPE, EN PREMIER ET EN GRAND.
+           Aharon : « le mode Google Lens, je le vois pas ». Normal : c'était un
+           bouton gris, en bas, sous « Enregistrer ». Ce qu'on veut faire
+           découvrir doit etre la premiere chose qu'on voit, pas la derniere. -->
+      <button id="loupe" class="loupe">
+        <span class="ic">🔍</span>
+        <span class="txt">
+          <b>Loupe Nexus</b>
+          <i>Glisse sur un bout de page : je l'explique, le résous, le traduis</i>
+        </span>
+        <kbd id="raccourciLoupe">⌘⇧L</kbd>
+      </button>
+
       <div class="onglets">
         <button id="tNote" class="on">Note</button>
         <button id="tTache">Tâche</button>
@@ -124,10 +155,6 @@ textarea::placeholder{color:#6f6f7a}
       <div class="r">
         <button class="p" id="ok">Enregistrer</button>
         <button id="page">Cette page</button>
-      </div>
-      <!-- La Loupe : glisser sur un bout de page pour le faire expliquer. -->
-      <div class="r">
-        <button id="loupe" style="flex:1">🔍 Loupe Nexus — expliquer un bout de page</button>
       </div>
       <div class="esp">
         <button data-app="notes">Notes</button>

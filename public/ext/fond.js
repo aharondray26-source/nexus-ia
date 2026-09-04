@@ -114,10 +114,20 @@ async function rogner(dataURL, z) {
     const toile = new OffscreenCanvas(w, h);
     toile.getContext("2d").drawImage(flou, x, y, w, h, 0, 0, w, h);
     const b = await toile.convertToBlob({ type: "image/png" });
-    return await new Promise((r) => {
-      const l = new FileReader();
-      l.onloadend = () => r(l.result);
-      l.readAsDataURL(b);
-    });
+    // PAS DE `FileReader` ICI.
+    //
+    // Il n'existe pas dans un service worker de Chrome — il n'est exposé qu'aux
+    // pages. La photo de la Loupe échouait donc en silence : le panneau
+    // s'ouvrait, mais SANS l'image du bout d'écran choisi, et rien ne le
+    // disait. Je ne l'ai vu qu'en relisant.
+    // On fabrique donc l'adresse nous-mêmes, à partir des octets.
+    const octets = new Uint8Array(await b.arrayBuffer());
+    let brut = "";
+    // Par tranches : `String.fromCharCode` sur un mégaoctet d'un coup fait
+    // déborder la pile.
+    for (let i = 0; i < octets.length; i += 0x8000) {
+      brut += String.fromCharCode.apply(null, octets.subarray(i, i + 0x8000));
+    }
+    return "data:image/png;base64," + btoa(brut);
   } catch (e) { return null; }
 }
