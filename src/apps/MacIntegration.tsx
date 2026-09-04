@@ -1,7 +1,8 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Image as ImageIcon, Download, Monitor, Puzzle, Check, Info } from "lucide-react";
 import { useSettings, resolveWallpaper } from "../os/useSettings";
 import { creerZip, fichierDistant, enOctets } from "../lib/zip";
+import { FONDS, fondParId, prechargerCarte } from "../lib/fondsEcran";
 
 const SITE = "https://nexus-espace.netlify.app/";
 
@@ -20,6 +21,28 @@ const TAILLES = [
   { nom: "iPad Pro", w: 2732, h: 2048 },
 ];
 
+/// Une vignette de fond d'écran. Dessinée pour de vrai, en petit : une pastille
+/// de couleur ne dirait rien de ce qu'on va obtenir.
+function Vignette({ fond, accent }: { fond: string; accent: string }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    let vivant = true;
+    // La carte du monde doit être là AVANT de dessiner, sinon le fond
+    // « Le monde » sort sans son monde.
+    prechargerCarte().then(() => {
+      const cv = ref.current;
+      if (!vivant || !cv) return;
+      const c = cv.getContext("2d");
+      if (!c) return;
+      // Deux fois la taille affichée : sinon la vignette est floue sur un Retina.
+      cv.width = 320; cv.height = 200;
+      fondParId(fond).dessiner(c, 320, 200, { accent });
+    });
+    return () => { vivant = false; };
+  }, [fond, accent]);
+  return <canvas ref={ref} className="block aspect-[16/10] w-full" />;
+}
+
 export default function MacIntegration() {
   const accent = useSettings((s) => s.accent);
   const wallpaper = useSettings((s) => s.wallpaper);
@@ -27,74 +50,48 @@ export default function MacIntegration() {
   const userName = useSettings((s) => s.userName);
   const [taille, setTaille] = useState(TAILLES[0]);
   const [avecWidgets, setAvecWidgets] = useState(true);
+  const [fondChoisi, setFondChoisi] = useState(FONDS[0].id);
   const [fait, setFait] = useState<string | null>(null);
   const apercu = useRef<HTMLCanvasElement>(null);
 
-  // Dessine le fond d'ecran a la taille demandee.
+  // Dessine le fond choisi, a la taille demandee.
+  //
+  // Aharon : « macOS propose déjà des fonds d'écran magnifiques ; si on en
+  // propose un largement moins bien, ça ne sert à rien ». Celui d'avant était
+  // un dégradé + une GRILLE + le mot « NEXUS » écrit en gros. Il y a
+  // maintenant huit fonds, chacun avec une idée, dessinés à la résolution
+  // exacte de l'écran — donc nets sur un Retina.
   function dessiner(cv: HTMLCanvasElement, W: number, H: number) {
     const c = cv.getContext("2d");
     if (!c) return;
     cv.width = W; cv.height = H;
-
-    // Fond profond
-    c.fillStyle = "#07070b";
-    c.fillRect(0, 0, W, H);
-
-    // Nappes de couleur (la meme aurore que dans Nexus)
-    const nappe = (x: number, y: number, r: number, col: string, a: number) => {
-      const g = c.createRadialGradient(x, y, 0, x, y, r);
-      g.addColorStop(0, col); g.addColorStop(1, "rgba(0,0,0,0)");
-      c.globalAlpha = a; c.fillStyle = g; c.fillRect(0, 0, W, H); c.globalAlpha = 1;
-    };
-    nappe(W * 0.18, H * 0.12, Math.max(W, H) * 0.55, accent, 0.36);
-    nappe(W * 0.86, H * 0.88, Math.max(W, H) * 0.5, accent, 0.22);
-    nappe(W * 0.55, H * 0.5, Math.max(W, H) * 0.4, "#1e293b", 0.3);
-
-    // Grille discrete
-    c.strokeStyle = "rgba(255,255,255,0.035)";
-    c.lineWidth = Math.max(1, W / 2400);
-    const pas = Math.round(W / 34);
-    for (let x = 0; x < W; x += pas) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, H); c.stroke(); }
-    for (let y = 0; y < H; y += pas) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
-
-    // Zones libres a gauche et a droite : la ou macOS pose ses widgets,
-    // le fond reste calme pour qu'ils restent lisibles.
-    if (avecWidgets) {
-      const zone = (x: number) => {
-        c.fillStyle = "rgba(0,0,0,0.16)";
-        c.fillRect(x, H * 0.1, W * 0.19, H * 0.8);
-      };
-      zone(W * 0.035); zone(W * 0.775);
-    }
-
-    // Signature Nexus, discrete, en bas au centre
-    c.textAlign = "center";
-    c.fillStyle = "rgba(255,255,255,0.30)";
-    c.font = `300 ${Math.round(H / 30)}px -apple-system, BlinkMacSystemFont, sans-serif`;
-    c.fillText("NEXUS", W / 2, H * 0.9);
-    c.fillStyle = "rgba(255,255,255,0.16)";
-    c.font = `400 ${Math.round(H / 68)}px -apple-system, sans-serif`;
-    c.letterSpacing = "4px";
-    c.fillText(userName ? `L'espace de ${userName}` : "Ton espace de travail", W / 2, H * 0.935);
+    c.clearRect(0, 0, W, H);
+    fondParId(fondChoisi).dessiner(c, W, H, { accent, zonesCalmes: avecWidgets });
   }
 
-  function telecharger() {
+  // L'extension du navigateur, en UN seul fichier .zip.
+  // Refondue : vrai style Nexus, menu contextuel, raccourcis vers les espaces,
+  // et tout ce qu'elle enregistre passe par ton compte — donc arrive partout.
+  /// Enregistrer l'image, à la taille exacte de l'écran choisi.
+  async function telecharger() {
+    setFait("Dessin en cours…");
+    await prechargerCarte();
     const cv = document.createElement("canvas");
     dessiner(cv, taille.w, taille.h);
     cv.toBlob((b) => {
       if (!b) return;
       const a = document.createElement("a");
       a.href = URL.createObjectURL(b);
-      a.download = `nexus-fond-${taille.w}x${taille.h}.png`;
+      // Le nom porte le fond ET la taille : sinon on se retrouve avec trois
+      // fichiers indistinguables dans les Téléchargements.
+      a.download = `Nexus-${fondParId(fondChoisi).nom.replace(/\s/g, "-")}`
+        + `-${taille.w}x${taille.h}.png`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 3000);
-      setFait("Image enregistrée dans tes Téléchargements.");
+      setFait(`« ${fondParId(fondChoisi).nom} » enregistré dans tes Téléchargements.`);
     }, "image/png");
   }
 
-  // L'extension du navigateur, en UN seul fichier .zip.
-  // Refondue : vrai style Nexus, menu contextuel, raccourcis vers les espaces,
-  // et tout ce qu'elle enregistre passe par ton compte — donc arrive partout.
   async function telechargerExtension() {
     setFait("Préparation de l'extension…");
     try {
@@ -158,7 +155,8 @@ export default function MacIntegration() {
     }
   }
 
-  function voirApercu() {
+  async function voirApercu() {
+    await prechargerCarte();
     if (apercu.current) dessiner(apercu.current, 640, 400);
   }
 
@@ -222,9 +220,33 @@ export default function MacIntegration() {
           Fond d'écran en image
         </div>
         <p className="text-xs leading-relaxed text-nexus-muted">
-          Si tu préfères un fond fixe, sans application : une image aux dimensions
-          exactes de ton écran, dans ta couleur d'accent.
+          Huit fonds, dessinés à la résolution <b>exacte</b> de ton écran — donc
+          nets sur un Retina, ce qu'une image téléchargée n'est presque jamais.
+          Chacun prend ta couleur d'accent.
         </p>
+
+        {/* LA GALERIE. On dessine une vraie vignette de chaque fond : choisir
+            sur un nom, c'est choisir à l'aveugle. */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {FONDS.map((f) => (
+            <button
+              key={f.id}
+              onClick={() => setFondChoisi(f.id)}
+              title={f.note}
+              className={`group relative overflow-hidden rounded-xl border text-left transition-all duration-[var(--t-moyen)] [transition-timing-function:var(--ressort)] active:scale-95 ${
+                fondChoisi === f.id
+                  ? "border-cyan-400 shadow-lg shadow-cyan-500/20"
+                  : "border-nexus-border hover:border-nexus-muted"
+              }`}
+            >
+              <Vignette fond={f.id} accent={accent} />
+              <span className="block px-2 py-1.5 text-[11px] font-medium text-nexus-text">
+                {f.nom}
+                {fondChoisi === f.id && <Check size={11} className="ml-1 inline text-cyan-400" />}
+              </span>
+            </button>
+          ))}
+        </div>
         <div className="flex flex-wrap gap-1.5">
           {TAILLES.map((t) => (
             <button key={t.nom} onClick={() => setTaille(t)}
