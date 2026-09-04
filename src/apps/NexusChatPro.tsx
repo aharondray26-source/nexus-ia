@@ -29,7 +29,8 @@ import {
   Sliders,
   PanelLeftClose,
   PanelRightClose,
-  ChevronDown
+  ChevronDown,
+  CalendarPlus,
 } from "lucide-react";
 import { GoogleGenAI } from "@google/genai";
 import { generateNexusResponse } from "../lib/nexusBrain";
@@ -39,6 +40,8 @@ import { MODELES, CLE_CHOIX, dejaInstalle, possible as gpuPossible,
          demanderAuNavigateur } from "../lib/iaNavigateur";
 import { NexusMessageRenderer } from "../os/NexusMessageRenderer";
 import { addNexusTask } from "../lib/persist";
+import { ajouterEvenement, comprendreQuand, comprendreQuoi, enFrancais,
+         telechargerIcs, type Evenement } from "../lib/agenda";
 
 interface ChatMessage {
   id: string;
@@ -155,6 +158,10 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
   // `null` = on ne sait pas encore.
   const [modeleEnLigne, setModeleEnLigne] = useState<boolean | null>(null);
   const [visiteurActif, setVisiteurActif] = useState(() => modeVisiteur());
+  /// Le dernier évènement que Nexus vient de poser. Il propose alors de le
+  /// mettre AUSSI dans le Calendrier de macOS — c'est la question qu'Aharon
+  /// voulait qu'elle pose : « sur mon site, ou sur le truc de macOS ? ».
+  const [evenementPropose, setEvenementPropose] = useState<Evenement | null>(null);
   useEffect(() => {
     let vivant = true;
     fetch("/api/health", { cache: "no-store" })
@@ -337,15 +344,53 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
       let codeSnippet: ChatMessage["codeSnippet"] = undefined;
 
       const lowerText = userText.toLowerCase();
-      const isReminder =
+
+      // ── UNE DEMANDE D'AGENDA ────────────────────────────────────────────
+      //
+      // Aharon : « il faut que la mascotte puisse ajouter un évènement dans
+      // mon agenda quand je lui demande, et qu'elle me demande si c'est sur
+      // mon site ou sur le truc de macOS. Il faut qu'elle soit capable de le
+      // faire. »
+      //
+      // Elle le fait ELLE-MÊME, sans passer par un modèle : une date se lit,
+      // elle ne se devine pas. Un modèle qui se trompe d'un jour sur un
+      // contrôle de maths, c'est pire que rien.
+      const parleAgenda = /\b(agenda|calendrier|rendez[- ]?vous|rdv)\b/i.test(userText)
+        && /\b(ajoute|ajouter|mets|met|note|noter|cr[ée]e|cr[ée]er|inscris|rajoute)\b/i.test(userText);
+      if (parleAgenda) {
+        const quand = comprendreQuand(userText);
+        const titre = comprendreQuoi(userText);
+        if (!quand.jour) {
+          // Sans date, on ne pose PAS un rendez-vous au hasard : on demande.
+          replyText = `Je veux bien ajouter **« ${titre} »** — mais tu ne m'as pas dit `
+            + `quand.\n\nRedis-le avec un jour : « demain », « vendredi », `
+            + `« le 12 septembre », « 12/09 » — et une heure si tu en as une.`;
+          moteur = "Nexus · agenda";
+        } else {
+          const ev = ajouterEvenement({
+            titre, jour: quand.jour, heure: quand.heure, source: "nexus",
+          });
+          setEvenementPropose(ev);
+          replyText = `📅 **C'est dans ton agenda Nexus.**\n\n`
+            + `- **Quoi :** ${titre}\n`
+            + `- **Quand :** ${enFrancais(ev)}\n\n`
+            + `Tu le retrouves dans l'espace **Agenda**.\n\n`
+            + `*Tu le veux aussi dans le Calendrier de macOS ? Le bouton juste en dessous.*`;
+          moteur = "Nexus · agenda";
+        }
+      }
+
+      const isReminder = !parleAgenda && (
         lowerText.includes("rappel") ||
         lowerText.includes("rappelle") ||
         lowerText.includes("ajoute une tâche") ||
         lowerText.includes("ajoute une tache") ||
         lowerText.includes("ajoute la tâche") ||
-        lowerText.includes("n'oublie pas de");
+        lowerText.includes("n'oublie pas de"));
 
-      if (isReminder) {
+      if (parleAgenda) {
+        // déjà traité au-dessus : on ne repasse pas par un modèle.
+      } else if (isReminder) {
         let timeText = "";
         const timeMatch = userText.match(/(?:à|pour|vers|demain à)\s+(\d{1,2}(?:h|:\d{2}|h\d{2})|\d{1,2}\s*heures?)/i);
         if (timeMatch) timeText = timeMatch[0].trim();
@@ -989,6 +1034,34 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
             action : c'est une phrase. On la garde discrète, on ne la montre
             que s'il n'y a pas déjà un modèle en ligne, et elle disparaît dès
             que le modèle est là. */}
+        {/* « Sur mon site, ou sur le truc de macOS ? » — la question qu'Aharon
+            voulait que la mascotte pose. Elle a déjà fait le plus utile (c'est
+            dans Nexus), et elle propose l'autre en un clic. */}
+        {evenementPropose && (
+          <div className="mx-3 mb-2 flex flex-wrap items-center gap-2 rounded-xl border
+                          border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-[11.5px]">
+            <CalendarPlus className="h-3.5 w-3.5 shrink-0 text-emerald-300" />
+            <span className="text-slate-300">
+              « {evenementPropose.titre} » — {enFrancais(evenementPropose)}
+            </span>
+            <span className="ml-auto flex items-center gap-1.5">
+              <button
+                onClick={() => { telechargerIcs(evenementPropose); setEvenementPropose(null); }}
+                className="rounded-lg bg-emerald-500/20 px-2 py-1 text-[10.5px] font-medium
+                           text-emerald-200 transition-colors hover:bg-emerald-500/30"
+              >
+                Aussi dans le Calendrier de macOS
+              </button>
+              <button
+                onClick={() => setEvenementPropose(null)}
+                className="rounded-lg px-2 py-1 text-[10.5px] text-slate-500 hover:text-slate-300"
+              >
+                Non merci
+              </button>
+            </span>
+          </div>
+        )}
+
         {!installe && gpuPossible() && modeleEnLigne === false && !progresModele && (
           <div className="mx-3 mb-2 flex flex-wrap items-center gap-x-2 gap-y-1
                           rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2
