@@ -97,8 +97,23 @@ const FONDS = {
   encre:    "radial-gradient(120% 90% at 20% 10%,#1b2340 0%,#0a0d1a 55%,#05060c 100%)",
   neige:    "linear-gradient(160deg,#eceef4 0%,#dfe3ee 50%,#c9d1e4 100%)",
   papier:   "linear-gradient(160deg,#f7f4ee 0%,#efe9dd 55%,#e2d9c7 100%)",
+
+  // Aharon : « j'aimerais que l'extension ait plus de thèmes, et que tout soit
+  // déjà meilleur ». Ceux-ci ne sont pas des variantes de couleur : chacun a
+  // une lumière qui vient d'un endroit précis, ce qui leur donne un relief que
+  // trois arrêts alignés n'ont jamais.
+  boreale:  "radial-gradient(130% 100% at 15% 0%,#0a2f3a 0%,#0b1a2e 40%,#080b1a 72%,#04060e 100%)",
+  nebuleuse:"radial-gradient(120% 95% at 75% 15%,#3b1d63 0%,#1e1140 38%,#0d0a1f 72%,#050410 100%)",
+  minuit:   "radial-gradient(140% 110% at 50% 120%,#12224a 0%,#0a1128 45%,#04060f 100%)",
+  corail:   "linear-gradient(155deg,#2a0f1c 0%,#5c1a33 38%,#a83b4a 72%,#e07a5f 100%)",
+  menthe:   "radial-gradient(120% 100% at 20% 100%,#0e3b34 0%,#0a2420 45%,#050d0c 100%)",
+  orage:    "linear-gradient(165deg,#0f1318 0%,#1c242f 38%,#2b3947 70%,#3d4d5c 100%)",
+  cerisier: "linear-gradient(150deg,#1d0f1c 0%,#3d1730 42%,#6e2b4c 76%,#b06079 100%)",
+  abysse:   "radial-gradient(135% 105% at 50% 0%,#062730 0%,#04161d 45%,#020a0e 100%)",
+  soleil:   "linear-gradient(160deg,#1b1206 0%,#4a2a0a 38%,#8f5511 72%,#d68c2b 100%)",
+  argent:   "linear-gradient(160deg,#f4f5f8 0%,#e6e9f0 45%,#d2d8e4 100%)",
 };
-const FONDS_CLAIRS = ["neige", "papier"];
+const FONDS_CLAIRS = ["neige", "papier", "argent"];
 
 const THEMES = {
   indigo:   { acc: "#6366f1", l1: "#4f46e5", l2: "#7c3aed", l3: "#0ea5e9" },
@@ -108,6 +123,14 @@ const THEMES = {
   ciel:     { acc: "#0ea5e9", l1: "#0284c7", l2: "#06b6d4", l3: "#6366f1" },
   violet:   { acc: "#a855f7", l1: "#7e22ce", l2: "#a855f7", l3: "#ec4899" },
   graphite: { acc: "#64748b", l1: "#334155", l2: "#475569", l3: "#0f172a" },
+  // Six teintes de plus. Chacune a ses trois lueurs propres : reprendre les
+  // memes ferait six fois la meme ambiance sous un autre nom.
+  corail:   { acc: "#fb7185", l1: "#e11d48", l2: "#f97316", l3: "#a855f7" },
+  menthe:   { acc: "#2dd4bf", l1: "#0d9488", l2: "#22d3ee", l3: "#4ade80" },
+  or:       { acc: "#eab308", l1: "#a16207", l2: "#f59e0b", l3: "#fb7185" },
+  azur:     { acc: "#3b82f6", l1: "#1d4ed8", l2: "#38bdf8", l3: "#818cf8" },
+  magenta:  { acc: "#d946ef", l1: "#a21caf", l2: "#ec4899", l3: "#6366f1" },
+  citron:   { acc: "#a3e635", l1: "#65a30d", l2: "#facc15", l3: "#22d3ee" },
 };
 
 const MOTEURS = {
