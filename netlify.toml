@@ -48,3 +48,21 @@
   to = "/.netlify/functions/sante"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/api/gemini/deals"
+  to = "/.netlify/functions/json"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/gemini/recipes"
+  to = "/.netlify/functions/json"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/gemini/document"
+  to = "/.netlify/functions/json"
+  status = 200
+  force = true

@@ -20,6 +20,8 @@ const PORT = Number(process.argv[2] || 4199);
 // Les mêmes renvois que « public/_redirects », dans le même ordre.
 const ROUTES = {
   "/api/gemini/chat": "ia", "/api/ai/chat": "ia", "/api/ai/generate": "ia",
+  "/api/gemini/deals": "json", "/api/gemini/recipes": "json",
+  "/api/gemini/document": "json",
   "/api/health": "sante",
 };
 const TYPES = {
@@ -32,7 +34,7 @@ const TYPES = {
 };
 
 const fonctions = {};
-for (const nom of ["ia", "sante"]) {
+for (const nom of ["ia", "sante", "json"]) {
   fonctions[nom] = (await import(
     path.join(ICI, "..", "netlify", "functions", nom + ".mjs"))).default;
 }

@@ -6,5 +6,8 @@
 /api/gemini/chat   /.netlify/functions/ia      200
 /api/ai/chat       /.netlify/functions/ia      200
 /api/ai/generate   /.netlify/functions/ia      200
+/api/gemini/deals    /.netlify/functions/json    200
+/api/gemini/recipes  /.netlify/functions/json    200
+/api/gemini/document /.netlify/functions/json    200
 /api/health        /.netlify/functions/sante   200
 /*                 /index.html                 200

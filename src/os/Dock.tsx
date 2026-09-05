@@ -75,8 +75,23 @@ export default function Dock({ horizontal = false, pos = "left" }: { horizontal?
           {APPS.filter((a) => !a.hidden).map((app) => {
             const isOpen = windows.some((w) => w.appId === app.id);
             return (
+              <div key={app.id} className={isHovered ? "w-full" : "flex flex-col items-center"}>
+              {/* LE TRAIT ENTRE DEUX GROUPES.
+                  Quarante-six icônes à la file, on ne trouve plus rien —
+                  Aharon : « NeoSchool n'est pas assez visible ». Il l'était,
+                  noyé au milieu. Barre dépliée, le groupe se nomme ; repliée,
+                  un simple trait suffit à séparer l'œil. */}
+              {app.groupe && (
+                isHovered ? (
+                  <div className="mb-1 mt-3 px-4 text-[10px] font-semibold uppercase
+                                  tracking-[0.08em] text-nexus-muted">
+                    {app.groupe}
+                  </div>
+                ) : (
+                  <div className="my-2 h-px w-6 bg-nexus-border" />
+                )
+              )}
               <button
-                key={app.id}
                 onClick={() => openApp(app.id, { width: app.width, height: app.height })}
                 title={isHovered ? "" : app.title}
                 className={`group/btn relative flex items-center rounded-2xl border transition-all duration-[220ms] [transition-timing-function:var(--appui)] active:scale-95 ${
@@ -129,6 +144,7 @@ export default function Dock({ horizontal = false, pos = "left" }: { horizontal?
                   </div>
                 )}
               </button>
+              </div>
             );
           })}
         </div>

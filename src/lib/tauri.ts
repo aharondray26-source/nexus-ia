@@ -21,5 +21,18 @@ export async function openAiWindow(label: string, url: string): Promise<void> {
     await invoke("open_ai_window", { label, url });
     return;
   }
-  window.open(url, "_blank", "noopener,noreferrer");
+  // `window.open` peut être REFUSÉ sans rien dire : bloqueur de fenêtres,
+  // navigateur strict, vue web intégrée. Le bouton a alors l'air cassé — c'est
+  // exactement ce qu'Aharon décrivait sur Mistral.
+  // Un vrai lien cliqué est traité comme une navigation demandée par la
+  // personne, et passe là où `window.open` échoue.
+  const fenetre = window.open(url, "_blank", "noopener,noreferrer");
+  if (fenetre) return;
+  const a = document.createElement("a");
+  a.href = url;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 }

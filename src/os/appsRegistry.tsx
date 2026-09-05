@@ -53,6 +53,10 @@ export interface AppDefinition {
   keywords: string;
   hue: string;
   hidden?: boolean;
+  /// Le groupe où l'espace se range. La barre latérale affiche un trait entre
+  /// deux groupes : avec quarante-six icônes à la file, on ne trouve plus rien
+  /// — Aharon : « NeoSchool n'est pas assez visible ». Il l'était, noyé.
+  groupe?: string;
   Component: ComponentType;
   width: number;
   height: number;
@@ -62,7 +66,7 @@ export interface AppDefinition {
 // il suffit de creer son composant et de l'inscrire ici.
 export const APPS: AppDefinition[] = [
   // --- Groupe 1 : Travail & Productivité Principale ---
-  { id: "nexus-chat", title: "Nexus IA", icon: "ai", hue: "#3abef8", keywords: "nexus chat pro ia studio intelligence assistant conversation historique multimédia", Component: NexusChatPro, width: 920, height: 640 },
+  { groupe: "Travailler", id: "nexus-chat", title: "Nexus IA", icon: "ai", hue: "#3abef8", keywords: "nexus chat pro ia studio intelligence assistant conversation historique multimédia", Component: NexusChatPro, width: 920, height: 640 },
   { id: "cloud", title: "Cloud", icon: "cloud", hue: "#3fbbf3", keywords: "cloud drive google compte sauvegarde synchro stockage documents", Component: NexusCloud, width: 780, height: 580 },
   { id: "messages", title: "Messages", icon: "message", hue: "#39ddf9", keywords: "messagerie tchat chat instantane message contacts discuter equipe", Component: NexusMessages, width: 820, height: 580 },
   { id: "docs", title: "Documents", icon: "docs", hue: "#3c83f6", keywords: "google docs word document texte traitement ecrire page rapport a4", Component: Docs, width: 780, height: 580 },
@@ -80,7 +84,7 @@ export const APPS: AppDefinition[] = [
   { id: "terminal", title: "Terminal", icon: "terminal", hue: "#50e286", keywords: "terminal console commande bash dev hacker shell", Component: Terminal, width: 620, height: 440 },
 
   // --- Groupe 2 : Médias Impressionnants, Actualités & Culture ---
-  { id: "video", title: "Montage vidéo", icon: "film", hue: "#fb6a7f", keywords: "video montage editeur capcut clip export", Component: VideoEditor, width: 720, height: 620 },
+  { groupe: "Apprendre & découvrir", id: "video", title: "Montage vidéo", icon: "film", hue: "#fb6a7f", keywords: "video montage editeur capcut clip export", Component: VideoEditor, width: 720, height: 620 },
   { id: "spectre", title: "Boussole politique", icon: "spectrum", hue: "#ec4899", keywords: "gauche droite politique boussole parti ideologie opinion spectre", Component: SpectrePolitique, width: 620, height: 520 },
   { id: "news", title: "Actualités", icon: "news", hue: "#3c83f6", keywords: "actu infos foot football scores direct ligue des champions journal", Component: News, width: 680, height: 520 },
   { id: "soundscapes", title: "Ambiances", icon: "soundscapes", hue: "#39ddf9", keywords: "bruit blanc pluie vagues ambiance musique concentration relaxation audio", Component: Soundscapes, width: 540, height: 440 },
@@ -93,7 +97,7 @@ export const APPS: AppDefinition[] = [
   { id: "deals", title: "Bons plans", icon: "deal", hue: "#a855f7", keywords: "bon plan produit prix promo reduction comparateur achat shopping", Component: Deals, width: 680, height: 520 },
 
   // --- Groupe 3 : Outils Créatifs & Utilitaires ---
-  { id: "maps", title: "Cartes", icon: "maps", hue: "#50e286", keywords: "carte maps geographie ville lieu itineraire gps openstreetmap", Component: Maps, width: 840, height: 600 },
+  { groupe: "Outils", id: "maps", title: "Cartes", icon: "maps", hue: "#50e286", keywords: "carte maps geographie ville lieu itineraire gps openstreetmap", Component: Maps, width: 840, height: 600 },
   { id: "compass", title: "Boussole", icon: "compass", hue: "#39ddf9", keywords: "boussole cap orientation nord gps inclinaison altitude", Component: Compass, width: 440, height: 480 },
   { id: "whiteboard", title: "Tableau blanc", icon: "whiteboard", hue: "#fbd337", keywords: "dessin schema croquis excalidraw", Component: Whiteboard, width: 720, height: 520 },
   { id: "image", title: "Image", icon: "image", hue: "#b26afb", keywords: "photo retouche montage photopea", Component: ImageEditor, width: 760, height: 540 },
@@ -106,7 +110,7 @@ export const APPS: AppDefinition[] = [
   { id: "today", title: "Aujourd'hui", icon: "today", hue: "#fbc437", keywords: "accueil journee intention activite bilan", Component: Today, width: 420, height: 480 },
 
   // --- Groupe 4 : Divertissement & Système ---
-  { id: "chess", title: "Échecs", icon: "chess", hue: "#7babea", keywords: "echecs chess jeu strategie plateau", Component: ChessGame, width: 620, height: 620 },
+  { groupe: "Détente & réglages", id: "chess", title: "Échecs", icon: "chess", hue: "#7babea", keywords: "echecs chess jeu strategie plateau", Component: ChessGame, width: 620, height: 620 },
   { id: "game", title: "Arcade", icon: "game", hue: "#d946ef", keywords: "echecs chess jeu neon arena serpent snake pause detente", Component: Game, width: 760, height: 620 },
   { id: "focus", title: "Détente", icon: "music", hue: "#f43f5e", keywords: "musique concentration lofi ambiance son youtube", Component: Focus, width: 480, height: 520 },
   { id: "mac", title: "Sur ton Mac", icon: "settings", hue: "#84b6cd", keywords: "mac macos fond ecran wallpaper extension widget bureau integration", Component: MacIntegration, width: 560, height: 640 },
