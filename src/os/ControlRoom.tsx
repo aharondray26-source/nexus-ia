@@ -773,13 +773,18 @@ export default function ControlRoom() {
       {welcome && (
         <div onClick={dismissWelcome} className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 p-5 backdrop-blur-md">
           <div onClick={(e) => e.stopPropagation()} className="nx-widget nexus-fade-in w-full max-w-md items-center gap-4 p-7 text-center">
-            <h2 className="text-xl font-semibold text-nexus-text">Bienvenue dans Nexus</h2>
+            {/* L'OUVERTURE DIT DÉJÀ BONJOUR.
+                Elle affiche le logo et le nom pendant deux secondes et demie ;
+                enchaîner sur une fenêtre qui redit « Bienvenue dans Nexus »,
+                c'est accueillir deux fois la même personne. Celle-ci ne salue
+                plus : elle explique la seule chose qu'on ne devine pas. */}
+            <h2 className="text-xl font-semibold text-nexus-text">Ta salle de contrôle</h2>
             <p className="nx-widget-body">
-              Voici ta salle de contrôle : chaque espace y affiche ses informations
-              et ses actions rapides, sans avoir besoin de l'ouvrir.
+              Chaque espace affiche ici ses informations et ses actions rapides,
+              sans avoir besoin de l'ouvrir.
               <br /><span className="text-nexus-text">Clic droit</span> pour choisir tes widgets.
             </p>
-            <button onClick={dismissWelcome} className="nx-btn nx-btn-primary w-full">Entrer</button>
+            <button onClick={dismissWelcome} className="nx-btn nx-btn-primary w-full">J'ai compris</button>
           </div>
         </div>
       )}

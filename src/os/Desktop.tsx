@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import Ouverture from "./Ouverture";
 import Dock from "./Dock";
 import TopBar from "./TopBar";
 import { estModeOnglet } from "../lib/ongletMode";
@@ -98,6 +99,18 @@ export default function Desktop() {
     recordVisit();
   }, []);
 
+  /// L'ouverture ne se joue qu'une fois par visite. Un rechargement pour
+  /// corriger une virgule ne doit pas coûter deux secondes et demie à chaque
+  /// fois : on la rejoue si l'onglet a été fermé, pas à chaque rafraîchissement
+  /// d'affilée.
+  const [ouvertureEnCours, setOuvertureEnCours] = useState(() => {
+    try {
+      if (sessionStorage.getItem("nexus.ouverture.vue")) return false;
+      sessionStorage.setItem("nexus.ouverture.vue", "1");
+      return true;
+    } catch { return true; }
+  });
+
   useEffect(() => {
     async function onKeyDown(e: KeyboardEvent) {
       // Cmd+K / Ctrl+K : ouvrir/fermer la barre de commande.
@@ -127,6 +140,11 @@ export default function Desktop() {
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-nexus-bg text-nexus-text">
+      {/* L'OUVERTURE. Le logo se forme, puis ses trois satellites se
+          détachent et vont devenir la barre du haut, la barre latérale et la
+          mascotte. L'interface derrière est DÉJÀ là — elle arrive juste au
+          moment où la bulle se déplie à sa place. */}
+      {ouvertureEnCours && <Ouverture surFin={() => setOuvertureEnCours(false)} />}
       <TopBar />
       <CallWatcher />
       {!estModeOnglet() && pos === "top" && dockEl}
