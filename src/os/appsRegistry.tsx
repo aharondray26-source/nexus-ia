@@ -1,4 +1,6 @@
 import type { ComponentType } from "react";
+import { lireMiniApps } from "../lib/miniApps";
+import MiniApp from "../apps/MiniApp";
 import AIHub from "../apps/AIHub";
 import ChessGame from "../apps/ChessGame";
 import Notes from "../apps/Notes";
@@ -53,6 +55,10 @@ export interface AppDefinition {
   keywords: string;
   hue: string;
   hidden?: boolean;
+  /// Fabriquée à la demande, par opposition aux espaces de Nexus.
+  fabriquee?: boolean;
+  /// Son emoji, quand elle en a un (les espaces fabriqués en ont tous un).
+  emoji?: string;
   /// Le groupe où l'espace se range. La barre latérale affiche un trait entre
   /// deux groupes : avec quarante-six icônes à la file, on ne trouve plus rien
   /// — Aharon : « NeoSchool n'est pas assez visible ». Il l'était, noyé.
@@ -122,6 +128,34 @@ export const APPS: AppDefinition[] = [
   { id: "viewer", title: "Visionneuse", icon: "eye", hue: "#3abef8", hidden: true, keywords: "ouvrir fichier apercu image pdf", Component: FileViewer, width: 640, height: 560 },
 ];
 
+// ── LES PETITES APPLICATIONS FABRIQUÉES ─────────────────────────────────────
+//
+// Aharon : « il faut qu'elle puisse créer des applications qui se mettent dans
+// le site ». Elles ne sont pas écrites ici : elles sont créées à la demande et
+// vivent dans le rangement. Mais elles doivent être des espaces COMME LES
+// AUTRES — dans la barre, dans la recherche, dans une fenêtre. On les ajoute
+// donc au même endroit, une seule fois, plutôt que de traiter le cas partout.
+export function espacesFabriques(): AppDefinition[] {
+  return lireMiniApps().map((a) => ({
+    id: a.id,
+    title: a.nom,
+    icon: "miniapp",
+    hue: "#a5a6ff",
+    keywords: `${a.nom} ${a.quoi} application creee sur mesure`,
+    groupe: undefined,
+    fabriquee: true,
+    emoji: a.icone,
+    Component: () => <MiniApp appId={a.id} />,
+    width: 520,
+    height: 520,
+  }));
+}
+
+/// TOUS les espaces : ceux de Nexus, puis ceux qu'on a fabriqués.
+export function tousLesEspaces(): AppDefinition[] {
+  return [...APPS, ...espacesFabriques()];
+}
+
 export function getApp(id: string): AppDefinition | undefined {
-  return APPS.find((a) => a.id === id);
+  return APPS.find((a) => a.id === id) || espacesFabriques().find((a) => a.id === id);
 }

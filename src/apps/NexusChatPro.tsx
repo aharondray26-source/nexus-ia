@@ -42,6 +42,8 @@ import { NexusMessageRenderer } from "../os/NexusMessageRenderer";
 import { addNexusTask } from "../lib/persist";
 import { ajouterEvenement, comprendreQuand, comprendreQuoi, enFrancais,
          telechargerIcs, type Evenement } from "../lib/agenda";
+import { ajouterMiniApp } from "../lib/miniApps";
+import { CONSIGNE_FABRIQUE, verifier, fabriquerSansModele, nommer } from "../lib/fabriquer";
 
 interface ChatMessage {
   id: string;
@@ -355,7 +357,59 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
       // Elle le fait ELLE-MÊME, sans passer par un modèle : une date se lit,
       // elle ne se devine pas. Un modèle qui se trompe d'un jour sur un
       // contrôle de maths, c'est pire que rien.
-      const parleAgenda = /\b(agenda|calendrier|rendez[- ]?vous|rdv)\b/i.test(userText)
+      // ── UNE DEMANDE DE PETITE APPLICATION ───────────────────────────────
+      //
+      // Aharon : « il faut qu'elle puisse créer des applications qui se mettent
+      // dans le site ». Nexus écrit la page, la vérifie, la range — et elle
+      // apparaît dans la barre latérale comme un espace, tout de suite.
+      const veutUneAppli =
+        /\b(cr[ée]e|cr[ée]er|fabrique|fabriquer|fais|g[ée]n[èe]re)\b/i.test(userText)
+        && /\b(appli\w*|application|outil|widget|petit programme)\b/i.test(userText);
+      if (veutUneAppli) {
+        // 1. Ce que Nexus sait faire LUI-MÊME : instantané, et ça marche même
+        //    hors ligne. On n'attend pas un modèle pour un minuteur.
+        const toute = fabriquerSansModele(userText);
+        if (toute) {
+          moteur = "Nexus · fabrique";
+          replyText = `${toute.icone} **« ${toute.nom} » est prête.**\n\n`
+            + `${toute.quoi}. Elle est dans ta barre latérale, tout en bas.\n\n`
+            + `*Je l'ai écrite moi-même : elle marche même sans connexion.*`;
+        } else {
+          // 2. Sinon on la fait écrire — puis on la RELIT avant de l'installer.
+          try {
+            const r = await fetch("/api/gemini/chat", {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ message: userText,
+                                     context: { systemCtx: CONSIGNE_FABRIQUE } }),
+            });
+            const d = r.ok ? await r.json() : null;
+            const v = d?.reply ? verifier(d.reply) : { refus: "aucun modèle n'a pu l'écrire" };
+            if ("code" in v) {
+              const n = nommer(userText);
+              const a = ajouterMiniApp({ ...n, quoi: userText.slice(0, 120),
+                                         code: v.code, demande: userText });
+              moteur = "Nexus · fabrique";
+              replyText = `${a.icone} **« ${a.nom} » est prête.**\n\n`
+                + `Elle est dans ta barre latérale, tout en bas. Redis-moi ce que tu `
+                + `veux changer et j'en refais une.`;
+            } else {
+              moteur = "Nexus · fabrique";
+              replyText = `Je ne l'ai pas installée : ${v.refus}.\n\n`
+                + `*Une application fabriquée n'a le droit ni d'aller sur internet, `
+                + `ni de toucher à tes affaires. Je préfère refuser que t'ouvrir une porte.*`;
+            }
+          } catch {
+            moteur = "Nexus · fabrique";
+            replyText = "Je n'ai pas pu écrire cette application : aucun modèle "
+              + "joignable pour l'instant.\n\n*Je sais en faire quelques-unes tout "
+              + "seul — essaie « crée-moi un minuteur », « un compteur », "
+              + "« un tirage au sort ».*";
+          }
+        }
+      }
+
+      const parleAgenda = !veutUneAppli
+        && /\b(agenda|calendrier|rendez[- ]?vous|rdv)\b/i.test(userText)
         && /\b(ajoute|ajouter|mets|met|note|noter|cr[ée]e|cr[ée]er|inscris|rajoute)\b/i.test(userText);
       if (parleAgenda) {
         const quand = comprendreQuand(userText);
@@ -380,7 +434,7 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
         }
       }
 
-      const isReminder = !parleAgenda && (
+      const isReminder = !parleAgenda && !veutUneAppli && (
         lowerText.includes("rappel") ||
         lowerText.includes("rappelle") ||
         lowerText.includes("ajoute une tâche") ||
@@ -388,7 +442,7 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
         lowerText.includes("ajoute la tâche") ||
         lowerText.includes("n'oublie pas de"));
 
-      if (parleAgenda) {
+      if (veutUneAppli || parleAgenda) {
         // déjà traité au-dessus : on ne repasse pas par un modèle.
       } else if (isReminder) {
         let timeText = "";

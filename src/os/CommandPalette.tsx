@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { APPS } from "./appsRegistry";
+import { APPS, tousLesEspaces } from "./appsRegistry";
 import { useWindows } from "./useWindows";
 import Icon from "./Icons";
 import { queryNexusAIObject } from "../lib/nexusBrain";
@@ -65,7 +65,8 @@ export default function CommandPalette() {
     // « reglages », et l'inverse aussi. Sans ca, ecrire correctement le
     // francais empechait de trouver — l'exact contraire du bon sens.
     const q = sansAccent(query.trim());
-    const visible = APPS.filter((a) => !a.hidden);
+    // La recherche doit trouver AUSSI les applications fabriquées.
+    const visible = tousLesEspaces().filter((a) => !a.hidden);
     if (!q) return visible;
     return visible.filter(
       (a) =>
@@ -185,7 +186,7 @@ export default function CommandPalette() {
     if (!item) return;
 
     if (item.type === "app" && item.appId) {
-      const app = APPS.find((a) => a.id === item.appId);
+      const app = tousLesEspaces().find((a) => a.id === item.appId);
       openApp(item.appId, app ? { width: app.width, height: app.height } : undefined);
     } else if (item.type === "ai") {
       window.dispatchEvent(new CustomEvent("nexus:open-ai"));

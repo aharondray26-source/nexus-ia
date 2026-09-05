@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { APPS } from "./appsRegistry";
+import { useEffect, useState } from "react";
+import { APPS, tousLesEspaces } from "./appsRegistry";
 import { useWindows } from "./useWindows";
 import Icon from "./Icons";
 import Logo from "./Logo";
@@ -10,12 +10,20 @@ export default function Dock({ horizontal = false, pos = "left" }: { horizontal?
   const windows = useWindows((s) => s.windows);
   const iconColors = useSettings((s) => s.iconColors);
   const [isHovered, setIsHovered] = useState(false);
+  // Les espaces FABRIQUÉS apparaissent ici comme les autres, et la liste se
+  // rafraîchit dès qu'on en crée un — sans recharger la page.
+  const [espaces, setEspaces] = useState(() => tousLesEspaces());
+  useEffect(() => {
+    const relire = () => setEspaces(tousLesEspaces());
+    window.addEventListener("nexus:miniapps", relire);
+    return () => window.removeEventListener("nexus:miniapps", relire);
+  }, []);
 
   // Horizontal bar for smaller mobile viewports
   if (horizontal) {
     return (
       <nav className={`nx-dock nx-dock-magnify ${pos === "top" ? "nx-dock-float-top" : "nx-dock-float-bottom"} z-40 flex shrink-0 items-center justify-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}>
-        {APPS.filter((a) => !a.hidden).map((app) => {
+        {espaces.filter((a) => !a.hidden).map((app) => {
           const isOpen = windows.some((w) => w.appId === app.id);
           return (
             <button
@@ -72,7 +80,7 @@ export default function Dock({ horizontal = false, pos = "left" }: { horizontal?
             avaient l'air de vouloir sortir de la barre. Une colonne centree
             quand elle est fermee, alignee a gauche quand elle s'ouvre. */}
         <div className={`flex-1 space-y-1 flex flex-col ${isHovered ? "items-start" : "items-center"}`}>
-          {APPS.filter((a) => !a.hidden).map((app) => {
+          {espaces.filter((a) => !a.hidden).map((app) => {
             const isOpen = windows.some((w) => w.appId === app.id);
             return (
               <div key={app.id} className={isHovered ? "w-full" : "flex flex-col items-center"}>
@@ -121,7 +129,11 @@ export default function Dock({ horizontal = false, pos = "left" }: { horizontal?
                   className="shrink-0 transition-transform duration-[260ms] [transition-timing-function:var(--appui)] group-hover/btn:scale-110 text-nexus-text"
                   style={iconColors ? { color: app.hue } : undefined}
                 >
-                  <Icon name={app.icon} size={20} />
+                  {/* Une application fabriquée porte SON emoji : c'est ce qui
+                      la distingue d'un espace de Nexus, d'un coup d'œil. */}
+                  {app.emoji
+                    ? <span className="block text-[17px] leading-none">{app.emoji}</span>
+                    : <Icon name={app.icon} size={20} />}
                 </span>
 
                 {/* LE NOM DE L'ESPACE.
