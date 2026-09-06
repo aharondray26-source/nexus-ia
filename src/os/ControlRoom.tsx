@@ -770,21 +770,27 @@ export default function ControlRoom() {
       {aurora && <div className="nx-aurora"><span /><span /><span /></div>}
       {/* La carte du monde reste le repere visuel de l'accueil. */}
       <div className={`nx-world ${revealed ? "nx-world-dim" : ""}`} />
+      {/* PLUS DE PAGE À VALIDER.
+          Aharon : « après l'animation on a une sorte de petite page où il faut
+          appuyer sur OK… elle gâche l'animation ». Il a raison : on vient de
+          lui offrir une entrée soignée, et on lui pose aussitôt un voile noir
+          avec un bouton. L'information reste — elle est utile — mais elle
+          devient un bandeau qui se pose en bas, sans rien couvrir, et qui
+          s'en va tout seul dès qu'il touche à quoi que ce soit. */}
       {welcome && (
-        <div onClick={dismissWelcome} className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 p-5 backdrop-blur-md">
-          <div onClick={(e) => e.stopPropagation()} className="nx-widget nexus-fade-in w-full max-w-md items-center gap-4 p-7 text-center">
-            {/* L'OUVERTURE DIT DÉJÀ BONJOUR.
-                Elle affiche le logo et le nom pendant deux secondes et demie ;
-                enchaîner sur une fenêtre qui redit « Bienvenue dans Nexus »,
-                c'est accueillir deux fois la même personne. Celle-ci ne salue
-                plus : elle explique la seule chose qu'on ne devine pas. */}
-            <h2 className="text-xl font-semibold text-nexus-text">Ta salle de contrôle</h2>
-            <p className="nx-widget-body">
-              Chaque espace affiche ici ses informations et ses actions rapides,
-              sans avoir besoin de l'ouvrir.
-              <br /><span className="text-nexus-text">Clic droit</span> pour choisir tes widgets.
-            </p>
-            <button onClick={dismissWelcome} className="nx-btn nx-btn-primary w-full">J'ai compris</button>
+        <div className="pointer-events-none absolute inset-x-0 bottom-4 z-50 flex justify-center px-4">
+          <div className="nexus-fade-in pointer-events-auto flex max-w-lg items-center gap-3
+                          rounded-2xl border border-nexus-border bg-nexus-panel px-4 py-2.5
+                          shadow-2xl backdrop-blur-xl">
+            <span className="text-[12.5px] leading-snug text-nexus-muted">
+              Chaque espace affiche ici ses informations, sans avoir besoin de l'ouvrir.
+              {" "}<span className="text-nexus-text">Clic droit</span> pour choisir tes widgets.
+            </span>
+            <button onClick={dismissWelcome}
+                    className="shrink-0 rounded-lg px-2 py-1 text-[11px] font-medium
+                               text-nexus-muted transition-colors hover:text-nexus-text">
+              Compris
+            </button>
           </div>
         </div>
       )}

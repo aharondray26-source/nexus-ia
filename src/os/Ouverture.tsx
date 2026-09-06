@@ -21,7 +21,10 @@ const DUREE = 2600;                    // ce que dure l'ouverture, en entier
 
 /// Là où chaque satellite arrive, en fraction de l'écran. C'est ce qui fait
 /// que la bulle « explose » EXACTEMENT à l'endroit de l'élément réel.
-type Cible = { x: string; y: string; w: number; h: number | string; r: number };
+/// Une destination MESURÉE : centre, taille, arrondi, et la couleur de fond de
+/// l'élément réel — c'est elle qui permet à la bulle de devenir l'élément au
+/// lieu de s'effacer devant lui.
+type Cible = { x: number; y: number; w: number; h: number; r: number; fond: string };
 
 export default function Ouverture({ surFin }: { surFin: () => void }) {
   // POUR TRAVAILLER L'OUVERTURE : « ?ouverture=0 », « =1 » ou « =2 » fige une
@@ -51,7 +54,9 @@ export default function Ouverture({ surFin }: { surFin: () => void }) {
       surFin();
     };
     const t1 = window.setTimeout(() => setPhase(1), 780);
-    const t2 = window.setTimeout(() => setPhase(2), 1420);
+    // On mesure JUSTE AVANT l'éclatement : l'interface est déjà en place
+    // derrière le voile, donc les vraies positions sont connues.
+    const t2 = window.setTimeout(() => { cibles.current = mesurer(); setPhase(2); }, 1420);
     const t3 = window.setTimeout(() => { setPhase(3); terminer(); }, DUREE);
 
     // On passe au premier geste : personne ne doit subir une animation.
@@ -68,14 +73,46 @@ export default function Ouverture({ surFin }: { surFin: () => void }) {
   if (sobre) return null;
 
   // Les trois destinations, dans l'ordre des satellites du logo.
-  // Les trois destinations, en coordonnées de l'ÉCRAN — mesurées sur les vrais
-  // éléments : la pastille du haut, la barre latérale (64 px de large), et la
-  // mascotte (58 px, à 12 px du bord droit et 96 px du bas).
-  const cibles: Cible[] = [
-    { x: "50%", y: "26px", w: 300, h: 32, r: 16 },                       // barre du haut
-    { x: "32px", y: "50%", w: 60, h: "68%", r: 26 },                      // barre latérale
-    { x: "calc(100% - 41px)", y: "calc(100% - 125px)", w: 58, h: 58, r: 29 }, // mascotte
-  ];
+  // ── OÙ CHAQUE BULLE DOIT ARRIVER ────────────────────────────────────────
+  //
+  // On ne devine PLUS les coordonnées. On MESURE les vrais éléments — la barre
+  // latérale, la pastille du haut, la mascotte — et la bulle prend exactement
+  // leur place, leur forme et leur couleur.
+  //
+  // C'est ce qui change tout. Avant, la bulle arrivait « à peu près » et
+  // s'effaçait en opacité : on voyait une tache disparaître, puis on
+  // remarquait qu'il y avait une barre latérale au même endroit. Aharon :
+  // « c'est pas beau, je veux qu'on ait l'impression que ces bulles se
+  // transforment elles-mêmes en la barre latérale ».
+  // Mesurée, la bulle ne s'efface pas : elle EST la barre latérale, et l'on
+  // retire simplement le calque quand les deux sont superposés au pixel.
+  const cibles = useRef<Cible[]>([]);
+  function mesurer(): Cible[] {
+    const par = (sel: string, secours: Cible): Cible => {
+      const e = document.querySelector(sel) as HTMLElement | null;
+      if (!e) return secours;
+      const r = e.getBoundingClientRect();
+      if (r.width < 4 || r.height < 4) return secours;
+      const st = getComputedStyle(e);
+      return {
+        x: r.left + r.width / 2, y: r.top + r.height / 2,
+        w: r.width, h: r.height,
+        r: parseFloat(st.borderRadius) || 18,
+        fond: st.backgroundColor && st.backgroundColor !== "rgba(0, 0, 0, 0)"
+          ? st.backgroundColor : "rgba(12,12,15,.62)",
+      };
+    };
+    const W = window.innerWidth, H = window.innerHeight;
+    return [
+      // La pastille du haut (le nom de l'espace ouvert).
+      par("[data-nx-ile]", { x: W / 2, y: 26, w: 300, h: 32, r: 16, fond: "rgba(12,12,15,.7)" }),
+      // La barre latérale.
+      par(".nx-dock", { x: 42, y: H / 2, w: 64, h: H * 0.86, r: 22, fond: "rgba(12,12,15,.62)" }),
+      // La mascotte.
+      par("[data-nx-mascotte]", { x: W - 41, y: H - 125, w: 58, h: 58, r: 29,
+                                  fond: "rgba(99,102,241,.18)" }),
+    ];
+  }
 
   // La position de départ de chaque satellite, sur le logo (viewBox 24×24,
   // dessiné à 132 px, centré). On calcule en pixels depuis le centre.
@@ -88,6 +125,11 @@ export default function Ouverture({ surFin }: { surFin: () => void }) {
   // comme un réseau. On les écarte — c'est le MÊME logo, respiré.
   const POS: [number, number][] = [[12, 2.6], [3.4, 19.4], [20.6, 19.4]];
   const depart = POS.map(([x, y]) => ({ dx: (x - 12) / 24 * T, dy: (y - 12) / 24 * T }));
+  // Le centre de l'écran : c'est là qu'est le logo, donc le point de départ
+  // des trois bulles. On le prend en pixels, pas en pourcentage : la bulle
+  // voyage ensuite vers des coordonnées mesurées, elles aussi en pixels.
+  const cx = typeof window !== "undefined" ? window.innerWidth / 2 : 0;
+  const cy = typeof window !== "undefined" ? window.innerHeight / 2 : 0;
 
   return (
     <AnimatePresence>
@@ -95,8 +137,40 @@ export default function Ouverture({ surFin }: { surFin: () => void }) {
         <motion.div
           className="fixed inset-0 z-[2000000] flex items-center justify-center bg-[#09090b]"
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, transition: { duration: 0.42, ease: [0.4, 0, 0.2, 1] } }}
+          // Le voile s'en va DERRIÈRE l'onde : il attend qu'elle soit partie,
+          // puis disparaît vite. On voit donc l'onde découvrir le bureau.
+          animate={phase >= 2
+            ? { opacity: 0, transition: { duration: 0.5, delay: 0.62,
+                                          ease: [0.4, 0, 0.2, 1] } }
+            : { opacity: 1 }}
+          exit={{ opacity: 0, transition: { duration: 0.28, ease: [0.4, 0, 0.2, 1] } }}
         >
+          {/* LE CŒUR DEVIENT LE BUREAU.
+              Aharon : « le bureau, qui est censé être le cœur des satellites,
+              c'est pas assez visible ». Il avait raison : le cœur se contentait
+              de grossir et de s'effacer, on ne voyait rien passer.
+              Maintenant une ONDE part du centre au moment de l'éclatement et
+              balaie l'écran. Le voile s'en va derrière elle : c'est l'onde qui
+              découvre le bureau, pas un fondu. */}
+          {phase >= 2 && (
+            <motion.div
+              className="pointer-events-none absolute rounded-full"
+              style={{
+                left: "50%", top: "50%", translate: "-50% -50%",
+                border: "2px solid color-mix(in srgb, var(--accent) 70%, transparent)",
+                boxShadow: "0 0 60px color-mix(in srgb, var(--accent) 45%, transparent),"
+                         + " inset 0 0 60px color-mix(in srgb, var(--accent) 30%, transparent)",
+              }}
+              initial={{ width: 40, height: 40, opacity: 0.95 }}
+              animate={{
+                width: Math.hypot(window.innerWidth, window.innerHeight) * 2.1,
+                height: Math.hypot(window.innerWidth, window.innerHeight) * 2.1,
+                opacity: [0.95, 0.6, 0],
+                transition: { duration: 1.0, ease: [0.22, 0.61, 0.36, 1] },
+              }}
+            />
+          )}
+
           {/* La respiration derrière le logo : c'est elle qui donne la
               sensation que quelque chose s'éveille, avant même le dessin. */}
           <motion.div
@@ -144,8 +218,9 @@ export default function Ouverture({ surFin }: { surFin: () => void }) {
                 fill="#09090b" stroke="var(--accent)" strokeWidth={1.5}
                 initial={{ scale: 1, opacity: 1 }}
                 animate={phase >= 2
-                  ? { scale: 14, opacity: 0,
-                      transition: { duration: 0.85, ease: [0.32, 0.72, 0, 1] } }
+                  ? { scale: [1, 0.7, 9], opacity: [1, 1, 0],
+                      transition: { duration: 0.8, times: [0, 0.2, 1],
+                                    ease: [0.32, 0.72, 0, 1] } }
                   : { scale: 1, opacity: 1 }}
                 style={{ transformOrigin: "12px 12px" }}
               />
@@ -161,46 +236,59 @@ export default function Ouverture({ surFin }: { surFin: () => void }) {
               coordonnées sont celles de l'écran, et le centre de l'écran est
               exactement là où se trouve le logo. */}
           <div className="pointer-events-none fixed inset-0">
-            {cibles.map((c, i) => (
+            {[0, 1, 2].map((i) => {
+              const c = cibles.current[i];
+              return (
               <motion.div
                 key={i}
                 className="absolute"
                 style={{
-                  left: "50%", top: "50%",
-                  // On centre l'élément sur son point d'ancrage avec la
-                  // propriété `translate`, qui est SÉPARÉE de `transform` :
-                  // l'animation peut alors se servir de x/y librement, sans
-                  // avoir à connaître la taille de la cible. Ça compte : la
-                  // barre latérale fait « 68% » de haut, et « -c.h / 2 » sur
-                  // une chaîne ne veut rien dire.
+                  left: 0, top: 0,
+                  // On centre par `translate`, séparé de `transform` : x/y
+                  // restent libres pour l'animation.
                   translate: "-50% -50%",
                   background: "var(--accent)",
-                  // Un halo SERRÉ. À 24 px de diffusion, les trois satellites
-                  // se rejoignaient en une seule tache.
                   boxShadow: "0 0 14px color-mix(in srgb, var(--accent) 55%, transparent)",
                 }}
                 initial={{
-                  x: depart[i].dx, y: depart[i].dy,
-                  width: 21, height: 21, borderRadius: 11, opacity: 1, scale: 1,
+                  x: cx + depart[i].dx, y: cy + depart[i].dy,
+                  width: 21, height: 21, borderRadius: 11, opacity: 1,
                 }}
-                animate={phase >= 2
+                animate={phase >= 2 && c
                   ? {
-                      // On vise le CENTRE de la cible, puis on prend sa forme :
-                      // la bulle ne saute pas, elle se déplie à l'arrivée.
-                      left: c.x, top: c.y, x: 0, y: 0,
-                      width: c.w, height: c.h, borderRadius: c.r,
-                      opacity: [1, 1, 0],
-                      scale: 1,
+                      // TROIS TEMPS, et aucun n'est un fondu.
+                      //
+                      // 1) elle FONCE sur le côté, en restant une bulle, et
+                      //    elle grossit un peu — le poids se sent ;
+                      // 2) elle se DÉROULE dans la forme de l'élément, avec un
+                      //    léger dépassement : c'est ce qui fait « exploser » ;
+                      // 3) sa couleur devient celle de l'élément réel, posé
+                      //    dessous au pixel près. On retire alors le calque :
+                      //    rien ne disparaît, la bulle EST devenue la barre.
+                      x: [cx + depart[i].dx, c.x, c.x],
+                      y: [cy + depart[i].dy, c.y, c.y],
+                      width: [21, 44, c.w],
+                      height: [21, 44, c.h],
+                      borderRadius: [11, 22, c.r],
+                      background: ["var(--accent)", "var(--accent)", c.fond],
+                      boxShadow: [
+                        "0 0 14px color-mix(in srgb, var(--accent) 55%, transparent)",
+                        "0 0 34px color-mix(in srgb, var(--accent) 85%, transparent)",
+                        "0 0 0px color-mix(in srgb, var(--accent) 0%, transparent)",
+                      ],
                       transition: {
-                        duration: 1.05,
-                        delay: i * 0.07,
-                        ease: [0.32, 0.72, 0, 1],
-                        opacity: { times: [0, 0.72, 1], duration: 1.05 },
+                        duration: 1.15,
+                        delay: i * 0.09,
+                        // Le trajet part vite et se pose : c'est la courbe
+                        // d'appui de Nexus. Le déroulé, lui, dépasse un peu.
+                        times: [0, 0.46, 1],
+                        ease: [[0.32, 0.72, 0, 1], [0.34, 1.32, 0.5, 1]],
                       },
                     }
-                  : { x: depart[i].dx, y: depart[i].dy, opacity: 1, scale: 1 }}
+                  : { x: cx + depart[i].dx, y: cy + depart[i].dy, opacity: 1 }}
               />
-            ))}
+              );
+            })}
           </div>
 
           {/* LE NOM, une fois le logo formé. */}

@@ -1067,6 +1067,9 @@ export default function NexusAssistant() {
     {/* Floating Trigger Pill - Fully Draggable with Magnetic Side Snapping & No Overshoot */}
     {!isDocked && (
       <motion.div
+        // L'ouverture MESURE cet élément pour y faire arriver sa bulle : il
+        // faut donc pouvoir le désigner sans dépendre de ses classes.
+        data-nx-mascotte
         drag
         animate={pillControls}
         dragMomentum={false}

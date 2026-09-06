@@ -35,7 +35,9 @@ export default function DynamicIsland() {
       onMouseEnter={() => setExpanded(true)}
       onMouseLeave={() => setExpanded(false)}
     >
+      {/* L'ouverture MESURE cette pastille pour y faire arriver sa bulle. */}
       <motion.div
+        data-nx-ile
         layout
         transition={{ type: "spring", stiffness: 380, damping: 25 }}
         className={`bg-slate-950/95 border border-white/20 backdrop-blur-3xl shadow-[0_12px_40px_rgba(0,0,0,0.6)] flex items-center justify-between text-white transition-colors ${

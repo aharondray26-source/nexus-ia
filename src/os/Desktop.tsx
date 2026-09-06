@@ -103,13 +103,13 @@ export default function Desktop() {
   /// corriger une virgule ne doit pas coûter deux secondes et demie à chaque
   /// fois : on la rejoue si l'onglet a été fermé, pas à chaque rafraîchissement
   /// d'affilée.
-  const [ouvertureEnCours, setOuvertureEnCours] = useState(() => {
-    try {
-      if (sessionStorage.getItem("nexus.ouverture.vue")) return false;
-      sessionStorage.setItem("nexus.ouverture.vue", "1");
-      return true;
-    } catch { return true; }
-  });
+  /// À CHAQUE CHARGEMENT.
+  ///
+  /// Je l'avais limitée à une fois par visite, pour ne pas coûter deux
+  /// secondes à chaque rafraîchissement pendant le travail. Aharon :
+  /// « il faut qu'elle soit là à chaque fois que je recharge le site ».
+  /// C'est son entrée : elle se joue. Un clic ou une touche la passe.
+  const [ouvertureEnCours, setOuvertureEnCours] = useState(true);
 
   useEffect(() => {
     async function onKeyDown(e: KeyboardEvent) {
