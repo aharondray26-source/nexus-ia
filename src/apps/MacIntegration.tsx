@@ -106,14 +106,14 @@ export default function MacIntegration() {
         return new Uint8Array(await r.arrayBuffer());
       };
 
-      const [manifestF, ongletHtmlF, ongletJsF, modeleJsF, modelePontF, mathsF,
+      const [manifestF, ongletHtmlF, ongletJsF, modeleJsF, modelePontF, mathsF, formulesF,
              loupeHtmlF, loupeJsF, loupePageF,
              popupF, popupJsF, fondJsF,
              lisezMoiF, i16, i48, i128] = await Promise.all([
         lire("manifest.json"), lire("onglet.html"), lire("onglet.js"),
         // La bibliotheque du modele, livree AVEC l'extension : Chrome interdit
         // a une extension de charger un script depuis internet.
-        lire("modele.js"), lire("modele-pont.js"), lire("maths.js"),
+        lire("modele.js"), lire("modele-pont.js"), lire("maths.js"), lire("formules.js"),
         lire("loupe.html"), lire("loupe.js"), lire("loupe-page.js"),
         lire("popup.html"), lire("popup.js"), lire("fond.js"), lire("LISEZ-MOI.txt"),
         fichierDistant("/ext/icone-16.png"),
@@ -128,6 +128,7 @@ export default function MacIntegration() {
         { nom: "Nexus-extension-Chrome/modele.js", donnees: modeleJsF },
         { nom: "Nexus-extension-Chrome/modele-pont.js", donnees: modelePontF },
         { nom: "Nexus-extension-Chrome/maths.js", donnees: mathsF },
+        { nom: "Nexus-extension-Chrome/formules.js", donnees: formulesF },
         { nom: "Nexus-extension-Chrome/loupe.html", donnees: loupeHtmlF },
         { nom: "Nexus-extension-Chrome/loupe.js", donnees: loupeJsF },
         { nom: "Nexus-extension-Chrome/loupe-page.js", donnees: loupePageF },

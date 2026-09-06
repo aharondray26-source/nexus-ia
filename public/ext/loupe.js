@@ -42,7 +42,8 @@ function ech(t) {
 /// Le peu de mise en forme que les modèles produisent : **gras** et listes.
 /// Sans ça, la réponse arrive constellée d'étoiles.
 function fmt(t) {
-  return ech(t)
+  // Les maths arrivent en LaTeX : on les rend lisibles avant tout le reste.
+  return ech(nettoyerFormules(t))
     .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
     .replace(/^[-*]\s+/gm, "· ");
 }

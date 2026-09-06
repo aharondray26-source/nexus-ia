@@ -11,10 +11,32 @@
 //  à une extension de charger un script depuis internet.
 // ============================================================================
 const NexusModele = (() => {
+  // DEUX FOIS PLUS DE PARAMÈTRES QU'AVANT.
+  //
+  // Aharon : « il faut que le modèle local soit au moins DOUBLÉ dans son
+  // efficacité, parce que là c'est rien ». C'est fait par le seul moyen qui
+  // double vraiment : un modèle deux fois plus gros — 3 milliards de
+  // paramètres au lieu d'1,5.
   const MODELES = [
-    { id: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC", nom: "Nexus local", poids: "environ 1,1 Go" },
-    { id: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC", nom: "Nexus léger", poids: "environ 380 Mo" },
+    { id: "Qwen2.5-3B-Instruct-q4f16_1-MLC",   nom: "Nexus local", poids: "environ 1,8 Go" },
+    { id: "Qwen2.5-7B-Instruct-q4f16_1-MLC",   nom: "Nexus fort",  poids: "environ 4,3 Go" },
+    { id: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC", nom: "Nexus léger", poids: "environ 1,1 Go" },
   ];
+
+  /// Ce que CETTE machine peut porter. On ne lance pas quatre gigaoctets sur
+  /// une machine qui ne pourra pas les faire tourner : on ne s'en apercevrait
+  /// qu'à la fin, après l'attente.
+  async function meilleurIci() {
+    try {
+      const a = await navigator.gpu.requestAdapter();
+      if (!a) return MODELES[2].id;
+      const tampon = Number(a.limits?.maxBufferSize || 0) / 1048576;
+      const memoire = Number(navigator.deviceMemory || 8);
+      if (tampon >= 5800 && memoire >= 16) return MODELES[1].id;
+      if (tampon >= 2800 && memoire >= 8) return MODELES[0].id;
+      return MODELES[2].id;
+    } catch (e) { return MODELES[2].id; }
+  }
   const OLLAMA = "http://127.0.0.1:11434";
 
   let cerveau = null;
@@ -59,7 +81,7 @@ const NexusModele = (() => {
     if (enRoute) return enRoute;
     enRoute = (async () => {
       const lib = await import("./modele.js");
-      const id = MODELES.some((m) => m.id === quel) ? quel : MODELES[0].id;
+      const id = MODELES.some((m) => m.id === quel) ? quel : await meilleurIci();
       const moteur = await lib.CreateMLCEngine(id, {
         initProgressCallback: (p) => {
           if (!avance) return;
@@ -181,5 +203,5 @@ const NexusModele = (() => {
   }
 
   return { MODELES, possible, demander, preparer, dejaLa, enFrancais, ollama,
-           enLigneDisponible };
+           enLigneDisponible, meilleurIci };
 })();

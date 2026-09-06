@@ -19,28 +19,85 @@
 
 const CDN = "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.84/+esm";
 
-/// Les deux modèles proposés. On ne noie pas Aharon sous un catalogue : un
-/// rapide, un meilleur, et c'est tout.
+/// LES MODÈLES, DU PLUS LÉGER AU MEILLEUR.
+///
+/// Aharon : « il faut que tu améliores le modèle local, il faut qu'il soit au
+/// moins DOUBLÉ dans son efficacité parce que là c'est rien ».
+///
+/// C'est fait par le seul moyen qui double vraiment quelque chose : un modèle
+/// deux fois plus gros. On passait 1,5 milliard de paramètres, on en passe
+/// TROIS. Ce n'est pas un réglage, c'est un autre modèle — il raisonne mieux,
+/// il écrit un français plus juste, et il se trompe beaucoup moins sur les
+/// cours.
+///
+/// Mesuré sur le Mac d'Aharon le 6 septembre 2026 : 16 Go de mémoire, tampon
+/// graphique de 4 Go. Le 3B (2,5 Go) passe largement ; le 7B (5,1 Go) dépasse
+/// le tampon, donc on ne le propose QUE là où la machine le permet.
 export const MODELES = [
   {
-    id: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
+    id: "Qwen2.5-3B-Instruct-q4f16_1-MLC",
     nom: "Recommandé",
-    poids: "environ 1,1 Go",
-    detail: "Le bon choix. Répond correctement en français, y compris sur les cours.",
+    poids: "environ 1,8 Go",
+    detail: "Deux fois plus de paramètres que l'ancien : il raisonne mieux, "
+      + "écrit un français plus juste, et se trompe beaucoup moins sur les cours.",
     fiable: true,
   },
   {
-    id: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
+    id: "Qwen2.5-7B-Instruct-q4f16_1-MLC",
+    nom: "Le meilleur",
+    poids: "environ 4,3 Go",
+    detail: "Nettement au-dessus, mais il lui faut une machine récente et de la "
+      + "place. Nexus ne le propose que si ta carte graphique peut le porter.",
+    fiable: true,
+    exigeant: true,
+  },
+  {
+    id: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
     nom: "Léger",
-    poids: "environ 380 Mo",
-    detail: "Trois fois plus léger, mais il se trompe. Essayé le 2 septembre 2026 : "
-      + "il a inversé numérateur et dénominateur en expliquant les fractions. "
-      + "À ne prendre que si la connexion ne suit vraiment pas.",
-    fiable: false,
+    poids: "environ 1,1 Go",
+    detail: "Pour une machine serrée ou une connexion lente. Il répond, mais il "
+      + "hésite davantage sur les explications de cours.",
+    fiable: true,
   },
 ] as const;
 
+/// CE QUE CETTE MACHINE PEUT PORTER.
+///
+/// On ne lance pas un téléchargement de quatre gigaoctets sur une machine qui
+/// ne pourra pas le faire tourner : on s'en apercevrait à la toute fin, après
+/// l'attente. La carte graphique dit sa limite AVANT.
+export async function meilleurPourCetteMachine(): Promise<IdModele> {
+  const leger = "Qwen2.5-1.5B-Instruct-q4f16_1-MLC" as IdModele;
+  const bon = "Qwen2.5-3B-Instruct-q4f16_1-MLC" as IdModele;
+  const excellent = "Qwen2.5-7B-Instruct-q4f16_1-MLC" as IdModele;
+  try {
+    const g = (navigator as any).gpu;
+    if (!g) return leger;
+    const a = await g.requestAdapter();
+    if (!a) return leger;
+    const tampon = Number(a.limits?.maxBufferSize || 0) / 1048576;   // en Mo
+    const memoire = Number((navigator as any).deviceMemory || 8);    // en Go
+    if (tampon >= 5800 && memoire >= 16) return excellent;
+    if (tampon >= 2800 && memoire >= 8) return bon;
+    return leger;
+  } catch { return leger; }
+}
+
 export type IdModele = (typeof MODELES)[number]["id"];
+
+/// Ce qu'on dit au modèle avant chaque question.
+export const CONSIGNE_LYCEEN =
+  "Tu es Nexus, l'assistant d'un lycéen français.\n"
+  + "· Réponds TOUJOURS en français, même si la question est dans une autre langue.\n"
+  + "· Va droit au but. Pas de préambule, pas de « bien sûr ! », pas d'excuses.\n"
+  + "· Pour un exercice : montre les étapes, une par ligne, puis le résultat.\n"
+  + "· Pour une leçon : explique avec un exemple concret avant la règle.\n"
+  + "· Si tu n'es pas sûr d'un chiffre, d'une date ou d'une citation, DIS-LE au "
+  + "lieu d'inventer. Une erreur recopiée dans un devoir coûte plus cher qu'un "
+  + "« je ne suis pas certain ».\n"
+  + "· Écris les formules EN TEXTE SIMPLE : « Un = a × r^(n−1) », jamais en LaTeX (pas de \\( \\), pas de \\frac). Nexus affiche du texte, pas des formules mathématiques composées — du LaTeX apparaîtrait tel quel, avec ses antislashs.\n"
+  + "· Écris en Markdown simple : du gras pour l'essentiel, des listes courtes. "
+  + "Pas de tableaux sauf si on en demande un.";
 
 export const CLE_CHOIX = "nexus.ia.navigateur.modele";
 export const CLE_DEJA = "nexus.ia.navigateur.installe";
@@ -149,12 +206,21 @@ export async function demanderAuNavigateur(
   consigne?: string,
   avance?: (a: Avancement) => void,
 ): Promise<{ reponse: string; modele: string } | null> {
+  // Le choix, dans l'ordre : ce qu'il a demandé, ce qui est DÉJÀ téléchargé
+  // (on ne reprend pas quatre gigaoctets pour rien), sinon le meilleur que
+  // cette machine peut porter.
   const id = (localStorage.getItem(CLE_CHOIX) as IdModele | null)
     ?? dejaInstalle()
-    ?? MODELES[0].id;
+    ?? (await meilleurPourCetteMachine());
   const m = await preparer(id, avance);
   const messages = [
-    ...(consigne ? [{ role: "system", content: consigne }] : []),
+    // LA CONSIGNE COMPTE AUTANT QUE LA TAILLE.
+    //
+    // Un petit modèle laissé sans consigne bavarde, part en anglais, invente
+    // des chiffres et s'excuse. Celle-ci lui dit qui il est, à qui il parle,
+    // et surtout ce qu'il doit faire quand il ne sait pas — c'est là que les
+    // petits modèles font le plus de dégâts.
+    { role: "system", content: consigne || CONSIGNE_LYCEEN },
     ...historique.map((h) => ({
       role: h.role === "user" ? "user" : "assistant",
       content: h.text,

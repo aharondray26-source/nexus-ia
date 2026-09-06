@@ -20,10 +20,27 @@
 <script type="module">
 import { CreateMLCEngine } from "/ext/modele.js";
 
+// DEUX FOIS PLUS DE PARAMÈTRES QU'AVANT (3 milliards au lieu d'1,5).
+// Aharon : « il faut que le modèle local soit au moins doublé dans son
+// efficacité ». C'est fait par le seul moyen qui double vraiment.
 const MODELES = {
-  normal: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
-  leger:  "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
+  normal: "Qwen2.5-3B-Instruct-q4f16_1-MLC",
+  fort:   "Qwen2.5-7B-Instruct-q4f16_1-MLC",
+  leger:  "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
 };
+
+/// Ce que cette machine peut porter. On ne télécharge pas quatre gigaoctets
+/// pour s'apercevoir à la fin qu'ils ne tiennent pas.
+async function meilleurIci() {
+  try {
+    const a = await navigator.gpu.requestAdapter();
+    if (!a) return MODELES.leger;
+    const tampon = Number(a.limits?.maxBufferSize || 0) / 1048576;
+    if (tampon >= 5800) return MODELES.fort;
+    if (tampon >= 2800) return MODELES.normal;
+    return MODELES.leger;
+  } catch (e) { return MODELES.leger; }
+}
 
 let moteur = null;
 let enRoute = null;
@@ -51,12 +68,25 @@ function lire(t, brut) {
   return { etape: "Préparation", part: Math.max(p, 0) };
 }
 
+// La consigne compte autant que la taille : sans elle, un petit modèle
+// bavarde, part en anglais et invente des chiffres.
+const CONSIGNE = [
+  "Tu es Nexus, l'assistant d'un lycéen français.",
+  "· Réponds TOUJOURS en français.",
+  "· Va droit au but : pas de préambule, pas d'excuses.",
+  "· Pour un exercice : les étapes, une par ligne, puis le résultat.",
+  "· Pour une leçon : un exemple concret avant la règle.",
+  "· Si tu n'es pas sûr d'un chiffre ou d'une date, DIS-LE au lieu d'inventer.",
+  "· Formules EN TEXTE SIMPLE (« Un = a × r^(n-1) »), jamais en LaTeX : Nexus "
+  + "affiche du texte, les antislashs apparaîtraient tels quels.",
+].join("\n");
+
 window.nexusPossible = () => !!navigator.gpu;
 
 window.nexusPreparer = async (quel) => {
   if (moteur) return "deja";
   if (enRoute) { await enRoute; return "deja"; }
-  const id = MODELES[quel] || MODELES.normal;
+  const id = MODELES[quel] || (await meilleurIci());
   enRoute = (async () => {
     moteur = await CreateMLCEngine(id, {
       initProgressCallback: (p) => {
@@ -72,7 +102,7 @@ window.nexusDemander = async (question, consigne) => {
   if (!moteur) throw new Error("le modèle n'est pas prêt");
   const r = await moteur.chat.completions.create({
     messages: [
-      { role: "system", content: consigne || "Tu es Nexus. Réponds en français, avec justesse et sans bavardage. Si c'est un exercice, montre les étapes." },
+      { role: "system", content: consigne || CONSIGNE },
       { role: "user", content: question },
     ],
     temperature: 0.25,

@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 import { motion } from "motion/react";
 import { Check, Copy, Play, Sparkles } from "lucide-react";
 import { useWindows } from "./useWindows";
+import { nettoyerFormules } from "../lib/formules";
 
 interface NexusMessageRendererProps {
   content: string;
@@ -15,6 +16,11 @@ export const NexusMessageRenderer: React.FC<NexusMessageRendererProps> = ({
   isAssistant = true,
   animateWords = false,
 }) => {
+  // Les modèles écrivent les maths en LaTeX. Nexus affiche du texte : sans ce
+  // nettoyage, on lit « \( U_1 \times q^{(n-1)} \) » au lieu de
+  // « U₁ × q^(n-1) ». On a essayé de le leur interdire dans la consigne — un
+  // petit modèle n'obéit pas à une interdiction. Alors on nettoie.
+  const contenu = nettoyerFormules(content);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const openApp = useWindows((s) => s.openApp);
 
@@ -36,7 +42,7 @@ export const NexusMessageRenderer: React.FC<NexusMessageRendererProps> = ({
   };
 
   if (!isAssistant) {
-    return <div className="font-medium leading-relaxed">{content}</div>;
+    return <div className="font-medium leading-relaxed">{contenu}</div>;
   }
 
   return (
@@ -155,7 +161,7 @@ export const NexusMessageRenderer: React.FC<NexusMessageRendererProps> = ({
           ),
         }}
       >
-        {content}
+        {contenu}
       </ReactMarkdown>
     </div>
   );

@@ -806,14 +806,23 @@ async function demander() {
         vue = Math.max(vue, Math.max(0.02, part));
         barre.firstChild.style.width = Math.round(vue * 100) + "%";
       };
-      const consigne = "Tu es Nexus. Réponds en français, avec justesse"
-        + (R.court ? ", en trois phrases au plus." : ", sans bavardage.")
-        + " Si c'est un exercice, montre les étapes.";
+      // La consigne compte autant que la taille du modèle : sans elle, un
+      // petit modèle bavarde, part en anglais et invente des chiffres.
+      const consigne = "Tu es Nexus, l'assistant d'un lycéen français.\n"
+        + "· Réponds TOUJOURS en français.\n"
+        + "· Va droit au but : pas de préambule, pas d'excuses."
+        + (R.court ? " Trois phrases au plus.\n" : "\n")
+        + "· Pour un exercice : les étapes, une par ligne, puis le résultat.\n"
+        + "· Si tu n'es pas sûr d'un chiffre ou d'une date, DIS-LE au lieu "
+        + "d'inventer : une erreur recopiée dans un devoir coûte plus cher.\n"
+        + "· Formules EN TEXTE SIMPLE (« Un = a × r^(n-1) »), jamais en LaTeX : "
+        + "Nexus affiche du texte, les antislashs apparaîtraient tels quels.";
       try {
         const rep = await NexusModele.demander(consigne, t, avance, R.modeleLocal);
         if (barre) barre.remove();
         if (rep) {
-          boite.textContent = rep.texte;
+          // Les maths arrivent en LaTeX : on les rend lisibles.
+          boite.textContent = nettoyerFormules(rep.texte);
           const sig = boite.parentElement && boite.parentElement.querySelector(".sig");
           if (sig) sig.textContent = "✦ " + rep.moteur;
         } else {
