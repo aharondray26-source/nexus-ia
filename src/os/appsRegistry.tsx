@@ -68,6 +68,13 @@ export interface AppDefinition {
   height: number;
 }
 
+// LES HAUTEURS SONT AJUSTÉES AU CONTENU.
+//
+// Aharon : « c'est pas beau ». Vu à l'écran le 6 septembre 2026 : la Météo
+// affiche sa ville, sa température et quatre jours — puis un quart de fenêtre
+// vide en dessous. Une fenêtre trop grande pour ce qu'elle contient fait
+// bâclé, même quand tout marche.
+//
 // Le catalogue de tous les espaces disponibles. Pour en ajouter un nouveau,
 // il suffit de creer son composant et de l'inscrire ici.
 export const APPS: AppDefinition[] = [
@@ -104,15 +111,15 @@ export const APPS: AppDefinition[] = [
 
   // --- Groupe 3 : Outils Créatifs & Utilitaires ---
   { groupe: "Outils", id: "maps", title: "Cartes", icon: "maps", hue: "#50e286", keywords: "carte maps geographie ville lieu itineraire gps openstreetmap", Component: Maps, width: 840, height: 600 },
-  { id: "compass", title: "Boussole", icon: "compass", hue: "#39ddf9", keywords: "boussole cap orientation nord gps inclinaison altitude", Component: Compass, width: 440, height: 480 },
+  { id: "compass", title: "Boussole", icon: "compass", hue: "#39ddf9", keywords: "boussole cap orientation nord gps inclinaison altitude", Component: Compass, width: 440, height: 430 },
   { id: "whiteboard", title: "Tableau blanc", icon: "whiteboard", hue: "#fbd337", keywords: "dessin schema croquis excalidraw", Component: Whiteboard, width: 720, height: 520 },
   { id: "image", title: "Image", icon: "image", hue: "#b26afb", keywords: "photo retouche montage photopea", Component: ImageEditor, width: 760, height: 540 },
   { id: "calculator", title: "Calculatrice", icon: "calculator", hue: "#ace949", keywords: "calcul math nombres", Component: Calculator, width: 320, height: 420 },
-  { id: "converter", title: "Convertisseur", icon: "convert", hue: "#50e2d0", keywords: "devises monnaie unites longueur masse temperature", Component: Converter, width: 380, height: 440 },
+  { id: "converter", title: "Convertisseur", icon: "convert", hue: "#50e2d0", keywords: "devises monnaie unites longueur masse temperature", Component: Converter, width: 380, height: 400 },
   { id: "translator", title: "Traducteur", icon: "translate", hue: "#60a5fa", keywords: "traduire langue anglais espagnol", Component: Translator, width: 440, height: 440 },
-  { id: "dictionary", title: "Dictionnaire", icon: "dictionary", hue: "#42d9f0", keywords: "definition mot vocabulaire", Component: Dictionary, width: 460, height: 460 },
-  { id: "weather", title: "Météo", icon: "weather", hue: "#3abef8", keywords: "temps ville temperature pluie soleil", Component: Weather, width: 420, height: 460 },
-  { id: "clock", title: "Horloge", icon: "clock", hue: "#6e7bf7", keywords: "heure minuteur chronometre concentration", Component: Clock, width: 380, height: 440 },
+  { id: "dictionary", title: "Dictionnaire", icon: "dictionary", hue: "#42d9f0", keywords: "definition mot vocabulaire", Component: Dictionary, width: 460, height: 420 },
+  { id: "weather", title: "Météo", icon: "weather", hue: "#3abef8", keywords: "temps ville temperature pluie soleil", Component: Weather, width: 420, height: 370 },
+  { id: "clock", title: "Horloge", icon: "clock", hue: "#6e7bf7", keywords: "heure minuteur chronometre concentration", Component: Clock, width: 380, height: 400 },
   { id: "today", title: "Aujourd'hui", icon: "today", hue: "#fbc437", keywords: "accueil journee intention activite bilan", Component: Today, width: 420, height: 480 },
 
   // --- Groupe 4 : Divertissement & Système ---
