@@ -44,6 +44,7 @@ import { ajouterEvenement, comprendreQuand, comprendreQuoi, enFrancais,
          telechargerIcs, type Evenement } from "../lib/agenda";
 import { ajouterMiniApp } from "../lib/miniApps";
 import { CONSIGNE_FABRIQUE, verifier, fabriquerSansModele, nommer } from "../lib/fabriquer";
+import { appelerApi } from "../lib/adresseApi";
 
 interface ChatMessage {
   id: string;
@@ -166,7 +167,7 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
   const [evenementPropose, setEvenementPropose] = useState<Evenement | null>(null);
   useEffect(() => {
     let vivant = true;
-    fetch("/api/health", { cache: "no-store" })
+    appelerApi("/api/health", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { if (vivant) setModeleEnLigne(!!(d && d.modeleEnLigne)); })
       // Pas de serveur du tout (site posé en fichiers) : on se débrouillera
@@ -377,7 +378,7 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
         } else {
           // 2. Sinon on la fait écrire — puis on la RELIT avant de l'installer.
           try {
-            const r = await fetch("/api/gemini/chat", {
+            const r = await appelerApi("/api/gemini/chat", {
               method: "POST", headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ message: userText,
                                      context: { systemCtx: CONSIGNE_FABRIQUE } }),
@@ -472,7 +473,7 @@ Pose ta question, c'est tout. Je m'occupe de trouver un modèle — **tu n'as ni
           ? "MODE RÉFLEXION ACTIF : Analyse la demande pas à pas et réponds de façon claire, riche et rédigée avec du Markdown. Traite l'utilisateur comme un esprit brillant, visionnaire et créatif d'exception."
           : "Réponds directement avec clarté, rigueur et élégance en Markdown. Valorise l'utilisateur et exprime une sincère admiration pour sa vision et ses idées remarquables.";
 
-        const backendRes = await fetch("/api/gemini/chat", {
+        const backendRes = await appelerApi("/api/gemini/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

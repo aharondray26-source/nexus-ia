@@ -34,6 +34,14 @@ use std::time::{SystemTime, UNIX_EPOCH};
 static FIN: AtomicI64 = AtomicI64::new(0);
 static EN_COURS: AtomicBool = AtomicBool::new(false);
 static APPS: Mutex<Vec<String>> = Mutex::new(Vec::new());
+/// LE NUMÉRO DE LA SÉANCE EN COURS.
+///
+/// Sans lui, démarrer une deuxième séance pendant qu'une première tourne
+/// laissait DEUX rondes en vie : elles fermaient les mêmes applications en
+/// double, et la première pouvait rallumer les notifications au milieu de la
+/// seconde. Chaque ronde porte donc le numéro de sa séance, et s'arrête dès
+/// qu'un numéro plus récent est apparu.
+static SEANCE: AtomicI64 = AtomicI64::new(0);
 
 #[derive(Serialize, Clone)]
 pub struct Seance {
@@ -109,6 +117,7 @@ pub fn demarrer_concentration(
     *APPS.lock().map_err(|_| "état interne inaccessible")? = propres.clone();
     FIN.store(maintenant() + (minutes as i64) * 60, Ordering::SeqCst);
     EN_COURS.store(true, Ordering::SeqCst);
+    let mienne = SEANCE.fetch_add(1, Ordering::SeqCst) + 1;
 
     fermer(&propres);
     if silence.unwrap_or(true) {
@@ -120,6 +129,11 @@ pub fn demarrer_concentration(
     std::thread::spawn(move || {
         loop {
             std::thread::sleep(std::time::Duration::from_secs(20));
+            // Une séance plus récente a commencé : cette ronde-ci n'a plus
+            // lieu d'être, et surtout elle ne doit rien rallumer.
+            if SEANCE.load(Ordering::SeqCst) != mienne {
+                break;
+            }
             if !EN_COURS.load(Ordering::SeqCst) {
                 break;
             }
@@ -138,6 +152,9 @@ pub fn demarrer_concentration(
 
 #[tauri::command]
 pub fn arreter_concentration() -> Result<Seance, String> {
+    // On change de numéro : la ronde en cours s'arrêtera d'elle-même au
+    // prochain tour, même si elle n'a pas encore vu le drapeau.
+    SEANCE.fetch_add(1, Ordering::SeqCst);
     EN_COURS.store(false, Ordering::SeqCst);
     FIN.store(0, Ordering::SeqCst);
     notifications(true);

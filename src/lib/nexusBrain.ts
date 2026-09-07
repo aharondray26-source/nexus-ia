@@ -1,4 +1,5 @@
 import { auth } from "./googleAuth";
+import { appelerApi } from "./adresseApi";
 
 // Moteur IA Hybride Haute Performance pour Nexus OS
 // Bascule automatiquement entre l'API Gemini Serveur (gemini-3.6-flash),
@@ -26,7 +27,7 @@ export async function queryNexusAIObject(userText: string, history: NexusMessage
   //    son absence apres le premier echec, au lieu de perdre un aller-retour a
   //    chaque fois.
   if (serveurPresent !== false) try {
-    const res = await fetch("/api/gemini/chat", {
+    const res = await appelerApi("/api/gemini/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -332,7 +333,7 @@ export async function askGeminiJson<T>(
 ): Promise<AskResult<T>> {
   // 1) Serveur (present uniquement en mode "application", pas sur le site statique)
   try {
-    const res = await fetch(endpoint, {
+    const res = await appelerApi(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

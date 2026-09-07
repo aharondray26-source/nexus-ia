@@ -97,26 +97,46 @@ pub fn regler_protocole(actif: bool) -> Result<bool, String> {
 }
 
 // ─────────────────────────────────────────────── le clic droit
+//
+//  ATTENTION AU « * », ET C'EST TOUT SAUF UN DÉTAIL.
+//
+//  La clé qui met « Analyser avec Nexus » sur TOUS les fichiers s'appelle
+//  littéralement « HKCU\Software\Classes\*\shell\Nexus ». Or pour PowerShell,
+//  « * » veut dire « n'importe quoi » : `New-Item` et `Test-Path` l'auraient
+//  compris comme un joker, seraient allés voir ailleurs, et la fonctionnalité
+//  phare de cette application n'aurait tout simplement jamais fonctionné —
+//  sans la moindre erreur à l'écran.
+//
+//  On passe donc par `reg.exe`, l'outil de Windows lui-même, qui prend le nom
+//  de la clé au pied de la lettre. C'est moins élégant, et c'est juste.
 
 const MENU: &str = r#"
 $exe = $env:NEXUS_EXE
 # Trois endroits, parce que Windows les traite séparément :
-#   *          → n'importe quel fichier
-#   Directory  → un dossier
-#   Directory\Background → le fond du dossier, clic droit dans le vide
-$cibles = @(
-  'HKCU:\Software\Classes\*\shell\Nexus',
-  'HKCU:\Software\Classes\Directory\shell\Nexus',
-  'HKCU:\Software\Classes\Directory\Background\shell\Nexus'
+#   *                     → n'importe quel fichier
+#   Directory             → un dossier
+#   Directory\Background   → le fond d'un dossier, clic droit dans le vide
+$cles = @(
+  'HKCU\Software\Classes\*\shell\Nexus',
+  'HKCU\Software\Classes\Directory\shell\Nexus',
+  'HKCU\Software\Classes\Directory\Background\shell\Nexus'
 )
-foreach ($c in $cibles) {
-  New-Item -Path $c -Force | Out-Null
-  Set-ItemProperty -Path $c -Name '(Default)' -Value 'Analyser avec Nexus'
-  Set-ItemProperty -Path $c -Name 'Icon' -Value "$exe,0"
-  New-Item -Path "$c\command" -Force | Out-Null
+foreach ($c in $cles) {
+  & reg.exe add $c /ve /t REG_SZ /d 'Analyser avec Nexus' /f | Out-Null
+  & reg.exe add $c /v Icon /t REG_SZ /d "$exe,0" /f | Out-Null
+  # « %1 » est le fichier sur lequel on a cliqué ; « %V » le dossier ouvert.
   $arg = if ($c -like '*Background*') { '"%V"' } else { '"%1"' }
-  Set-ItemProperty -Path "$c\command" -Name '(Default)' -Value ('"' + $exe + '" --fichier ' + $arg)
+  & reg.exe add "$c\command" /ve /t REG_SZ /d "`"$exe`" --fichier $arg" /f | Out-Null
 }
+'ok'
+"#;
+
+const MENU_RETIRER: &str = r#"
+foreach ($c in @(
+  'HKCU\Software\Classes\*\shell\Nexus',
+  'HKCU\Software\Classes\Directory\shell\Nexus',
+  'HKCU\Software\Classes\Directory\Background\shell\Nexus'
+)) { & reg.exe delete $c /f 2>$null | Out-Null }
 'ok'
 "#;
 
@@ -126,13 +146,7 @@ pub fn regler_menu_contextuel(actif: bool) -> Result<bool, String> {
     let script = if actif {
         format!("{UTF8}{MENU}")
     } else {
-        format!(
-            "{UTF8}\
-             foreach ($c in @('HKCU:\\Software\\Classes\\*\\shell\\Nexus', \
-                              'HKCU:\\Software\\Classes\\Directory\\shell\\Nexus', \
-                              'HKCU:\\Software\\Classes\\Directory\\Background\\shell\\Nexus')) \
-             {{ Remove-Item -Path $c -Recurse -ErrorAction SilentlyContinue }} 'ok'"
-        )
+        format!("{UTF8}{MENU_RETIRER}")
     };
     powershell(&script, &[("EXE", &chemin)]).texte()?;
     Ok(actif)
@@ -143,7 +157,10 @@ pub fn regler_menu_contextuel(actif: bool) -> Result<bool, String> {
 const ETAT: &str = r#"
 $d = $null -ne (Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name 'Nexus' -ErrorAction SilentlyContinue)
 $p = Test-Path 'HKCU:\Software\Classes\nexus'
-$m = Test-Path 'HKCU:\Software\Classes\*\shell\Nexus'
+# Ici encore : « Test-Path » avec un « * » répondrait « oui » dès qu'une clé
+# quelconque existe. `reg query` regarde LA clé, et son code de sortie dit tout.
+& reg.exe query 'HKCU\Software\Classes\*\shell\Nexus' 2>$null | Out-Null
+$m = ($LASTEXITCODE -eq 0)
 [pscustomobject]@{ demarrage = [bool]$d; protocole = [bool]$p; menu = [bool]$m } | ConvertTo-Json -Compress
 "#;
 

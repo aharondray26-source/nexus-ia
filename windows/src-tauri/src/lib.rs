@@ -286,10 +286,19 @@ pub fn lancer() {
             if let Some((sorte, valeur)) = au_demarrage.clone() {
                 *ARGUMENT.lock().unwrap() = Some((sorte, valeur));
             }
-            if discret {
-                if let Some(f) = poignee.get_webview_window("main") {
-                    let _ = f.hide();
-                }
+            // LA FENÊTRE NAÎT CACHÉE, ET C'EST VOULU.
+            //
+            // Elle était déclarée « visible » dans la configuration, et on la
+            // cachait ensuite quand Windows lançait Nexus au démarrage de la
+            // session : on voyait donc une fenêtre APPARAÎTRE PUIS DISPARAÎTRE
+            // à chaque allumage du PC. C'est le genre de clignotement qui fait
+            // croire à un logiciel mal fait — ou à un virus.
+            //
+            // Elle naît donc cachée, et c'est nous qui la montrons — sauf en
+            // mode discret. Si quoi que ce soit échouait ici, l'icône près de
+            // l'horloge est déjà posée : Nexus reste joignable.
+            if !discret {
+                montrer(&poignee);
             }
             Ok(())
         })

@@ -12,7 +12,7 @@
 //  l'objet, au lieu d'espérer.
 // ============================================================================
 import { trierLaDemande, quiDemande, demanderAuModele, reponse,
-         FENETRE_MIN } from "../lib/modele.mjs";
+         FENETRE_MIN, porte } from "../lib/modele.mjs";
 
 /// Ce qu'on demande, selon l'adresse appelée.
 const TACHES = {
@@ -62,7 +62,7 @@ function extraire(texte) {
   return null;
 }
 
-export default async (requete) => {
+export default porte(async (requete) => {
   if (requete.method === "OPTIONS") return reponse({}, 204);
   if (requete.method !== "POST") return reponse({ error: "méthode non permise" }, 405);
 
@@ -100,4 +100,4 @@ export default async (requete) => {
     return reponse({ error: e.message, code: "sans-modele", detail: e.detail },
                    e.detail ? 502 : 503);
   }
-};
+});

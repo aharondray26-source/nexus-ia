@@ -19,14 +19,14 @@
 // ============================================================================
 
 import { trierLaDemande, quiDemande, demanderAuModele, reponse, enTetes,
-         FENETRE_MIN } from "../lib/modele.mjs";
+         FENETRE_MIN, porte } from "../lib/modele.mjs";
 
 const CONSIGNE_PAR_DEFAUT =
   "Tu es Nexus, l'assistant d'Aharon, lycéen français. Réponds en français, "
   + "avec justesse, en Markdown, sans bavardage. Si c'est un exercice, montre "
   + "les étapes. Si tu n'es pas sûr, dis-le plutôt que d'inventer.";
 
-export default async (requete) => {
+export default porte(async (requete) => {
   if (requete.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: enTetes() });
   }
@@ -82,5 +82,4 @@ export default async (requete) => {
           + "Site configuration → Environment variables, puis redéploie.",
     }, e.detail ? 502 : 503);
   }
-};
-
+});

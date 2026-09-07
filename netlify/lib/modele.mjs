@@ -189,3 +189,59 @@ export function enTetes() {
 export function reponse(objet, statut = 200) {
   return new Response(JSON.stringify(objet), { status: statut, headers: enTetes() });
 }
+
+/* ==========================================================================
+   QUI A LE DROIT D'APPELER LE MODÈLE
+   ==========================================================================
+
+   IL MANQUAIT « Access-Control-Allow-Origin ». Sans cet en-tête, un navigateur
+   REFUSE la réponse à tout ce qui n'est pas le site lui-même. Conséquence :
+   l'application Windows et l'application macOS — qui affichent le site depuis
+   leur propre adresse — n'avaient AUCUNE intelligence. Pas un message
+   d'erreur : le navigateur bloque en silence, et Nexus concluait simplement
+   « il n'y a pas de serveur ».
+
+   MAIS PAS « * » NON PLUS. Aharon : « j'ai pas envie que tout le monde
+   l'utilise, elle va être épuisée. » Autoriser n'importe quel site, ce serait
+   offrir sa clé à qui veut la prendre. On liste donc précisément qui a le
+   droit, et l'on renvoie l'origine demandée — c'est la façon correcte de
+   faire, et elle ne coûte rien.                                            */
+
+const ORIGINES = new Set([
+  "https://nexus-espace.netlify.app",
+  // Les applications de bureau. Tauri sert le site depuis ces adresses-là :
+  // « tauri://localhost » sur macOS, « http://tauri.localhost » sur Windows.
+  "tauri://localhost",
+  "http://tauri.localhost",
+  "https://tauri.localhost",
+]);
+
+export function origineAcceptee(origine) {
+  if (!origine) return null;                       // pas un appel de navigateur
+  if (ORIGINES.has(origine)) return origine;
+  // Le développement, et l'application macOS qui sert le site sur un petit
+  // serveur local.
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d{2,5})?$/.test(origine)) return origine;
+  // Les aperçus de Netlify : « https://<quelque-chose>--nexus-espace.netlify.app ».
+  if (/^https:\/\/[a-z0-9-]+--nexus-espace\.netlify\.app$/.test(origine)) return origine;
+  return null;
+}
+
+/// Rajoute l'autorisation à une réponse déjà faite.
+export function avecOrigine(rep, requete) {
+  const o = origineAcceptee(requete.headers.get("origin"));
+  if (!o) return rep;
+  const h = new Headers(rep.headers);
+  h.set("Access-Control-Allow-Origin", o);
+  // « Vary » dit aux caches que la réponse dépend de qui demande. Sans lui,
+  // le cache servirait l'autorisation d'un autre, et l'appel serait refusé.
+  h.set("Vary", "Origin");
+  return new Response(rep.body, { status: rep.status, headers: h });
+}
+
+/// La porte d'entrée d'une fonction : elle traite, puis elle autorise.
+/// On l'écrit une fois ici plutôt que dans chacune des quinze réponses —
+/// sinon il en manquera une, et ce sera celle qui compte.
+export function porte(traiter) {
+  return async (requete) => avecOrigine(await traiter(requete), requete);
+}

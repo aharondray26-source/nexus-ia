@@ -101,8 +101,25 @@ verifier("l'installateur s'installe SANS droits administrateur",
          conf.bundle?.windows?.nsis?.installMode);
 verifier("l'installateur parle français",
          (conf.bundle?.windows?.nsis?.languages ?? []).includes("French"));
-verifier("la fenêtre principale s'appelle « main »",
-         conf.app.windows[0].label === "main");
+const fenetre = conf.app.windows[0];
+verifier("la fenêtre principale s'appelle « main »", fenetre.label === "main");
+
+// LE GLISSER-DÉPOSER, ET C'EST UN PIÈGE À L'ENVERS.
+//
+// « dragDropEnabled » à VRAI veut dire « c'est la coquille qui s'occupe des
+// fichiers déposés » — et la page web ne reçoit alors RIEN. Or c'est la page
+// qui gère ça dans Nexus : glisser un fichier sur la mascotte pour qu'elle le
+// lise. Laissé à vrai (c'est la valeur par défaut), la fonctionnalité serait
+// morte dans l'application, et seulement dans l'application.
+verifier("le glisser-déposer est laissé à la page (la mascotte attrape les fichiers)",
+         fenetre.dragDropEnabled === false, String(fenetre.dragDropEnabled));
+
+// La fenêtre naît cachée : sinon, au démarrage du PC, on la voit apparaître
+// puis disparaître. C'est Rust qui la montre, sauf en mode discret.
+verifier("la fenêtre naît cachée (pas de clignotement au démarrage)",
+         fenetre.visible === false, String(fenetre.visible));
+verifier("… et le code la montre bien quand ce n'est pas le démarrage",
+         toutLeRust.includes("if !discret {") && toutLeRust.includes("montrer(&poignee)"));
 
 const cap = JSON.parse(readFileSync(join(WIN, "capabilities", "principal.json"), "utf8"));
 verifier("les permissions visent la fenêtre principale",
@@ -166,6 +183,28 @@ verifier("aucune valeur d'utilisateur collée dans un script PowerShell",
 const utiliseEnv = scripts.filter((s) => s.code.includes("$env:NEXUS_")).length;
 verifier("les scripts lisent les valeurs par variables d'environnement",
          utiliseEnv >= 6, `${utiliseEnv} scripts sur ${scripts.length}`);
+
+// LE PIÈGE DU « * » DANS LE REGISTRE.
+//
+// La clé qui met « Analyser avec Nexus » sur tous les fichiers s'appelle
+// littéralement « HKCU\Software\Classes\*\shell\Nexus ». Pour PowerShell,
+// « * » veut dire « n'importe quoi » : New-Item, Test-Path et Remove-Item
+// l'auraient pris pour un joker, seraient allés voir ailleurs, et la
+// fonctionnalité phare de l'application n'aurait jamais marché — sans la
+// moindre erreur affichée. Ces chemins-là doivent passer par `reg.exe`, qui
+// prend le nom au pied de la lettre.
+{
+  const jokers = new RegExp(
+    "(New-Item|Test-Path|Remove-Item|Set-ItemProperty|Get-ItemProperty)" +
+    "[^\n]*HK(CU|LM)[^\n]*\\*", "g");
+  const coupables: string[] = [];
+  for (const s2 of scripts) {
+    const m = s2.code.match(jokers);
+    if (m) coupables.push(`${s2.fichier} · ${s2.nom} : ${m[0].slice(0, 60)}`);
+  }
+  verifier("aucun chemin de registre avec « * » confié à PowerShell",
+           coupables.length === 0, coupables.join(" ; ") || "ils passent tous par reg.exe");
+}
 
 verifier("aucune console noire ne clignote",
          rust["ps.rs"].includes("CREATE_NO_WINDOW") || rust["ps.rs"].includes("0x0800_0000"));

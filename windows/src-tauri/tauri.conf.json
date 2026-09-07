@@ -19,9 +19,9 @@
         "center": true,
         "resizable": true,
         "maximizable": true,
-        "visible": true,
+        "visible": false,
         "focus": true,
-        "dragDropEnabled": true,
+        "dragDropEnabled": false,
         "theme": null,
         "backgroundColor": "#09090b"
       }
@@ -30,13 +30,23 @@
       "csp": null,
       "assetProtocol": {
         "enable": true,
-        "scope": ["$HOME/**", "$APPDATA/**", "$DESKTOP/**", "$DOCUMENT/**", "$DOWNLOAD/**", "$PICTURE/**"]
+        "scope": [
+          "$HOME/**",
+          "$APPDATA/**",
+          "$DESKTOP/**",
+          "$DOCUMENT/**",
+          "$DOWNLOAD/**",
+          "$PICTURE/**"
+        ]
       }
     }
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis", "msi"],
+    "targets": [
+      "nsis",
+      "msi"
+    ],
     "publisher": "Aharon Dray",
     "copyright": "© Aharon Dray",
     "category": "Productivity",
@@ -51,7 +61,10 @@
     "windows": {
       "nsis": {
         "installMode": "currentUser",
-        "languages": ["French", "English"],
+        "languages": [
+          "French",
+          "English"
+        ],
         "displayLanguageSelector": false
       }
     }

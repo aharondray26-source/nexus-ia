@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUpRight, BookOpen, CalendarDays, Check, ChevronDown, Chrome, CloudSun, Download, Eye, EyeOff, Gamepad2, GraduationCap, GripVertical, History, Image as ImageIcon, LayoutGrid, Mail, Maximize2, MessageSquare, Minimize2, Monitor, Moon, Music, Palette, Play, Plus, RotateCcw, Search, Settings2, Sparkles, StickyNote, Sun, Waves } from "lucide-react";
+import { AppWindow, ArrowUpRight, BookOpen, CalendarDays, Check, ChevronDown, Chrome, CloudSun, Download, Eye, EyeOff, Gamepad2, GraduationCap, GripVertical, History, Image as ImageIcon, LayoutGrid, Mail, Maximize2, MessageSquare, Minimize2, Monitor, Moon, Music, Palette, Play, Plus, RotateCcw, Search, Settings2, Sparkles, StickyNote, Sun, Waves } from "lucide-react";
 import { useWindows } from "./useWindows";
 import { useSettings } from "./useSettings";
 import { searchShortcutLabel } from "../lib/platform";
@@ -819,38 +819,64 @@ export default function ControlRoom() {
             </span>
             <kbd className="nx-chip shrink-0 text-[10px] font-mono">{searchShortcutLabel()}</kbd>
           </button>
-          {/* NEXUS PARTOUT — les trois portes d'entree, des l'accueil.
+          {/* NEXUS PARTOUT — les portes d'entree, des l'accueil.
               Epurees pour ne pas encombrer, assez presentes pour donner envie.
-              Elles arrivent l'une apres l'autre, comme tout le reste. */}
-          <div className="nx-entre-liste mt-5 grid w-full max-w-xl grid-cols-1 items-stretch gap-2.5 sm:grid-cols-3">
+              Elles arrivent l'une apres l'autre, comme tout le reste.
+
+              Aharon : « n'oublie pas de le rappeler dans le site, parce qu'on
+              a que l'application ». Il avait raison : Nexus pour Windows
+              existait, et RIEN sur le site ne le disait. Une application dont
+              personne n'apprend l'existence n'existe pas. Elle a donc sa porte
+              ici, au meme rang que les autres. */}
+          <div className="nx-entre-liste mt-5 grid w-full max-w-xl grid-cols-2 items-stretch gap-2.5 sm:grid-cols-4">
             {([
-              { href: "/Nexus-macOS.zip", telecharger: true, icone: <Monitor size={15} />,
+              { espace: "", href: "/Nexus-macOS.zip", telecharger: true, icone: <Monitor size={15} />,
                 titre: "Sur ton Mac", detail: "Barre des menus, widgets, dock" },
-              { href: "?app=mac", telecharger: false, icone: <Chrome size={15} />,
+              // Windows n'a pas de fichier a telecharger tout de suite : on
+              // ouvre l'espace qui explique, clic par clic, comment l'obtenir.
+              { espace: "pc", href: "", telecharger: false, icone: <AppWindow size={15} />,
+                titre: "Sur ton PC", detail: "Windows · Alt + Espace, partout" },
+              { espace: "", href: "?app=mac", telecharger: false, icone: <Chrome size={15} />,
                 titre: "Navigateur", detail: "Chaque onglet devient Nexus" },
-              { href: "https://neo-school-nine.vercel.app/", telecharger: false, externe: true,
+              { espace: "", href: "https://neo-school-nine.vercel.app/", telecharger: false, externe: true,
                 icone: <GraduationCap size={15} />,
                 titre: "NeoSchool", detail: "Notes, devoirs, emploi du temps" },
-            ] as const).map((x) => (
-              <a
-                key={x.titre}
-                href={x.href}
-                {...(x.telecharger ? { download: true } : {})}
-                {...("externe" in x && x.externe
-                  ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                className="nx-boite group flex h-full flex-col gap-1 rounded-2xl px-3.5 py-3 text-left "
-              >
-                <span
-                  className="flex h-7 w-7 items-center justify-center rounded-xl transition-transform duration-[260ms] [transition-timing-function:var(--appui)] group-hover:scale-110"
-                  style={{ backgroundColor: "color-mix(in srgb, var(--accent) 18%, transparent)",
-                           color: "var(--accent-texte)" }}
+            ] as const).map((x) => {
+              const dedans = (
+                <>
+                  <span
+                    className="flex h-7 w-7 items-center justify-center rounded-xl transition-transform duration-[260ms] [transition-timing-function:var(--appui)] group-hover:scale-110"
+                    style={{ backgroundColor: "color-mix(in srgb, var(--accent) 18%, transparent)",
+                             color: "var(--accent-texte)" }}
+                  >
+                    {x.icone}
+                  </span>
+                  <span className="text-xs font-semibold text-nexus-text">{x.titre}</span>
+                  <span className="text-[10.5px] leading-snug text-nexus-muted">{x.detail}</span>
+                </>
+              );
+              const habits =
+                "nx-boite group flex h-full flex-col gap-1 rounded-2xl px-3.5 py-3 text-left";
+              // Une porte qui ouvre un espace de Nexus est un BOUTON, pas un
+              // lien : un lien vide recharge la page et l'on perd tout.
+              return x.espace ? (
+                <button key={x.titre} type="button" className={habits}
+                        onClick={() => openApp(x.espace, { width: 580, height: 660 })}>
+                  {dedans}
+                </button>
+              ) : (
+                <a
+                  key={x.titre}
+                  href={x.href}
+                  {...(x.telecharger ? { download: true } : {})}
+                  {...("externe" in x && x.externe
+                    ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  className={habits}
                 >
-                  {x.icone}
-                </span>
-                <span className="text-xs font-semibold text-nexus-text">{x.titre}</span>
-                <span className="text-[10.5px] leading-snug text-nexus-muted">{x.detail}</span>
-              </a>
-            ))}
+                  {dedans}
+                </a>
+              );
+            })}
           </div>
 
           <button onClick={() => setRevealed(true)}

@@ -39,6 +39,7 @@ import {
   FileUp,
   Save,
 } from "lucide-react";
+import { appelerApi } from "../lib/adresseApi";
 
 export interface DocumentItem {
   id: string;
@@ -401,7 +402,7 @@ export default function Docs() {
 
       // 1. Essai avec l'API Gemini dédiée aux documents
       try {
-        const docRes = await fetch("/api/gemini/document", {
+        const docRes = await appelerApi("/api/gemini/document", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

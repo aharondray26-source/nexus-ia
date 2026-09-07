@@ -12,28 +12,28 @@
 cd "$(dirname "$0")/.."
 echec=0
 
-echo "══ 1/10  Le code tient debout ══"
+echo "══ 1/12  Le code tient debout ══"
 npx tsc --noEmit || echec=1
 echo "  ✓ types"
 
 echo
-echo "══ 2/10  Le site se construit ══"
+echo "══ 2/12  Le site se construit ══"
 npm run build 2>&1 | tail -2 || echec=1
 
 echo
-echo "══ 3/10  Le calcul certain ne se trompe pas ══"
+echo "══ 3/12  Le calcul certain ne se trompe pas ══"
 # Un modèle qui tourne dans un navigateur se trompe en calcul AVEC APLOMB.
 # Ce que Nexus affirme, il doit pouvoir le prouver.
 node outils/maths.cjs | tail -1 || echec=1
 
 echo
-echo "══ 4/10  Les formules sont lisibles ══"
+echo "══ 4/12  Les formules sont lisibles ══"
 # Les modèles écrivent les maths en LaTeX ; Nexus affiche du texte. Sans
 # nettoyage, on lit « \( U_1 \times q^{(n-1)} \) ».
 node outils/formules.cjs | tail -2 || echec=1
 
 echo
-echo "══ 5/10  Les téléchargements mènent à la dernière version ══"
+echo "══ 5/12  Les téléchargements mènent à la dernière version ══"
 if ! node outils/telechargements.cjs; then
   # LA PANNE QUI REVIENT TOUJOURS, ET QUI N'EST PAS UNE PANNE.
   #
@@ -54,20 +54,20 @@ if ! node outils/telechargements.cjs; then
 fi
 
 echo
-echo "══ 6/10  La bureautique rend de VRAIS fichiers ══"
+echo "══ 6/12  La bureautique rend de VRAIS fichiers ══"
 # Un .docx de 200 octets et un PDF sans texte passeraient pour des succès :
 # le banc relit chaque fichier produit.
 npx tsx outils/bureautique.mts | tail -1 || echec=1
 
 echo
-echo "══ 7/10  Les deux mascottes sont à parité ══"
+echo "══ 7/12  Les deux mascottes sont à parité ══"
 # Aharon : « aucune capacité que la mascotte du site ait et que celle de macOS
 # n'ait pas ». Le banc vérifie aussi que chaque case cochée existe VRAIMENT
 # dans le code des deux côtés.
 npx tsx outils/parite.mts | tail -1 || echec=1
 
 echo
-echo "══ 8/10  L'application Windows tient debout ══"
+echo "══ 8/12  L'application Windows tient debout ══"
 # On ne peut pas compiler du Rust sur ce Mac — le réseau bloque les serveurs de
 # Rust — et l'on ne peut pas lancer Windows dessus. Mais on vérifie ce qui
 # casse VRAIMENT dans ce genre de projet et qui ne se voit pas à la
@@ -76,13 +76,24 @@ echo "══ 8/10  L'application Windows tient debout ══"
 npx tsx outils/windows.mts | tail -1 || echec=1
 
 echo
-echo "══ 9/10  La mascotte comprend bien ce qu'on lui demande sur le PC ══"
+echo "══ 9/12  La mascotte comprend bien ce qu'on lui demande sur le PC ══"
 # Un routeur d'intentions se casse toujours pareil : il attrape trop.
 # « c'est quoi VLC ? » ne doit pas installer VLC.
 npx tsx outils/intentions.mts | tail -1 || echec=1
 
 echo
-echo "══ 10/10  L'atelier qui fabrique l'installateur Windows ══"
+echo "══ 10/12  Le modèle est joignable depuis les applications ══"
+# Il manquait l'autorisation d'origine : les applications Windows et macOS
+# n'avaient AUCUNE intelligence, sans le moindre message. Mais pas d'ouverture
+# à tout le monde non plus — la clé d'Aharon serait vidée.
+node outils/origines.mjs | tail -1 || echec=1
+
+echo
+echo "══ 11/12  Nexus trouve son serveur, où qu'il soit ══"
+npx tsx outils/adresse-api.mts | tail -1 || echec=1
+
+echo
+echo "══ 12/12  L'atelier qui fabrique l'installateur Windows ══"
 if [ -f .github/workflows/windows.yml ]; then
   echo "  ✓ .github/workflows/windows.yml est là — GitHub fabriquera le .exe"
   echo "    (Actions → « Nexus pour Windows » → Run workflow)"
