@@ -130,7 +130,20 @@ fn brancher_raccourci(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::
 /// c'est ce que les gens attendent, et c'est ce qui rend Alt+Espace instantané
 /// — Nexus est déjà démarré, il ne fait que se montrer.
 fn brancher_icone(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> {
-    let ouvrir = MenuItem::with_id(app, "ouvrir", "Ouvrir Nexus", true, Some("Alt+Espace"))?;
+    // ⚠ LE RACCOURCI S'ÉCRIT DANS LE LIBELLÉ, PAS DANS LE CHAMP « ACCÉLÉRATEUR ».
+    //
+    // J'avais écrit Some("Alt+Espace") dans le champ prévu pour ça. Windows ne
+    // connaît pas de touche nommée « Espace » — elle s'appelle « Space ». Ce
+    // champ est ANALYSÉ au démarrage : une valeur qu'il ne comprend pas rend
+    // une erreur, l'erreur remonte jusqu'au lancement, et Nexus ne s'ouvre
+    // PAS DU TOUT. Sur une machine Windows, on aurait vu l'application ne
+    // jamais démarrer, sans le moindre message.
+    //
+    // De toute façon ce champ ne sert qu'à AFFICHER le raccourci : le vrai est
+    // posé par `brancher_raccourci`. On l'écrit donc en clair dans le texte du
+    // menu, en français, et plus rien ne peut être mal compris.
+    let ouvrir = MenuItem::with_id(app, "ouvrir", "Ouvrir Nexus   ·   Alt + Espace",
+                                   true, None::<&str>)?;
     let palette = MenuItem::with_id(app, "palette", "Demander quelque chose…", true, None::<&str>)?;
     let loupe = MenuItem::with_id(app, "loupe", "Lire une zone de l'écran", true, None::<&str>)?;
     let concentration =
@@ -186,17 +199,20 @@ pub fn lancer() {
     // réveiller devant une fenêtre qu'on n'a pas demandée est insupportable.
     let discret = arguments.iter().any(|a| a == "--discret");
 
-    let mut constructeur = tauri::Builder::default()
-        .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_notification::init());
+    let mut constructeur = tauri::Builder::default();
 
     #[cfg(desktop)]
     {
-        // UNE SEULE COPIE DE NEXUS À LA FOIS. Sans ça, un clic droit dans
-        // l'Explorateur lance une deuxième application : deux icônes, deux
-        // fenêtres, et le raccourci global qui ne marche plus dans l'une des
-        // deux. Le second lancement passe donc son message au premier.
+        // UNE SEULE COPIE DE NEXUS À LA FOIS, ET CE GREFFON PASSE EN PREMIER.
+        //
+        // Sans lui, un clic droit dans l'Explorateur lance une DEUXIÈME
+        // application : deux icônes près de l'horloge, deux fenêtres, et le
+        // raccourci Alt+Espace qui ne marche plus dans l'une des deux. Le
+        // second lancement passe donc son message au premier, puis s'arrête.
+        //
+        // Il doit être posé AVANT tous les autres : c'est lui qui décide si
+        // cette copie a le droit de continuer, et il ne sert à rien de
+        // préparer le reste pour une copie qui va se fermer aussitôt.
         constructeur = constructeur.plugin(tauri_plugin_single_instance::init(
             |app, argv, _dossier| {
                 if let Some((sorte, valeur)) = argument_utile(&argv) {
@@ -208,6 +224,9 @@ pub fn lancer() {
     }
 
     constructeur
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_notification::init())
         .invoke_handler(tauri::generate_handler![
             // ── les fichiers
             fichiers::chercher_fichiers,
