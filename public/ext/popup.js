@@ -99,3 +99,10 @@ chrome.commands?.getAll?.((liste) => {
   if (c && c.shortcut) k.textContent = c.shortcut;
   else k.remove();
 });
+
+// Le numéro de version, lu depuis le manifeste : il ne peut pas mentir.
+try {
+  const v = chrome.runtime.getManifest().version;
+  const e = document.getElementById("version");
+  if (e) e.textContent = v;
+} catch (err) { /* hors extension : on n'affiche rien */ }

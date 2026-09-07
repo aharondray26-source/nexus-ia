@@ -1,0 +1,102 @@
+# ============================================================================
+#  FABRIQUER NEXUS POUR WINDOWS
+#
+#  Aharon n'a pas de PC sous Windows, et ce Mac ne peut pas fabriquer un
+#  programme Windows. C'est GitHub qui le fait : il prête une vraie machine
+#  Windows, y construit Nexus, et dépose l'installateur.
+#
+#  COMMENT AHARON S'EN SERT — c'est tout ce qu'il a besoin de retenir :
+#    1. github.com/<son dépôt> → onglet « Actions »
+#    2. « Nexus pour Windows » à gauche → bouton « Run workflow »
+#    3. dix minutes plus tard, l'installateur est en bas de la page, dans
+#       « Artifacts ». Il se télécharge en un clic.
+#
+#  Et à chaque fois qu'il pousse une modification, la construction se relance
+#  toute seule : il ne peut donc pas se retrouver avec un installateur en
+#  retard sur le site, ce qui lui est déjà arrivé avec l'application Mac.
+# ============================================================================
+
+name: Nexus pour Windows
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "windows/**"
+      - "src/**"
+      - "public/**"
+      - "package.json"
+      - ".github/workflows/windows.yml"
+  # Le bouton « Run workflow », pour reconstruire quand on veut.
+  workflow_dispatch:
+
+concurrency:
+  # Deux poussées coup sur coup ne doivent pas fabriquer deux fois : on garde
+  # la dernière, et l'on arrête celle d'avant.
+  group: windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  construire:
+    name: Construire l'installateur
+    runs-on: windows-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Installer Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Garder les dépendances Rust d'une fois sur l'autre
+        # Sans ce cache, chaque construction recompile trois cents caisses :
+        # quinze minutes au lieu de trois.
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: windows/src-tauri -> target
+
+      - name: Installer les dépendances du site
+        run: npm ci
+
+      - name: Vérifier que le code tient debout
+        run: npx tsc --noEmit
+
+      - name: Construire le site
+        # L'application EMBARQUE le site : s'il n'est pas construit d'abord,
+        # l'installateur contient une page blanche. C'est exactement le piège
+        # qui a déjà mordu avec l'application macOS.
+        run: npm run build
+
+      - name: Relire l'application Windows
+        # Les noms de commandes entre le Rust et l'interface, les fichiers que
+        # la configuration promet, les garde-fous des automatisations.
+        run: npx tsx outils/windows.mts
+
+      - name: Fabriquer l'installateur
+        working-directory: windows
+        run: npx tauri build
+
+      - name: Déposer l'installateur
+        uses: actions/upload-artifact@v4
+        with:
+          name: Nexus-Windows-installateur
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            windows/src-tauri/target/release/bundle/nsis/*.exe
+            windows/src-tauri/target/release/bundle/msi/*.msi
+
+      - name: Déposer aussi le programme seul
+        # Pour essayer sans installer : on lance le .exe et voilà.
+        uses: actions/upload-artifact@v4
+        with:
+          name: Nexus-Windows-programme-seul
+          if-no-files-found: error
+          retention-days: 30
+          path: windows/src-tauri/target/release/nexus.exe

@@ -72,7 +72,7 @@ export default function QuickCapture() {
                 className="nx-btn nx-btn-secondary flex-1 text-[11px]"
                 style={
                   kind === k
-                    ? { borderColor: "var(--accent)", color: "var(--accent)" }
+                    ? { borderColor: "var(--accent)", color: "var(--accent-texte)" }
                     : { borderColor: "#27272a", color: "#a1a1aa" }
                 }
               >

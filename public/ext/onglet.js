@@ -396,8 +396,12 @@ function poserLaVignette(p, hote, adresse) {
   //    tromper, elle marche pour les sous-domaines, et elle n'a besoin
   //    d'aucune liste ecrite a la main. Il faut la permission « favicon ».
   //    C'etait la bonne reponse depuis le debut ; je passais a cote.
+  //    Firefox n'a pas cette permission : on ne l'y demande donc pas, sinon
+  //    chaque icone commence par une requete qui echoue et l'affichage
+  //    clignote. On regarde le manifeste plutot que de deviner le navigateur.
   try {
-    if (chrome.runtime && chrome.runtime.getURL) {
+    const permis = (chrome.runtime.getManifest().permissions || []).includes("favicon");
+    if (permis && chrome.runtime.getURL) {
       sources.push(chrome.runtime.getURL(
         "/_favicon/?pageUrl=" + encodeURIComponent(adresse || ("https://" + hote + "/")) + "&size=64"));
     }
@@ -1057,7 +1061,39 @@ function construireReglages() {
       // Ces trois-là changent l'heure : on la redessine tout de suite, sinon on
       // coche et il ne se passe rien pendant une seconde entière.
       if (champ === "secondes" || champ === "chiffresCadran"
-          || champ === "dateSousHeure") { // La version, ecrite depuis le manifeste : impossible qu'elle mente.
+          || champ === "dateSousHeure") { // LA LOUPE, ANNONCÉE SUR LE NOUVEL ONGLET.
+//
+// Elle ne peut pas s'utiliser ICI — le nouvel onglet est une page de
+// l'extension, pas une page web — mais c'est ici qu'on la découvre. Le bouton
+// dit ce qu'elle fait et comment l'appeler ; un clic ouvre la dernière page
+// web consultée et y lance la Loupe, ce qui évite d'avoir à l'expliquer.
+try {
+  const t = document.getElementById("loupeTouche");
+  chrome.commands?.getAll?.((l) => {
+    const c = (l || []).find((x) => x.name === "loupe");
+    if (t) { if (c && c.shortcut) t.textContent = c.shortcut; else t.remove(); }
+  });
+  document.getElementById("loupeInfo")?.addEventListener("click", () => {
+    // On cherche le dernier onglet de vraie page web : la Loupe ne peut rien
+    // faire sur une page de Chrome, et le dire vaut mieux que ne rien faire.
+    chrome.tabs.query({ currentWindow: true }, (onglets) => {
+      const bon = (onglets || [])
+        .filter((o) => /^https?:/.test(o.url || ""))
+        .sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0))[0];
+      if (!bon) {
+        const b = document.getElementById("loupeInfo");
+        if (b) { b.lastChild.textContent = ""; b.childNodes[2].nodeValue = " Ouvre d'abord une page "; }
+        return;
+      }
+      chrome.tabs.update(bon.id, { active: true }, () => {
+        chrome.runtime.sendMessage({ k: "ouvrir-loupe", tabId: bon.id },
+                                   () => { void chrome.runtime.lastError; });
+      });
+    });
+  });
+} catch (e) { /* hors extension : le bouton ne sert à rien */ }
+
+// La version, ecrite depuis le manifeste : impossible qu'elle mente.
 try {
   const v = chrome.runtime.getManifest().version;
   const e = document.getElementById("version");

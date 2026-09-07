@@ -76,3 +76,67 @@ export async function fichierDistant(url: string): Promise<Uint8Array> {
 }
 
 export const enOctets = (t: string) => new TextEncoder().encode(t);
+
+// ============================================================================
+//  LIRE un zip. On n'en écrivait que.
+//
+//  Il en faut un pour ouvrir les .docx : un fichier Word est un ZIP dont le
+//  texte vit dans `word/document.xml`. Plutôt que d'ajouter une bibliothèque
+//  pour ça, on se sert de `DecompressionStream`, présent dans tous les
+//  navigateurs récents — et l'on dit franchement quand il manque, au lieu de
+//  rendre un document vide.
+// ============================================================================
+
+/// Les fichiers d'un zip, par leur nom. Ne décompresse QUE ce qu'on demande
+/// (`seulement`) : un .docx contient une vingtaine de pièces dont une seule
+/// nous intéresse.
+export async function lireZip(
+  octets: Uint8Array,
+  seulement?: (nom: string) => boolean,
+): Promise<Record<string, Uint8Array>> {
+  const vue = new DataView(octets.buffer, octets.byteOffset, octets.byteLength);
+  const u16 = (p: number) => vue.getUint16(p, true);
+  const u32 = (p: number) => vue.getUint32(p, true);
+
+  // La fin du catalogue est en queue de fichier, après un commentaire de
+  // longueur libre : on la cherche à reculons.
+  let fin = -1;
+  for (let p = octets.length - 22; p >= 0 && p > octets.length - 66000; p--) {
+    if (u32(p) === 0x06054b50) { fin = p; break; }
+  }
+  if (fin < 0) throw new Error("Ce fichier n'est pas un zip lisible.");
+
+  const nombre = u16(fin + 10);
+  let p = u32(fin + 16);
+  const out: Record<string, Uint8Array> = {};
+  const decodeur = new TextDecoder();
+
+  for (let i = 0; i < nombre; i++) {
+    if (u32(p) !== 0x02014b50) break;
+    const methode = u16(p + 10);
+    const taille = u32(p + 20);            // compressée
+    const nomLong = u16(p + 28);
+    const extraLong = u16(p + 30);
+    const commentLong = u16(p + 32);
+    const local = u32(p + 42);
+    const nom = decodeur.decode(octets.subarray(p + 46, p + 46 + nomLong));
+    p += 46 + nomLong + extraLong + commentLong;
+
+    if (seulement && !seulement(nom)) continue;
+    if (u32(local) !== 0x04034b50) continue;
+    const debut = local + 30 + u16(local + 26) + u16(local + 28);
+    const brut = octets.subarray(debut, debut + taille);
+
+    if (methode === 0) { out[nom] = brut; continue; }
+    if (methode !== 8) continue;           // une compression qu'on ne sait pas lire
+    if (typeof DecompressionStream === "undefined") {
+      throw new Error("Ce navigateur ne sait pas décompresser un .docx.");
+    }
+    const flux = new Blob([brut as BlobPart]).stream()
+      .pipeThrough(new DecompressionStream("deflate-raw"));
+    out[nom] = new Uint8Array(await new Response(flux).arrayBuffer());
+  }
+  return out;
+}
+
+export const enTexte = (o: Uint8Array) => new TextDecoder().decode(o);

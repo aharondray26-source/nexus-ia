@@ -1,0 +1,59 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Nexus",
+  "version": "1.0.0",
+  "identifier": "fr.aharondray.nexus",
+  "build": {
+    "frontendDist": "../../dist"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Nexus",
+        "width": 1180,
+        "height": 780,
+        "minWidth": 880,
+        "minHeight": 560,
+        "center": true,
+        "resizable": true,
+        "maximizable": true,
+        "visible": true,
+        "focus": true,
+        "dragDropEnabled": true,
+        "theme": null,
+        "backgroundColor": "#09090b"
+      }
+    ],
+    "security": {
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["$HOME/**", "$APPDATA/**", "$DESKTOP/**", "$DOCUMENT/**", "$DOWNLOAD/**", "$PICTURE/**"]
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis", "msi"],
+    "publisher": "Aharon Dray",
+    "copyright": "© Aharon Dray",
+    "category": "Productivity",
+    "shortDescription": "Ton espace de travail, sur Windows",
+    "longDescription": "Nexus réunit tes cours, tes fichiers, tes documents et une intelligence artificielle dans un seul endroit. Alt+Espace ouvre une barre à laquelle tu peux demander n'importe quoi, par-dessus n'importe quelle application.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": ["French", "English"],
+        "displayLanguageSelector": false
+      }
+    }
+  }
+}

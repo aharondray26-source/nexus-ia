@@ -32,6 +32,7 @@ import Sheet from "../apps/Sheet";
 import FileViewer from "../apps/FileViewer";
 import About from "../apps/About";
 import MacIntegration from "../apps/MacIntegration";
+import NexusPC from "../apps/NexusPC";
 import Changelog from "../apps/Changelog";
 import VideoEditor from "../apps/VideoEditor";
 import Recipes from "../apps/Recipes";
@@ -126,6 +127,7 @@ export const APPS: AppDefinition[] = [
   { groupe: "Détente & réglages", id: "chess", title: "Échecs", icon: "chess", hue: "#7babea", keywords: "echecs chess jeu strategie plateau", Component: ChessGame, width: 620, height: 620 },
   { id: "game", title: "Arcade", icon: "game", hue: "#d946ef", keywords: "echecs chess jeu neon arena serpent snake pause detente", Component: Game, width: 760, height: 620 },
   { id: "focus", title: "Détente", icon: "music", hue: "#f43f5e", keywords: "musique concentration lofi ambiance son youtube", Component: Focus, width: 480, height: 520 },
+  { id: "pc", title: "Sur ton PC", icon: "settings", hue: "#4cc2ff", keywords: "windows pc ordinateur raccourci alt espace concentration automatisation demarrage explorateur clic droit lire ecran installer logiciel", Component: NexusPC, width: 580, height: 660 },
   { id: "mac", title: "Sur ton Mac", icon: "settings", hue: "#84b6cd", keywords: "mac macos fond ecran wallpaper extension widget bureau integration", Component: MacIntegration, width: 560, height: 640 },
   { id: "settings", title: "Réglages", icon: "settings", hue: "#6565e6", keywords: "reglages couleur accent prenom theme fond", Component: Settings, width: 420, height: 480 },
   { id: "changelog", title: "Nouveautés", icon: "star", hue: "#fbc437", keywords: "nouveautes mises a jour changelog evolution", Component: Changelog, width: 460, height: 500 },

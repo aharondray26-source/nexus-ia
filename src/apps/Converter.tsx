@@ -23,7 +23,7 @@ export default function Converter() {
             className="nx-btn nx-btn-secondary flex-1 text-xs"
             style={
               tab === t
-                ? { borderColor: "var(--accent)", color: "var(--accent)" }
+                ? { borderColor: "var(--accent)", color: "var(--accent-texte)" }
                 : { borderColor: "#27272a", color: "#a1a1aa" }
             }
           >

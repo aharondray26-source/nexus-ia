@@ -128,7 +128,7 @@ function HistoryWidget() {
     <Card onClick={() => openApp("onthisday", { width: 460, height: 480 })}>
       <Label>Ce jour</Label>
       <span className="line-clamp-2 text-xs leading-relaxed text-nexus-text">
-        <span style={{ color: "var(--accent)" }}>{event.year}</span> ·{" "}
+        <span style={{ color: "var(--accent-texte)" }}>{event.year}</span> ·{" "}
         {event.text}
       </span>
     </Card>

@@ -12,6 +12,7 @@ import { useWindows, noterZoneBureau } from "./useWindows";
 import { useSettings, resolveWallpaper, type DockPos } from "./useSettings";
 import { getApp } from "./appsRegistry";
 import { isTauri } from "../lib/tauri";
+import { ecouter, pc, surWindows } from "../lib/pcWindows";
 import { recordVisit } from "../lib/activity";
 import { useIsMobile } from "../lib/useIsMobile";
 import NexusAssistant from "./NexusAssistant";
@@ -22,6 +23,7 @@ export default function Desktop() {
   const windows = useWindows((s) => s.windows);
   const togglePalette = useWindows((s) => s.togglePalette);
   const setPaletteOpen = useWindows((s) => s.setPaletteOpen);
+  const openApp = useWindows((s) => s.openApp);
   const autoMinimizeInactiveWindows = useWindows((s) => s.autoMinimizeInactiveWindows);
   const ajusterAEcran = useWindows((s) => s.ajusterAEcran);
   const zoneRef = useRef<HTMLDivElement>(null);
@@ -124,19 +126,85 @@ export default function Desktop() {
         setPaletteOpen(false);
         return;
       }
-      // Option+Espace / Alt+Espace : masquer/afficher la fenetre (mode bureau).
+      // Alt+Espace : la barre de commande.
+      //
+      // Sur Windows, ce raccourci est capté par la coquille MÊME QUAND NEXUS
+      // N'EST PAS DEVANT — c'est tout l'intérêt, et c'est elle qui nous
+      // envoie alors « nexus://palette ». Ici on ne s'occupe que du cas où
+      // Nexus est déjà à l'écran : sans ça, le raccourci ne marcherait pas
+      // dans la fenêtre elle-même.
       if (e.altKey && e.code === "Space") {
         e.preventDefault();
-        if (isTauri()) {
-          const { invoke } = await import("@tauri-apps/api/core");
-          await invoke("toggle_window_visibility");
-        }
+        togglePalette();
         return;
       }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [togglePalette, setPaletteOpen]);
+
+  // ── CE QUE LA COQUILLE WINDOWS NOUS ENVOIE ──────────────────────────────
+  //
+  // Alt+Espace pressé alors qu'on jouait à autre chose, un clic droit
+  // « Analyser avec Nexus » dans l'Explorateur, un clic sur l'icône près de
+  // l'horloge : tout arrive ici. Sur le site et sur le Mac, ces écoutes ne
+  // coûtent rien et ne se déclenchent jamais.
+  useEffect(() => {
+    if (!isTauri()) return;
+    const arrets: Array<() => void> = [];
+    let vivant = true;
+
+    const brancher = async () => {
+      const a = await ecouter("nexus://palette", () => setPaletteOpen(true));
+      const b = await ecouter("nexus://loupe", () => openApp("viewer"));
+      const c = await ecouter("nexus://concentration", () => openApp("pc"));
+      const d = await ecouter("nexus://argument", (donnee) => {
+        // [sorte, valeur] : un fichier venu du clic droit, ou une adresse
+        // nexus://espace. On ouvre ce qu'il faut, tout de suite.
+        const [sorte, valeur] = (donnee as [string, string]) ?? [];
+        if (sorte === "fichier" && valeur) {
+          window.dispatchEvent(new CustomEvent("nexus:fichier-du-systeme",
+                                               { detail: { chemin: valeur } }));
+          openApp("pc");
+        } else if (sorte === "adresse" && valeur) {
+          const espace = valeur.replace(/^nexus:\/\//, "").replace(/\/+$/, "");
+          if (espace) openApp(espace);
+        }
+      });
+      const e = await ecouter("nexus://raccourci-refuse", (raison) => {
+        // Un autre logiciel a déjà pris Alt+Espace. Le dire, plutôt que de
+        // laisser croire que Nexus est cassé.
+        window.dispatchEvent(new CustomEvent("nexus:toast", {
+          detail: { texte: "Alt+Espace est déjà pris par un autre logiciel sur ce PC "
+                         + `(${String(raison).slice(0, 80)}). Le reste de Nexus fonctionne.` },
+        }));
+      });
+      if (!vivant) { [a, b, c, d, e].forEach((f) => f()); return; }
+      arrets.push(a, b, c, d, e);
+    };
+    brancher();
+
+    // Un fichier passé au lancement (le tout premier clic droit) : la coquille
+    // l'a gardé au chaud, on vient le chercher une fois l'interface prête.
+    if (surWindows()) {
+      pc.argumentDeLancement()
+        .then((a) => {
+          if (!a) return;
+          const [sorte, valeur] = a;
+          if (sorte === "fichier") {
+            window.dispatchEvent(new CustomEvent("nexus:fichier-du-systeme",
+                                                 { detail: { chemin: valeur } }));
+            openApp("pc");
+          }
+        })
+        .catch(() => {});
+    }
+
+    return () => {
+      vivant = false;
+      arrets.forEach((f) => f());
+    };
+  }, [setPaletteOpen, openApp]);
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-nexus-bg text-nexus-text">

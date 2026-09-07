@@ -98,6 +98,18 @@ window.nexus = {
 // serveur local, et la promesse rejetee salissait la console pour rien.
 function inscrireLeServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
+  // PAS DANS L'APPLICATION DE BUREAU, ET C'EST IMPORTANT.
+  //
+  // Le mode hors ligne ne sert à rien quand l'interface est DÉJÀ sur le
+  // disque : elle est locale, il n'y a rien à mettre en cache. Mais il peut
+  // nuire — le service worker garde une copie de l'ancienne version, et après
+  // une mise à jour de Nexus on continuerait de voir l'ancien écran, sans
+  // erreur, sans explication. Exactement le genre de panne muette qui fait
+  // dire « tu m'as dit que tu l'avais corrigé et ce n'est pas corrigé ».
+  //
+  // Sur le Mac le problème ne se posait pas : WebKit refuse ces inscriptions.
+  // Sur Windows, elles réussissent — il faut donc le dire explicitement.
+  if (typeof window !== "undefined" && "__TAURI_INTERNALS__" in window) return;
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {
       // Hors ligne indisponible ici. Tout le reste fonctionne.

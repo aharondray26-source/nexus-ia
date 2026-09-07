@@ -72,6 +72,13 @@ cp "$SRC/modele.js" "$DEST/modele.js"
 for f in manifest.json onglet.html onglet.js maths.js formules.js modele-pont.js loupe.html loupe.js loupe-page.js popup.html popup.js fond.js LISEZ-MOI.txt; do
   cp "$SRC/$f" "$DEST/$f"
 done
+# LE NUMERO DE VERSION, ECRIT UNE SEULE FOIS.
+#
+# Le mode d'emploi annoncait « EXTENSION NEXUS 2.9 » alors que l'extension
+# etait en 2.14 : Aharon ouvrait le fichier et en concluait, legitimement, que
+# rien n'avait ete refait. Le numero n'est plus ecrit a la main nulle part —
+# il est pris dans le manifeste, qui est la seule source.
+sed -i "" "s/@VERSION@/$V/g" "$DEST/LISEZ-MOI.txt"
 # Le manifeste nomme les icones « icones/16.png » ; dans public/ elles sont a
 # plat, parce que le site les sert par leur adresse.
 cp "$SRC/icone-16.png"  "$DEST/icones/16.png"
@@ -91,6 +98,38 @@ python3 -c "import json;json.load(open('$DEST/manifest.json'))"
 printf 'Extension Nexus %s\nPreparee le %s\n\nSi Chrome affiche une autre version, c est que tu as charge un\nancien dossier : supprime-la et recharge celui-ci.\n' \
   "$V" "$(date '+%d %B %Y a %H:%M')" > "$DEST/VERSION $V.txt"
 
+# ════════════════════ LA VERSION FIREFOX ════════════════════
+#
+# Aharon : « une extension egalement compatible avec d'autres navigateurs ».
+#
+# Edge, Brave, Opera, Vivaldi et Arc sont tous batis sur Chromium : le dossier
+# Chrome ci-dessus leur va TEL QUEL, il n'y a rien a faire de plus.
+#
+# Firefox, lui, ne parle pas tout a fait la meme langue. Trois differences, et
+# elles empechent le dossier Chrome de se charger du tout :
+#   1. le fond. Chrome veut « service_worker », Firefox veut « scripts ». Et ce
+#      n'est pas negociable : Chrome REFUSE « background.scripts » en version 3
+#      du manifeste, Firefox ignore « service_worker ». D'ou deux dossiers.
+#   2. l'identite. Firefox exige un identifiant d'extension.
+#   3. la permission « favicon » n'existe que chez Chrome ; laissee la, elle
+#      fait afficher un avertissement a l'installation.
+FDEST=~/Downloads/Nexus-extension-Firefox-$V
+rm -rf "$FDEST"
+cp -R "$DEST" "$FDEST"
+python3 - "$FDEST/manifest.json" <<'PYFIN'
+import json, sys
+chemin = sys.argv[1]
+m = json.load(open(chemin))
+m["background"] = {"scripts": ["fond.js"]}
+m["browser_specific_settings"] = {
+    "gecko": {"id": "nexus@aharondray.fr", "strict_min_version": "115.0"}
+}
+m["permissions"] = [p for p in m["permissions"] if p != "favicon"]
+json.dump(m, open(chemin, "w"), indent=2, ensure_ascii=False)
+PYFIN
+python3 -c "import json;json.load(open('$FDEST/manifest.json'))"
+mv "$FDEST/VERSION $V.txt" "$FDEST/VERSION $V (Firefox).txt" 2>/dev/null || true
+
 echo ""
 echo "  ✓ EXTENSION $V"
 echo ""
@@ -106,3 +145,12 @@ echo "     Telechargements/Nexus-extension-Chrome-$V"
 echo ""
 echo "     Pour verifier SANS OUVRIR le Finder : ouvre un nouvel onglet,"
 echo "     le numero est ecrit en bas a gauche, a cote de « Nexus pour macOS »."
+echo ""
+echo "     LES AUTRES NAVIGATEURS"
+echo "        Edge, Brave, Opera, Vivaldi, Arc : le MEME dossier Chrome."
+echo "           edge://extensions  (ou brave://, opera://…)"
+echo "           → Mode developpeur, puis « Charger l'extension non empaquetee »."
+echo "        Firefox : le dossier Nexus-extension-Firefox-$V"
+echo "           about:debugging#/runtime/this-firefox"
+echo "           → « Charger un module temporaire », choisis manifest.json"
+echo "             DANS ce dossier."

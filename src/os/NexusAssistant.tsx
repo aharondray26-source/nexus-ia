@@ -22,6 +22,12 @@ import {
 } from "lucide-react";
 import { useWindows, zoneBureau } from "./useWindows";
 import { generateNexusResponse, queryNexusAIObject } from "../lib/nexusBrain";
+import { comprendreDocument, consigneDocument } from "../lib/capacites";
+import { comprendrePC, consigneAutomatisation } from "../lib/intentionsPC";
+import { tousLesEspaces } from "./appsRegistry";
+import { pc, surWindows } from "../lib/pcWindows";
+import { creer as creerDocument, telecharger as telechargerDocument,
+         FORMATS as FORMATS_DOCUMENT } from "../lib/bureautique";
 import { addNexusTask } from "../lib/persist";
 import { NexusMessageRenderer } from "./NexusMessageRenderer";
 
@@ -703,6 +709,195 @@ export default function NexusAssistant() {
       openApp("tasks", { width: 520, height: 500 });
 
       overrideSystemReply = `⏰ **Rappel Enregistré dans l'Application Tâches & Rappels !**\n\nJ'ai créé ton rappel avec succès dans l'application **Tâches & Rappels** et sur ton widget de bureau.\n\n- **Contenu du rappel :** ${taskText}\n${timeText ? `- **Horaire spécifié :** ${timeText}\n` : ""}- **Statut :** Enregistré et Actif\n\n*L'application Tâches a été ouverte automatiquement pour te permettre de le consulter !*`;
+    }
+
+    // ═════════════════════ AGIR SUR LE PC (WINDOWS) ═════════════════════
+    //
+    // Aharon : « elle doit être largement meilleure au niveau des fonctions ».
+    // Des fonctions qu'il faut aller chercher dans un panneau ne sont pas des
+    // fonctions, ce sont des réglages : elles ne comptent que si on peut les
+    // DEMANDER. Ici, la mascotte ouvre une application, installe un logiciel,
+    // retrouve un fichier, lance une séance de concentration, ou écrit une
+    // automatisation — en parlant.
+    //
+    // Sur le site et sur le Mac, `surWindows()` est faux et rien de tout ceci
+    // ne se déclenche : c'est le même code partout, il n'y a pas deux versions
+    // à tenir à jour.
+    const intention = surWindows() ? comprendrePC(fullQuery) : null;
+    if (intention) {
+      try {
+        switch (intention.quoi) {
+          case "ouvrir_application": {
+            // UN ESPACE DE NEXUS D'ABORD. « ouvre la calculatrice » veut dire
+            // celle de Nexus, pas un logiciel Windows qui s'appellerait comme
+            // ça. On ne va sur le PC que si Nexus n'a pas cet espace.
+            const cible = intention.nom.toLowerCase();
+            const espace = tousLesEspaces().find(
+              (a) => a.title.toLowerCase() === cible
+                  || a.title.toLowerCase().includes(cible),
+            );
+            if (espace && !espace.hidden) {
+              openApp(espace.id, { width: espace.width, height: espace.height });
+              overrideSystemReply = `J'ai ouvert **${espace.title}** dans Nexus.`;
+            } else {
+              const ouverte = await pc.ouvrirApplication(intention.nom);
+              overrideSystemReply = `**${ouverte}** est en train de s'ouvrir.`;
+            }
+            break;
+          }
+          case "installer_logiciel": {
+            overrideSystemReply = await pc.installerLogiciel(intention.nom);
+            break;
+          }
+          case "chercher_fichier": {
+            const r = await pc.chercherFichiers(intention.terme);
+            overrideSystemReply = r.length === 0
+              ? `Je n'ai rien trouvé qui s'appelle « ${intention.terme} » sur ce PC.`
+              : `**${r.length} résultat${r.length > 1 ? "s" : ""}** pour « ${intention.terme} » :\n\n`
+                + r.slice(0, 8).map((f) => `- **${f.nom}**\n  \`${f.chemin}\``).join("\n")
+                + `\n\nDis-moi lequel ouvrir, ou retrouve-les avec Alt+Espace.`;
+            break;
+          }
+          case "chercher_contenu": {
+            const r = await pc.chercherDansContenu(intention.terme);
+            overrideSystemReply = r.length === 0
+              ? `Aucun document ne parle de « ${intention.terme} » sur ce PC.`
+              : `**${r.length} document${r.length > 1 ? "s" : ""}** parlent de `
+                + `« ${intention.terme} » :\n\n`
+                + r.slice(0, 8).map((f) => `- **${f.nom}**\n  \`${f.chemin}\``).join("\n");
+            break;
+          }
+          case "concentration": {
+            const ouvertes = await pc.distractionsOuvertes().catch(() => [] as string[]);
+            const s = await pc.demarrerConcentration(intention.minutes, ouvertes);
+            overrideSystemReply =
+              `⏳ **${intention.minutes} minutes de concentration**, c'est parti.\n\n`
+            + (ouvertes.length
+                ? `J'ai fermé ${ouvertes.join(", ")} — et si l'une revient, je la referme.\n`
+                : `Rien de distrayant n'était ouvert.\n`)
+            + `Les notifications de Windows sont coupées jusqu'à la fin.\n\n`
+            + `Dis « arrête la concentration » quand tu veux — je ne t'enferme pas.`;
+            void s;
+            break;
+          }
+          case "automatisation": {
+            // Le modèle écrit le script ; Nexus le RELIT avant de l'installer,
+            // et ne le lance pas tout seul. Deux gestes séparés, exprès.
+            const r = await queryNexusAIObject(consigneAutomatisation(intention.sujet), []);
+            const code = (r.reply || "")
+              .replace(/^```(?:powershell|ps1|ps)?\n?/i, "")
+              .replace(/```\s*$/, "")
+              .trim();
+            const sansModele = /sans mod[èe]le/i.test(r.modelUsed || "")
+              || /Mode Autonome|Analyse Nexus AI Pro/i.test(r.reply || "");
+            if (sansModele || code.length < 20) {
+              overrideSystemReply =
+                `Je n'écris pas cette automatisation : je n'ai aucune intelligence `
+              + `joignable pour la rédiger, et je préfère ne rien installer plutôt `
+              + `qu'un script que je n'ai pas vraiment écrit.`;
+              break;
+            }
+            const titre = intention.sujet.charAt(0).toUpperCase() + intention.sujet.slice(1);
+            const faite = await pc.creerScript(titre, code, intention.sujet);
+            overrideSystemReply =
+              `🪄 **${faite.nom}** est prête.\n\n`
+            + `Je l'ai relue avant de l'installer : elle n'efface rien en masse, `
+            + `ne touche pas à Windows et ne va rien chercher sur internet.\n\n`
+            + "```powershell\n" + faite.code + "\n```\n\n"
+            + `Elle ne s'est **pas** lancée — c'est à toi de le demander. `
+            + `Dis « lance ${faite.nom} », ou va la voir dans « Sur ton PC ».`;
+            break;
+          }
+        }
+      } catch (e) {
+        overrideSystemReply = e instanceof Error ? e.message : String(e);
+      }
+    }
+
+    // ══════════════════════ ÉCRIRE UN VRAI DOCUMENT ══════════════════════
+    //
+    // Aharon voulait que la mascotte du site sache tout ce que sait la
+    // mascotte de macOS. Celle du Mac écrit de vrais .docx et de vrais PDF ;
+    // celle-ci le fait aussi, DANS LE NAVIGATEUR — rien à installer, rien à
+    // envoyer sur un serveur, et le fichier arrive dans les téléchargements.
+    //
+    // On ne fabrique que si la phrase contient un VERBE de fabrication ET un
+    // mot de document : « c'est quoi un PDF ? » doit rester une question.
+    const demandeDoc = overrideSystemReply ? null : comprendreDocument(fullQuery);
+    if (demandeDoc) {
+      const nomFormat = FORMATS_DOCUMENT.find((f) => f.id === demandeDoc.format)?.nom
+                     ?? demandeDoc.format;
+      try {
+        // On demande au modèle de RÉDIGER, pas de commenter. S'il n'est pas
+        // joignable, on écrit quand même le document avec ce qu'on a : un
+        // fichier maigre vaut mieux qu'un refus.
+        let corps = "";
+        try {
+          const r = await queryNexusAIObject(
+            consigneDocument(demandeDoc.sujet, demandeDoc.titre), []);
+
+          // ON NE MET PAS N'IMPORTE QUOI DANS UN DOCUMENT.
+          //
+          // Sans modèle joignable, Nexus répond avec un texte d'aide écrit
+          // d'avance — utile dans une conversation, désastreux dans un
+          // fichier : le premier essai a produit un « Les volcans.docx » de
+          // 472 mots qui recopiait ma propre consigne. Un document est un
+          // objet qu'Aharon va garder et peut-être envoyer : mieux vaut ne
+          // pas l'écrire que l'écrire faux.
+          const sansModele = /sans mod[èe]le/i.test(r.modelUsed || "");
+          const recopieLaConsigne =
+            /R[èe]gles absolues|Rends UNIQUEMENT|Mode Autonome|Analyse Nexus AI Pro/i
+              .test(r.reply || "");
+          corps = sansModele || recopieLaConsigne
+            ? ""
+            : (r.reply || "")
+                .replace(/^```(?:markdown|md)?\n?/i, "")
+                .replace(/```\s*$/, "")
+                // « Voici le document que tu m'as demandé : » — une politesse
+                // qui n'a rien à faire dans le fichier.
+                .replace(/^\s*(?:voici|bien s[ûu]r[ ,!]*|d'accord[ ,!]*)[^\n]{0,120}:\s*\n+/i, "")
+                .trim();
+        } catch { corps = ""; }
+
+        if (corps.length < 120) {
+          // Pas de fichier vide, pas de fichier faux : on dit ce qui manque.
+          overrideSystemReply =
+            `Je n'écris pas ce document tout de suite : je n'ai **aucune `
+          + `intelligence joignable** pour le rédiger, et je préfère ne rien te `
+          + `donner qu'un fichier rempli de vide.\n\n`
+          + `Deux façons d'y remédier, au choix :\n\n`
+          + `- **Sans rien installer** : ouvre *Nexus IA* et lance le modèle qui `
+          + `tourne dans ton navigateur. Une fois téléchargé, il écrit les `
+          + `documents hors ligne.\n`
+          + `- **Avec une clé** : Réglages → Clé d'intelligence artificielle.\n\n`
+          + `Le reste est prêt : dès qu'il y a un modèle, `
+          + `« ${demandeDoc.titre} » part en ${nomFormat} en une seconde.`;
+          throw new Error("__deja_repondu__");
+        }
+
+        const fait = await creerDocument(demandeDoc.titre, corps, demandeDoc.format);
+        if ("erreur" in fait) {
+          overrideSystemReply = `Je n'ai pas réussi à écrire le document : ${fait.erreur}`;
+        } else {
+          telechargerDocument(fait.blob, fait.nom);
+          const mots = corps.split(/\s+/).length;
+          overrideSystemReply =
+            `📄 **${fait.nom}** est écrit et se télécharge.\n\n`
+          + `- **Format :** ${nomFormat}\n`
+          + `- **Longueur :** environ ${mots} mots\n\n`
+          + `Je peux le refaire dans un autre format — dis simplement `
+          + `« le même en Word » ou « le même en page web ».\n\n---\n\n`
+          + corps;
+        }
+      } catch (e) {
+        // « __deja_repondu__ » : on a déjà expliqué, plus haut, pourquoi il n'y
+        // a pas de fichier. Le redire en message d'erreur serait absurde.
+        if (!(e instanceof Error && e.message === "__deja_repondu__")) {
+          overrideSystemReply =
+            `Je n'ai pas réussi à écrire le document : `
+          + `${e instanceof Error ? e.message : String(e)}`;
+        }
+      }
     }
 
     await new Promise((resolve) => setTimeout(resolve, 500));

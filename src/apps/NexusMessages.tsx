@@ -155,7 +155,7 @@ export default function NexusMessages() {
               <span className="min-w-0 flex-1 truncate text-xs font-medium text-nexus-text">{active}</span>
               {call ? (
                 <span className="flex items-center gap-1.5">
-                  <span className="text-[10px]" style={{ color: "var(--accent)" }}>
+                  <span className="text-[10px]" style={{ color: "var(--accent-texte)" }}>
                     {callState === "connected" ? "En ligne" : "Appel..."}
                   </span>
                   <button onClick={onHangUp} title="Raccrocher"

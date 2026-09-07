@@ -54,7 +54,7 @@ export default function CallWatcher() {
       <div className="nexus-fade-in fixed left-1/2 top-14 z-[1000030] w-[min(420px,calc(100vw-24px))] -translate-x-1/2">
         <div className="nx-widget flex-row items-center gap-3 !p-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-                style={{ backgroundColor: "color-mix(in srgb, var(--accent) 24%, transparent)", color: "var(--accent)" }}>
+                style={{ backgroundColor: "color-mix(in srgb, var(--accent) 24%, transparent)", color: "var(--accent-texte)" }}>
             {call?.video ? <Video size={16} /> : <Phone size={16} />}
           </span>
           <div className="min-w-0 flex-1">

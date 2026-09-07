@@ -4,7 +4,10 @@ import { useWindows } from "./useWindows";
 import Icon from "./Icons";
 import { queryNexusAIObject } from "../lib/nexusBrain";
 import { NexusMessageRenderer } from "./NexusMessageRenderer";
-import { Sparkles, Search, Calculator, ArrowRight } from "lucide-react";
+import { Sparkles, Search, Calculator, ArrowRight, Monitor, AppWindow,
+         FileText, Wand2 } from "lucide-react";
+import { chercheurPC, type ResultatPC } from "../lib/recherchePC";
+import { surWindows } from "../lib/pcWindows";
 
 /// Minuscules et sans accents : « Réglages », « reglages » et « RÉGLAGES »
 /// deviennent la même chose.
@@ -33,6 +36,18 @@ export default function CommandPalette() {
   // déclencherait une requête pour rien.
   const [reponse, setReponse] = useState<{ texte: string; moteur: string } | null>(null);
   const [cherche, setCherche] = useState(false);
+
+  // ── CE QU'IL Y A SUR LE PC ──────────────────────────────────────────────
+  //
+  // Dans l'application Windows, la barre ne cherche plus seulement dans Nexus :
+  // elle cherche sur la MACHINE. Un fichier, une application, une fenêtre déjà
+  // ouverte, une automatisation. C'est ce que Windows n'a pas et que le Mac a
+  // depuis toujours — et c'est la raison d'être de cette application.
+  //
+  // Sur le site et sur le Mac, cette liste reste vide et rien ne change : le
+  // même code tourne partout, il n'y a pas deux versions à tenir à jour.
+  const [surPC, setSurPC] = useState<ResultatPC[]>([]);
+  const chercheur = useRef(chercheurPC());
   const demandeEnCours = useRef(0);
   const [resteEnBas, setResteEnBas] = useState(false);
   const listeRef = useRef<HTMLUListElement>(null);
@@ -78,12 +93,13 @@ export default function CommandPalette() {
   const items = useMemo(() => {
     const q = query.trim();
     const list: Array<{
-      type: "app" | "ai" | "web" | "math";
+      type: "app" | "ai" | "web" | "math" | "pc";
       id: string;
       title: string;
       subtitle?: string;
       icon: string | React.ReactNode;
       appId?: string;
+      agir?: () => Promise<unknown>;
     }> = [];
 
     if (mathResult !== null) {
@@ -95,6 +111,25 @@ export default function CommandPalette() {
         icon: <Calculator className="w-4 h-4 text-emerald-400" />,
       });
     }
+
+    // Ce qui est sur le PC passe AVANT « demander à l'IA » : quand on tape le
+    // nom d'un fichier, on veut le fichier, pas une dissertation dessus.
+    const icones: Record<ResultatPC["sorte"], React.ReactNode> = {
+      fenetre: <AppWindow className="h-4 w-4 text-cyan-400" />,
+      application: <Monitor className="h-4 w-4 text-indigo-400" />,
+      fichier: <FileText className="h-4 w-4 text-amber-400" />,
+      automatisation: <Wand2 className="h-4 w-4 text-emerald-400" />,
+    };
+    surPC.forEach((r, i) => {
+      list.push({
+        type: "pc",
+        id: `pc-${r.sorte}-${i}`,
+        title: r.titre,
+        subtitle: r.detail,
+        icon: icones[r.sorte],
+        agir: r.agir,
+      });
+    });
 
     if (q) {
       list.push({
@@ -129,7 +164,7 @@ export default function CommandPalette() {
     });
 
     return list;
-  }, [query, mathResult, appMatches]);
+  }, [query, mathResult, appMatches, surPC]);
 
   useEffect(() => {
     if (open) {
@@ -178,12 +213,30 @@ export default function CommandPalette() {
     return () => window.clearTimeout(t);
   }, [query, open]);
 
+  useEffect(() => {
+    if (!open) { chercheur.current.oublier(); setSurPC([]); return; }
+    chercheur.current.chercher(query, setSurPC);
+  }, [query, open]);
+
   useEffect(mesurerDefilement, [mesurerDefilement, items, open]);
 
   if (!open) return null;
 
   function executeItem(item: typeof items[0]) {
     if (!item) return;
+
+    if (item.type === "pc" && item.agir) {
+      // On ferme TOUT DE SUITE, sans attendre la machine : ouvrir Word prend
+      // deux secondes, et une barre qui reste figée pendant ce temps donne
+      // l'impression que le clic n'a pas été pris.
+      setOpen(false);
+      item.agir().catch((e) => {
+        window.dispatchEvent(new CustomEvent("nexus:toast", {
+          detail: { texte: e instanceof Error ? e.message : String(e) },
+        }));
+      });
+      return;
+    }
 
     if (item.type === "app" && item.appId) {
       const app = tousLesEspaces().find((a) => a.id === item.appId);
@@ -236,7 +289,9 @@ export default function CommandPalette() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Chercher un espace, calculer, ou demander à l'IA"
+            placeholder={surWindows()
+              ? "Cherche un fichier, une application, ou demande n'importe quoi"
+              : "Chercher un espace, calculer, ou demander à l'IA"}
             className="nx-champ w-full bg-transparent text-nexus-text outline-none placeholder:text-nexus-muted font-sans"
           />
           {query && (

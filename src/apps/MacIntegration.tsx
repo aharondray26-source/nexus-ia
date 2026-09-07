@@ -92,6 +92,14 @@ export default function MacIntegration() {
     }, "image/png");
   }
 
+  /// Le zip proposé par le site contient les DEUX navigateurs.
+  ///
+  /// Aharon : « une extension également compatible avec d'autres navigateurs ».
+  /// Edge, Brave, Opera, Vivaldi et Arc prennent le dossier Chrome tel quel.
+  /// Firefox, non : il veut « background.scripts » là où Chrome veut
+  /// « background.service_worker », et Chrome REFUSE le premier. Impossible
+  /// de faire un seul dossier pour les deux — on en met donc deux dans le zip,
+  /// et le mode d'emploi dit lequel prendre.
   async function telechargerExtension() {
     setFait("Préparation de l'extension…");
     try {
@@ -121,7 +129,38 @@ export default function MacIntegration() {
         fichierDistant("/ext/icone-128.png"),
       ]);
 
+      // Le manifeste de Firefox, dérivé de celui de Chrome — jamais recopié :
+      // deux manifestes écrits à la main divergeraient en une semaine.
+      const pourFirefox = (() => {
+        try {
+          const m = JSON.parse(new TextDecoder().decode(manifestF));
+          m.background = { scripts: ["fond.js"] };
+          m.browser_specific_settings = {
+            gecko: { id: "nexus@aharondray.fr", strict_min_version: "115.0" },
+          };
+          // « favicon » n'existe que chez Chrome : laissée là, elle fait
+          // afficher un avertissement à l'installation.
+          m.permissions = (m.permissions || []).filter((p: string) => p !== "favicon");
+          return new TextEncoder().encode(JSON.stringify(m, null, 2));
+        } catch { return manifestF; }
+      })();
+
+      const communs: [string, Uint8Array][] = [
+        ["onglet.html", ongletHtmlF], ["onglet.js", ongletJsF],
+        ["modele.js", modeleJsF], ["modele-pont.js", modelePontF],
+        ["maths.js", mathsF], ["formules.js", formulesF],
+        ["loupe.html", loupeHtmlF], ["loupe.js", loupeJsF], ["loupe-page.js", loupePageF],
+        ["popup.html", popupF], ["popup.js", popupJsF], ["fond.js", fondJsF],
+        ["icones/16.png", i16], ["icones/48.png", i48], ["icones/128.png", i128],
+        ["LISEZ-MOI.txt", lisezMoiF],
+      ];
+      const pourFirefoxEntrees = [
+        { nom: "Nexus-extension-Firefox/manifest.json", donnees: pourFirefox },
+        ...communs.map(([n, d]) => ({ nom: `Nexus-extension-Firefox/${n}`, donnees: d })),
+      ];
+
       const zip = creerZip([
+        ...pourFirefoxEntrees,
         { nom: "Nexus-extension-Chrome/manifest.json", donnees: manifestF },
         { nom: "Nexus-extension-Chrome/onglet.html", donnees: ongletHtmlF },
         { nom: "Nexus-extension-Chrome/onglet.js", donnees: ongletJsF },
@@ -145,12 +184,16 @@ export default function MacIntegration() {
       a.href = URL.createObjectURL(zip);
       // Le zip et le dossier qu'il produit portent le meme nom : sinon on se
       // retrouve avec deux dossiers d'apparence identique, dont un perime.
-      a.download = "Nexus-extension-Chrome.zip";
+      a.download = "Nexus-extension.zip";
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-      setFait("Nexus-extension-Chrome.zip téléchargé. Double-clique dessus, puis "
-        + "dans Chrome : chrome://extensions → Charger l'extension non empaquetée "
-        + "→ choisis le dossier Nexus-extension-Chrome.");
+      setFait("Nexus-extension.zip téléchargé. Double-clique dessus : tu obtiens "
+        + "DEUX dossiers.\n\n"
+        + "· Chrome, Edge, Brave, Opera, Vivaldi, Arc → dossier « …-Chrome » : "
+        + "chrome://extensions (ou edge://, brave://…) → Mode développeur → "
+        + "Charger l'extension non empaquetée.\n"
+        + "· Firefox → dossier « …-Firefox » : about:debugging#/runtime/this-firefox "
+        + "→ Charger un module temporaire → choisis manifest.json dans ce dossier.");
     } catch (e) {
       setFait("Échec : " + (e as Error).message);
     }

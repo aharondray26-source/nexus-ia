@@ -399,7 +399,7 @@ function HistoryWidget({ onOpen }: { onOpen: () => void }) {
   return (
     <Widget title="Ce jour-là" icon={<History size={15} />} hue="#fb923c" onOpen={onOpen} span={2}>
       {item ? (
-        <p><span className="text-lg font-semibold" style={{ color: "var(--accent)" }}>{item.year}</span>
+        <p><span className="text-lg font-semibold" style={{ color: "var(--accent-texte)" }}>{item.year}</span>
           <span className="mx-2 opacity-40">·</span>{item.text}</p>
       ) : <p className="py-2">Chargement…</p>}
     </Widget>
@@ -843,7 +843,7 @@ export default function ControlRoom() {
                 <span
                   className="flex h-7 w-7 items-center justify-center rounded-xl transition-transform duration-[260ms] [transition-timing-function:var(--appui)] group-hover:scale-110"
                   style={{ backgroundColor: "color-mix(in srgb, var(--accent) 18%, transparent)",
-                           color: "var(--accent)" }}
+                           color: "var(--accent-texte)" }}
                 >
                   {x.icone}
                 </span>

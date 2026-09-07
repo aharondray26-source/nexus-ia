@@ -1,0 +1,51 @@
+[package]
+name = "nexus"
+version = "1.0.0"
+description = "Nexus — ton espace de travail, sur Windows"
+authors = ["Aharon Dray"]
+edition = "2021"
+rust-version = "1.77"
+
+[lib]
+name = "nexus_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-notification = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Ces deux-là étaient derrière une condition « sauf sur téléphone », recopiée
+# des exemples de Tauri. Nexus pour Windows ne vise QUE l'ordinateur : la
+# condition n'apportait rien, et elle cachait les greffons aux outils de Tauri
+# (« tauri info » ne les voyait pas). Une ligne de configuration qu'on ne
+# comprend pas est une ligne qui finira par mentir.
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-single-instance = "2"
+
+# PAS DE BIBLIOTHÈQUE WINDOWS EN PLUS, ET C'EST VOULU.
+#
+# On pourrait appeler l'API de Windows directement (la caisse « windows »).
+# Mais tout ce dont Nexus a besoin — le registre, les fenêtres, l'écran, les
+# applications installées — PowerShell le sait faire, il est présent sur
+# CHAQUE Windows depuis dix ans, et son code se relit à voix haute. Une
+# dépendance de moins, c'est une version qui ne peut pas casser, et un
+# comportement qu'on peut vérifier sans compiler.
+
+# UNE APPLICATION QUI DÉMARRE VITE.
+#
+# Sur Windows, Nexus doit s'ouvrir en une fraction de seconde quand on appuie
+# sur Alt+Espace : c'est toute la promesse de la barre de commande. On optimise
+# donc pour de bon, et l'on accepte une compilation plus longue.
+[profile.release]
+opt-level = "s"      # petit binaire : il se télécharge et se lance plus vite
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

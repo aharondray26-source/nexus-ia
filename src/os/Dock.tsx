@@ -66,7 +66,7 @@ export default function Dock({ horizontal = false, pos = "left" }: { horizontal?
             {/* « NEXUS PRO OS / Workspace Pro » : du jargon anglais au milieu
                 d'un produit entierement en francais. On dit ce que c'est. */}
             <span className="text-xs font-bold text-nexus-text tracking-wide">Nexus</span>
-            <span className="text-[10px] font-semibold" style={{ color: "var(--accent)" }}>
+            <span className="text-[10px] font-semibold" style={{ color: "var(--accent-texte)" }}>
               Tes espaces
             </span>
           </div>

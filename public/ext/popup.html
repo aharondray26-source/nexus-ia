@@ -109,6 +109,15 @@ textarea::placeholder{color:#6f6f7a}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
 }
+/* LA VERSION, DANS LA FENÊTRE.
+   Aharon a dit TROIS FOIS « je ne vois pas le bouton Loupe ». Le dossier livré
+   l'avait pourtant. La seule explication qui tienne : Chrome charge encore une
+   ancienne copie — il garde le dossier qu'on lui a donné la première fois.
+   Impossible de le savoir sans regarder le manifeste. Maintenant le numéro est
+   écrit là, à côté du nom : s'il ne lit pas le dernier, il sait pourquoi. */
+#version{font-size:10px;font-weight:600;letter-spacing:.02em;padding:1px 6px;
+  border-radius:6px;background:rgba(255,255,255,.10);color:var(--texte-doux,#a5a5b2)}
+
 /* LA LOUPE : le geste principal de l'extension, donc l'element principal
    de cette fenetre. */
 .loupe{display:flex;align-items:center;gap:11px;width:100%;text-align:left;
@@ -132,7 +141,7 @@ textarea::placeholder{color:#6f6f7a}
   <div id="lueur"><i></i><i></i></div>
   <div id="dedans">
     <div class="haut"><img src="icones/48.png" alt="">
-      <b>Nexus</b><span id="etat"></span></div>
+      <b>Nexus</b><span id="version"></span><span id="etat"></span></div>
     <div class="corps">
       <!-- LA LOUPE, EN PREMIER ET EN GRAND.
            Aharon : « le mode Google Lens, je le vois pas ». Normal : c'était un

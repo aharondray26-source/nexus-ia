@@ -15,6 +15,14 @@
   --nexus-card-hover: rgba(39, 39, 42, 0.9);
   --nexus-input-bg: rgba(9, 9, 11, 0.8);
   --nexus-input-border: rgba(255, 255, 255, 0.16);
+  /* L'ACCENT, EN VERSION LISIBLE.
+     L'accent pur (#6366f1 par défaut) donne 4,37 de contraste sur le fond de
+     Nexus — juste sous le seuil de 4,5, c'est-à-dire juste illisible, sur tous
+     les éléments « choisi » du site. Mesuré à neuf endroits. On l'éclaircit
+     sur fond sombre, on le fonce sur fond clair : c'est la même couleur, elle
+     se lit simplement. À utiliser pour tout TEXTE en accent ; « var(--accent) »
+     reste la couleur des fonds, des bordures et des traits. */
+  --accent-texte: color-mix(in srgb, var(--accent) 38%, white);
 }
 
 html.light-mode {
@@ -29,6 +37,7 @@ html.light-mode {
   --nexus-card-hover: rgba(241, 245, 249, 0.95);
   --nexus-input-bg: #ffffff;
   --nexus-input-border: #cbd5e1;
+  --accent-texte: color-mix(in srgb, var(--accent) 82%, black);
 }
 
 html {
@@ -461,13 +470,21 @@ button:active { transform: scale(.985); }   /* appui subtil, plus "cher" */
 
 /* Action principale : pleine, coloree, avec un halo qui donne du relief */
 .nx-btn-primary {
-  background: var(--accent);
+  /* UN CHEVEU PLUS FONCÉ, ET ÇA CHANGE TOUT.
+     Le blanc sur l'accent pur donne 4,47 de contraste. Le seuil de lisibilité
+     est à 4,5 : le bouton le plus utilisé de Nexus — « Enregistrer »,
+     « Envoyer », « Travailler 45 minutes » — était donc, partout, juste en
+     dessous. Douze pour cent de noir suffisent à passer au-dessus, et la
+     couleur reste la même à l'œil. Mesuré, pas supposé. */
+  background: color-mix(in srgb, var(--accent) 88%, black);
   color: #fff;
   box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--accent) 70%, transparent),
               inset 0 1px 0 rgba(255,255,255,.22);
 }
 .nx-btn-primary:not(:disabled):hover {
-  background: color-mix(in srgb, var(--accent) 88%, white);
+  /* Au survol, on ÉCLAIRCIT : c'est le sens attendu, « ça réagit ». On part
+     donc de l'accent pur, pas de la version foncée. */
+  background: var(--accent);
   box-shadow: 0 6px 20px -4px color-mix(in srgb, var(--accent) 80%, transparent),
               inset 0 1px 0 rgba(255,255,255,.28);
 }
@@ -496,10 +513,14 @@ button:active { transform: scale(.985); }   /* appui subtil, plus "cher" */
 /* Action destructrice */
 .nx-btn-danger {
   background: rgba(239,68,68,.14);
-  color: #fca5a5;
+  /* Le rouge pâle est fait pour un fond noir. En mode clair il devient
+     illisible : « Fermer tout » passait a 1,9 de contraste. On passe par la
+     variable du theme, avec le rouge pale en secours pour le mode sombre. */
+  color: var(--t-rouge, #fca5a5);
   border-color: rgba(239,68,68,.34);
 }
-.nx-btn-danger:not(:disabled):hover { background: rgba(239,68,68,.24); color: #fecaca; }
+.nx-btn-danger:not(:disabled):hover { background: rgba(239,68,68,.24);
+  color: var(--t-rouge, #fecaca); filter: brightness(1.08); }
 
 /* Element selectionne dans une liste (contact, onglet...) */
 .nx-item {
@@ -545,7 +566,7 @@ button:active { transform: scale(.985); }   /* appui subtil, plus "cher" */
 .nx-chip:hover { background: rgba(255,255,255,.1); color: var(--nexus-text); }
 .nx-chip-active {
   background: color-mix(in srgb, var(--accent) 20%, transparent);
-  color: color-mix(in srgb, var(--accent) 35%, white);
+  color: var(--accent-texte);
   border-color: color-mix(in srgb, var(--accent) 60%, transparent);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.1),
               0 2px 8px -3px color-mix(in srgb, var(--accent) 60%, transparent);
@@ -977,3 +998,368 @@ html.light-mode .nx-dock {
 .nx-mascotte:hover .nx-mascotte-body { animation-duration: 1.9s; }
 .nx-mascotte g[onclick], .nx-mascotte g { cursor: pointer; }
 .reduce-motion .nx-mascotte .nx-mascotte-body { animation: none; }
+
+/* ==========================================================================
+   LE MODE CLAIR, POUR DE VRAI
+   ==========================================================================
+
+   Aharon : « il faut que tout absolument tout soit personnalisable, de manière
+   agréable, facile et avec des résultats remarquablement satisfaisants ».
+
+   Le mode clair existait, et les variables de Nexus (--nexus-text, --nexus-bg,
+   --nexus-card…) basculaient correctement. Mais la plupart des écrans ne s'en
+   servent pas : ils écrivent directement « text-slate-500 », « text-white »,
+   « text-emerald-300 » — des couleurs choisies pour un fond NOIR. Posées sur
+   un fond clair, elles deviennent illisibles, sans le moindre message.
+
+   Mesuré, un par un, sur les 47 espaces : 844 textes en dessous du seuil de
+   lisibilité. Ce n'est pas un détail de goût — c'est du texte qu'on ne peut
+   pas lire. Le relevé se refait avec `outils/contraste.js`.
+
+   LE PRINCIPE, ici : chaque famille de gris et chaque couleur pâle passe par
+   une VARIABLE. En clair, elle vaut sa version foncée ; sur une surface restée
+   sombre (la dynamique, un panneau marqué « nx-sombre »), on remet la version
+   pâle. Ainsi une même classe reste lisible des deux côtés, et l'on n'a pas à
+   corriger des centaines d'endroits un par un.                              */
+
+html.light-mode {
+  /* Les gris : du texte secondaire sur une surface claire. */
+  --t-200: #1e293b;
+  --t-300: #334155;
+  --t-400: #475569;
+  --t-500: #475569;
+  /* Les couleurs, en version lisible sur clair (600-700 au lieu de 300-400). */
+  --t-emeraude: #047857;
+  --t-cyan:     #0e7490;
+  --t-rouge:    #b91c1c;
+  --t-ambre:    #b45309;
+  --t-ciel:     #0369a1;
+  --t-violet:   #6d28d9;
+  --t-indigo:   #4338ca;
+  --t-bleu:     #1d4ed8;
+  --t-rose:     #be123c;
+  --t-sarcelle: #0f766e;
+  --t-vert:     #15803d;
+  --t-orange:   #c2410c;
+  --t-fuchsia:  #a21caf;
+}
+
+/* L'ÉCHAPPATOIRE, ET ELLE N'EST PAS OPTIONNELLE.
+   Certaines surfaces restent sombres même en mode clair : la dynamique (comme
+   l'encoche d'un iPhone), les bulles de conversation, les panneaux qui posent
+   eux-mêmes un « bg-slate-900 ». Sans cette règle, mon remplacement écrivait
+   du gris FONCÉ sur du presque noir — j'avais déplacé le problème au lieu de
+   le résoudre, et la mesure est passée de 844 textes illisibles à 1184.
+   Vérifié, pas supposé.
+
+   On ne touche ici QU'À DES VARIABLES : aucun fond n'est modifié, donc aucun
+   écran ne change d'aspect. Les variantes « hover: » et « group-hover: » sont
+   exclues — leur fond sombre n'existe qu'au survol, et une variable posée en
+   permanence rendrait le texte pâle sur une surface claire.
+   Pour rendre un panneau sombre en mode clair, la classe « nx-sombre » suffit. */
+html.light-mode [data-nx-ile],
+html.light-mode .nx-sombre,
+html.light-mode [class*="bg-slate-8"]:not([class*=":bg-slate-8"]):not([class*="bg-black/5"]):not([class*="bg-black/1"]):not([class*="bg-black/2"]):not([class*="bg-black/3"]):not([class*="bg-black/4"]):not([class*="bg-slate-800/5"]):not([class*="bg-slate-800/1"]):not([class*="bg-slate-800/2"]):not([class*="bg-slate-800/3"]):not([class*="bg-slate-800/4"]):not([class*="bg-slate-900/5"]):not([class*="bg-slate-900/1"]):not([class*="bg-slate-900/2"]):not([class*="bg-slate-900/3"]):not([class*="bg-slate-900/4"]):not([class*="bg-slate-950/5"]):not([class*="bg-slate-950/1"]):not([class*="bg-slate-950/2"]):not([class*="bg-slate-950/3"]):not([class*="bg-slate-950/4"]):not([class*="bg-zinc-800/5"]):not([class*="bg-zinc-800/1"]):not([class*="bg-zinc-800/2"]):not([class*="bg-zinc-800/3"]):not([class*="bg-zinc-800/4"]):not([class*="bg-zinc-900/5"]):not([class*="bg-zinc-900/1"]):not([class*="bg-zinc-900/2"]):not([class*="bg-zinc-900/3"]):not([class*="bg-zinc-900/4"]):not([class*="bg-neutral-900/5"]):not([class*="bg-neutral-900/1"]):not([class*="bg-neutral-900/2"]):not([class*="bg-neutral-900/3"]):not([class*="bg-neutral-900/4"]):not([class*="bg-gray-900/5"]):not([class*="bg-gray-900/1"]):not([class*="bg-gray-900/2"]):not([class*="bg-gray-900/3"]):not([class*="bg-gray-900/4"]):not([class*="bg-slate-800/"]):not([class*="bg-slate-850/"]),
+html.light-mode [class*="bg-slate-9"]:not([class*=":bg-slate-9"]):not([class*="bg-black/5"]):not([class*="bg-black/1"]):not([class*="bg-black/2"]):not([class*="bg-black/3"]):not([class*="bg-black/4"]):not([class*="bg-slate-800/5"]):not([class*="bg-slate-800/1"]):not([class*="bg-slate-800/2"]):not([class*="bg-slate-800/3"]):not([class*="bg-slate-800/4"]):not([class*="bg-slate-900/5"]):not([class*="bg-slate-900/1"]):not([class*="bg-slate-900/2"]):not([class*="bg-slate-900/3"]):not([class*="bg-slate-900/4"]):not([class*="bg-slate-950/5"]):not([class*="bg-slate-950/1"]):not([class*="bg-slate-950/2"]):not([class*="bg-slate-950/3"]):not([class*="bg-slate-950/4"]):not([class*="bg-zinc-800/5"]):not([class*="bg-zinc-800/1"]):not([class*="bg-zinc-800/2"]):not([class*="bg-zinc-800/3"]):not([class*="bg-zinc-800/4"]):not([class*="bg-zinc-900/5"]):not([class*="bg-zinc-900/1"]):not([class*="bg-zinc-900/2"]):not([class*="bg-zinc-900/3"]):not([class*="bg-zinc-900/4"]):not([class*="bg-neutral-900/5"]):not([class*="bg-neutral-900/1"]):not([class*="bg-neutral-900/2"]):not([class*="bg-neutral-900/3"]):not([class*="bg-neutral-900/4"]):not([class*="bg-gray-900/5"]):not([class*="bg-gray-900/1"]):not([class*="bg-gray-900/2"]):not([class*="bg-gray-900/3"]):not([class*="bg-gray-900/4"]):not([class*="bg-slate-900/"]):not([class*="bg-slate-950/"]),
+html.light-mode [class*="bg-zinc-8"]:not([class*=":bg-zinc-8"]):not([class*="bg-black/5"]):not([class*="bg-black/1"]):not([class*="bg-black/2"]):not([class*="bg-black/3"]):not([class*="bg-black/4"]):not([class*="bg-slate-800/5"]):not([class*="bg-slate-800/1"]):not([class*="bg-slate-800/2"]):not([class*="bg-slate-800/3"]):not([class*="bg-slate-800/4"]):not([class*="bg-slate-900/5"]):not([class*="bg-slate-900/1"]):not([class*="bg-slate-900/2"]):not([class*="bg-slate-900/3"]):not([class*="bg-slate-900/4"]):not([class*="bg-slate-950/5"]):not([class*="bg-slate-950/1"]):not([class*="bg-slate-950/2"]):not([class*="bg-slate-950/3"]):not([class*="bg-slate-950/4"]):not([class*="bg-zinc-800/5"]):not([class*="bg-zinc-800/1"]):not([class*="bg-zinc-800/2"]):not([class*="bg-zinc-800/3"]):not([class*="bg-zinc-800/4"]):not([class*="bg-zinc-900/5"]):not([class*="bg-zinc-900/1"]):not([class*="bg-zinc-900/2"]):not([class*="bg-zinc-900/3"]):not([class*="bg-zinc-900/4"]):not([class*="bg-neutral-900/5"]):not([class*="bg-neutral-900/1"]):not([class*="bg-neutral-900/2"]):not([class*="bg-neutral-900/3"]):not([class*="bg-neutral-900/4"]):not([class*="bg-gray-900/5"]):not([class*="bg-gray-900/1"]):not([class*="bg-gray-900/2"]):not([class*="bg-gray-900/3"]):not([class*="bg-gray-900/4"]):not([class*="bg-zinc-800/"]):not([class*="bg-zinc-850/"]),
+html.light-mode [class*="bg-zinc-9"]:not([class*=":bg-zinc-9"]):not([class*="bg-black/5"]):not([class*="bg-black/1"]):not([class*="bg-black/2"]):not([class*="bg-black/3"]):not([class*="bg-black/4"]):not([class*="bg-slate-800/5"]):not([class*="bg-slate-800/1"]):not([class*="bg-slate-800/2"]):not([class*="bg-slate-800/3"]):not([class*="bg-slate-800/4"]):not([class*="bg-slate-900/5"]):not([class*="bg-slate-900/1"]):not([class*="bg-slate-900/2"]):not([class*="bg-slate-900/3"]):not([class*="bg-slate-900/4"]):not([class*="bg-slate-950/5"]):not([class*="bg-slate-950/1"]):not([class*="bg-slate-950/2"]):not([class*="bg-slate-950/3"]):not([class*="bg-slate-950/4"]):not([class*="bg-zinc-800/5"]):not([class*="bg-zinc-800/1"]):not([class*="bg-zinc-800/2"]):not([class*="bg-zinc-800/3"]):not([class*="bg-zinc-800/4"]):not([class*="bg-zinc-900/5"]):not([class*="bg-zinc-900/1"]):not([class*="bg-zinc-900/2"]):not([class*="bg-zinc-900/3"]):not([class*="bg-zinc-900/4"]):not([class*="bg-neutral-900/5"]):not([class*="bg-neutral-900/1"]):not([class*="bg-neutral-900/2"]):not([class*="bg-neutral-900/3"]):not([class*="bg-neutral-900/4"]):not([class*="bg-gray-900/5"]):not([class*="bg-gray-900/1"]):not([class*="bg-gray-900/2"]):not([class*="bg-gray-900/3"]):not([class*="bg-gray-900/4"]):not([class*="bg-zinc-900/"]):not([class*="bg-zinc-950/"]),
+html.light-mode [class*="bg-neutral-8"]:not([class*=":bg-neutral-8"]):not([class*="bg-black/5"]):not([class*="bg-black/1"]):not([class*="bg-black/2"]):not([class*="bg-black/3"]):not([class*="bg-black/4"]):not([class*="bg-slate-800/5"]):not([class*="bg-slate-800/1"]):not([class*="bg-slate-800/2"]):not([class*="bg-slate-800/3"]):not([class*="bg-slate-800/4"]):not([class*="bg-slate-900/5"]):not([class*="bg-slate-900/1"]):not([class*="bg-slate-900/2"]):not([class*="bg-slate-900/3"]):not([class*="bg-slate-900/4"]):not([class*="bg-slate-950/5"]):not([class*="bg-slate-950/1"]):not([class*="bg-slate-950/2"]):not([class*="bg-slate-950/3"]):not([class*="bg-slate-950/4"]):not([class*="bg-zinc-800/5"]):not([class*="bg-zinc-800/1"]):not([class*="bg-zinc-800/2"]):not([class*="bg-zinc-800/3"]):not([class*="bg-zinc-800/4"]):not([class*="bg-zinc-900/5"]):not([class*="bg-zinc-900/1"]):not([class*="bg-zinc-900/2"]):not([class*="bg-zinc-900/3"]):not([class*="bg-zinc-900/4"]):not([class*="bg-neutral-900/5"]):not([class*="bg-neutral-900/1"]):not([class*="bg-neutral-900/2"]):not([class*="bg-neutral-900/3"]):not([class*="bg-neutral-900/4"]):not([class*="bg-gray-900/5"]):not([class*="bg-gray-900/1"]):not([class*="bg-gray-900/2"]):not([class*="bg-gray-900/3"]):not([class*="bg-gray-900/4"]):not([class*="bg-neutral-800/"]):not([class*="bg-neutral-850/"]),
+html.light-mode [class*="bg-neutral-9"]:not([class*=":bg-neutral-9"]):not([class*="bg-black/5"]):not([class*="bg-black/1"]):not([class*="bg-black/2"]):not([class*="bg-black/3"]):not([class*="bg-black/4"]):not([class*="bg-slate-800/5"]):not([class*="bg-slate-800/1"]):not([class*="bg-slate-800/2"]):not([class*="bg-slate-800/3"]):not([class*="bg-slate-800/4"]):not([class*="bg-slate-900/5"]):not([class*="bg-slate-900/1"]):not([class*="bg-slate-900/2"]):not([class*="bg-slate-900/3"]):not([class*="bg-slate-900/4"]):not([class*="bg-slate-950/5"]):not([class*="bg-slate-950/1"]):not([class*="bg-slate-950/2"]):not([class*="bg-slate-950/3"]):not([class*="bg-slate-950/4"]):not([class*="bg-zinc-800/5"]):not([class*="bg-zinc-800/1"]):not([class*="bg-zinc-800/2"]):not([class*="bg-zinc-800/3"]):not([class*="bg-zinc-800/4"]):not([class*="bg-zinc-900/5"]):not([class*="bg-zinc-900/1"]):not([class*="bg-zinc-900/2"]):not([class*="bg-zinc-900/3"]):not([class*="bg-zinc-900/4"]):not([class*="bg-neutral-900/5"]):not([class*="bg-neutral-900/1"]):not([class*="bg-neutral-900/2"]):not([class*="bg-neutral-900/3"]):not([class*="bg-neutral-900/4"]):not([class*="bg-gray-900/5"]):not([class*="bg-gray-900/1"]):not([class*="bg-gray-900/2"]):not([class*="bg-gray-900/3"]):not([class*="bg-gray-900/4"]):not([class*="bg-neutral-900/"]):not([class*="bg-neutral-950/"]),
+html.light-mode [class*="bg-gray-8"]:not([class*=":bg-gray-8"]):not([class*="bg-black/5"]):not([class*="bg-black/1"]):not([class*="bg-black/2"]):not([class*="bg-black/3"]):not([class*="bg-black/4"]):not([class*="bg-slate-800/5"]):not([class*="bg-slate-800/1"]):not([class*="bg-slate-800/2"]):not([class*="bg-slate-800/3"]):not([class*="bg-slate-800/4"]):not([class*="bg-slate-900/5"]):not([class*="bg-slate-900/1"]):not([class*="bg-slate-900/2"]):not([class*="bg-slate-900/3"]):not([class*="bg-slate-900/4"]):not([class*="bg-slate-950/5"]):not([class*="bg-slate-950/1"]):not([class*="bg-slate-950/2"]):not([class*="bg-slate-950/3"]):not([class*="bg-slate-950/4"]):not([class*="bg-zinc-800/5"]):not([class*="bg-zinc-800/1"]):not([class*="bg-zinc-800/2"]):not([class*="bg-zinc-800/3"]):not([class*="bg-zinc-800/4"]):not([class*="bg-zinc-900/5"]):not([class*="bg-zinc-900/1"]):not([class*="bg-zinc-900/2"]):not([class*="bg-zinc-900/3"]):not([class*="bg-zinc-900/4"]):not([class*="bg-neutral-900/5"]):not([class*="bg-neutral-900/1"]):not([class*="bg-neutral-900/2"]):not([class*="bg-neutral-900/3"]):not([class*="bg-neutral-900/4"]):not([class*="bg-gray-900/5"]):not([class*="bg-gray-900/1"]):not([class*="bg-gray-900/2"]):not([class*="bg-gray-900/3"]):not([class*="bg-gray-900/4"]):not([class*="bg-gray-800/"]):not([class*="bg-gray-850/"]),
+html.light-mode [class*="bg-gray-9"]:not([class*=":bg-gray-9"]):not([class*="bg-black/5"]):not([class*="bg-black/1"]):not([class*="bg-black/2"]):not([class*="bg-black/3"]):not([class*="bg-black/4"]):not([class*="bg-slate-800/5"]):not([class*="bg-slate-800/1"]):not([class*="bg-slate-800/2"]):not([class*="bg-slate-800/3"]):not([class*="bg-slate-800/4"]):not([class*="bg-slate-900/5"]):not([class*="bg-slate-900/1"]):not([class*="bg-slate-900/2"]):not([class*="bg-slate-900/3"]):not([class*="bg-slate-900/4"]):not([class*="bg-slate-950/5"]):not([class*="bg-slate-950/1"]):not([class*="bg-slate-950/2"]):not([class*="bg-slate-950/3"]):not([class*="bg-slate-950/4"]):not([class*="bg-zinc-800/5"]):not([class*="bg-zinc-800/1"]):not([class*="bg-zinc-800/2"]):not([class*="bg-zinc-800/3"]):not([class*="bg-zinc-800/4"]):not([class*="bg-zinc-900/5"]):not([class*="bg-zinc-900/1"]):not([class*="bg-zinc-900/2"]):not([class*="bg-zinc-900/3"]):not([class*="bg-zinc-900/4"]):not([class*="bg-neutral-900/5"]):not([class*="bg-neutral-900/1"]):not([class*="bg-neutral-900/2"]):not([class*="bg-neutral-900/3"]):not([class*="bg-neutral-900/4"]):not([class*="bg-gray-900/5"]):not([class*="bg-gray-900/1"]):not([class*="bg-gray-900/2"]):not([class*="bg-gray-900/3"]):not([class*="bg-gray-900/4"]):not([class*="bg-gray-900/"]):not([class*="bg-gray-950/"]),
+html.light-mode [class*="bg-black"]:not([class*=":bg-black"]):not([class*="bg-black/5"]):not([class*="bg-black/1"]):not([class*="bg-black/2"]):not([class*="bg-black/3"]):not([class*="bg-black/4"]):not([class*="bg-slate-800/5"]):not([class*="bg-slate-800/1"]):not([class*="bg-slate-800/2"]):not([class*="bg-slate-800/3"]):not([class*="bg-slate-800/4"]):not([class*="bg-slate-900/5"]):not([class*="bg-slate-900/1"]):not([class*="bg-slate-900/2"]):not([class*="bg-slate-900/3"]):not([class*="bg-slate-900/4"]):not([class*="bg-slate-950/5"]):not([class*="bg-slate-950/1"]):not([class*="bg-slate-950/2"]):not([class*="bg-slate-950/3"]):not([class*="bg-slate-950/4"]):not([class*="bg-zinc-800/5"]):not([class*="bg-zinc-800/1"]):not([class*="bg-zinc-800/2"]):not([class*="bg-zinc-800/3"]):not([class*="bg-zinc-800/4"]):not([class*="bg-zinc-900/5"]):not([class*="bg-zinc-900/1"]):not([class*="bg-zinc-900/2"]):not([class*="bg-zinc-900/3"]):not([class*="bg-zinc-900/4"]):not([class*="bg-neutral-900/5"]):not([class*="bg-neutral-900/1"]):not([class*="bg-neutral-900/2"]):not([class*="bg-neutral-900/3"]):not([class*="bg-neutral-900/4"]):not([class*="bg-gray-900/5"]):not([class*="bg-gray-900/1"]):not([class*="bg-gray-900/2"]):not([class*="bg-gray-900/3"]):not([class*="bg-gray-900/4"]) {
+  --t-200: #e2e8f0;
+  --t-300: #cbd5e1;
+  --t-400: #94a3b8;
+  --t-500: #94a3b8;
+  --t-emeraude: #6ee7b7;
+  --t-cyan:     #67e8f9;
+  --t-rouge:    #fca5a5;
+  --t-ambre:    #fcd34d;
+  --t-ciel:     #7dd3fc;
+  --t-violet:   #c4b5fd;
+  --t-indigo:   #a5b4fc;
+  --t-bleu:     #93c5fd;
+  --t-rose:     #fda4af;
+  --t-sarcelle: #5eead4;
+  --t-vert:     #86efac;
+  --t-orange:   #fdba74;
+  --t-fuchsia:  #f0abfc;
+  /* ET L'ENCRE DU THÈME AVEC. C'est ce qui manquait : « .nx-btn-secondary »,
+     « .nx-chip », « .nx-item », « .nx-widget-body » écrivent tous avec
+     « var(--nexus-text) » ou « var(--nexus-muted) ». Sur une bulle de
+     conversation restée noire en mode clair, cela donnait du texte noir sur
+     du noir — un contraste de 1,0, c'est-à-dire rigoureusement rien.
+     Comme ce ne sont que des variables, aucun fond ne bouge. */
+  --nexus-text: #f4f4f5;
+  --nexus-muted: #94a3b8;
+  --nexus-border: rgba(255, 255, 255, 0.12);
+  --accent-texte: color-mix(in srgb, var(--accent) 38%, white);
+}
+
+/* Deux classes valent mieux qu'une : « html.light-mode .text-slate-500 »
+   l'emporte sur « .text-slate-500 » sans avoir besoin de « !important ». */
+html.light-mode .text-slate-200, html.light-mode .text-zinc-200,
+html.light-mode .text-gray-200,  html.light-mode .text-neutral-200 { color: var(--t-200); }
+html.light-mode .text-slate-300, html.light-mode .text-zinc-300,
+html.light-mode .text-gray-300,  html.light-mode .text-neutral-300 { color: var(--t-300); }
+html.light-mode .text-slate-400, html.light-mode .text-zinc-400,
+html.light-mode .text-gray-400,  html.light-mode .text-neutral-400 { color: var(--t-400); }
+html.light-mode .text-slate-500, html.light-mode .text-zinc-500,
+html.light-mode .text-gray-500,  html.light-mode .text-neutral-500 { color: var(--t-500); }
+
+html.light-mode .text-emerald-200, html.light-mode .text-emerald-300,
+html.light-mode .text-emerald-400 { color: var(--t-emeraude); }
+html.light-mode .text-cyan-200, html.light-mode .text-cyan-300,
+html.light-mode .text-cyan-400 { color: var(--t-cyan); }
+html.light-mode .text-red-200, html.light-mode .text-red-300,
+html.light-mode .text-red-400 { color: var(--t-rouge); }
+html.light-mode .text-amber-200, html.light-mode .text-amber-300,
+html.light-mode .text-amber-400, html.light-mode .text-yellow-300,
+html.light-mode .text-yellow-400 { color: var(--t-ambre); }
+html.light-mode .text-sky-200, html.light-mode .text-sky-300,
+html.light-mode .text-sky-400 { color: var(--t-ciel); }
+html.light-mode .text-violet-200, html.light-mode .text-violet-300,
+html.light-mode .text-violet-400, html.light-mode .text-purple-300,
+html.light-mode .text-purple-400 { color: var(--t-violet); }
+html.light-mode .text-indigo-200, html.light-mode .text-indigo-300,
+html.light-mode .text-indigo-400 { color: var(--t-indigo); }
+html.light-mode .text-blue-200, html.light-mode .text-blue-300,
+html.light-mode .text-blue-400 { color: var(--t-bleu); }
+html.light-mode .text-rose-200, html.light-mode .text-rose-300,
+html.light-mode .text-rose-400 { color: var(--t-rose); }
+html.light-mode .text-teal-200, html.light-mode .text-teal-300,
+html.light-mode .text-teal-400 { color: var(--t-sarcelle); }
+html.light-mode .text-green-200, html.light-mode .text-green-300,
+html.light-mode .text-green-400, html.light-mode .text-lime-300,
+html.light-mode .text-lime-400 { color: var(--t-vert); }
+html.light-mode .text-orange-200, html.light-mode .text-orange-300,
+html.light-mode .text-orange-400 { color: var(--t-orange); }
+html.light-mode .text-fuchsia-300, html.light-mode .text-fuchsia-400,
+html.light-mode .text-pink-300,    html.light-mode .text-pink-400 { color: var(--t-fuchsia); }
+
+/* LE BLANC EST UN CAS À PART.
+   Sur un bouton d'accent ou une surface sombre, le blanc est JUSTE : le
+   remplacer casserait les boutons. Il n'est faux que sur une surface claire.
+   On ne touche donc qu'aux endroits où l'on SAIT que la surface est devenue
+   claire : les cartes, les panneaux et les boîtes de Nexus. Le blanc y devient
+   l'encre du thème — c'est-à-dire noir en clair, blanc en sombre. */
+/* ──────────────────────────── LE BLANC ────────────────────────────
+   « text-white » est la classe la plus délicate du mode clair : sur un bouton
+   d'accent, le blanc est JUSTE ; sur une carte devenue blanche, il disparaît
+   purement et simplement. Mesuré sur huit espaces : 63 blancs légitimes pour
+   38 illisibles. Les remplacer tous en aurait donc cassé 63 pour en réparer
+   38 — le remède aurait été pire que le mal.
+
+   On passe donc par une variable, et l'on part du plus PRUDENT : le blanc
+   reste blanc partout par défaut, donc rien ne change. Il ne devient l'encre
+   du thème que sur les surfaces dont on SAIT qu'elles sont claires — les
+   panneaux et les cartes de Nexus. Et à l'intérieur de celles-ci, tout ce qui
+   a un fond coloré ou sombre remet le blanc : un bouton indigo posé sur une
+   carte blanche garde son texte blanc.                                      */
+
+html.light-mode { --t-blanc: #ffffff; }
+
+/* Les surfaces du thème, devenues claires : le blanc y devient l'encre. */
+html.light-mode [class*="bg-nexus-panel"],
+html.light-mode [class*="bg-nexus-bg"],
+html.light-mode [class*="bg-nexus-card"],
+html.light-mode [class*="bg-white"]:not([class*=":bg-white"]),
+html.light-mode [class*="bg-slate-50"]:not([class*=":bg-slate-50"]),
+html.light-mode [class*="bg-slate-100"]:not([class*=":bg-slate-100"]),
+html.light-mode .nx-boite,
+html.light-mode .nx-widget,
+html.light-mode .nx-palette { --t-blanc: var(--nexus-text); }
+
+/* … sauf sur un fond coloré ou sombre, où le blanc reste blanc. */
+html.light-mode [class*="bg-indigo-4"]:not([class*=":bg-indigo-4"]),
+html.light-mode [class*="bg-indigo-5"]:not([class*=":bg-indigo-5"]),
+html.light-mode [class*="bg-indigo-6"]:not([class*=":bg-indigo-6"]),
+html.light-mode [class*="bg-indigo-7"]:not([class*=":bg-indigo-7"]),
+html.light-mode [class*="bg-indigo-8"]:not([class*=":bg-indigo-8"]),
+html.light-mode [class*="bg-indigo-9"]:not([class*=":bg-indigo-9"]),
+html.light-mode [class*="bg-violet-4"]:not([class*=":bg-violet-4"]),
+html.light-mode [class*="bg-violet-5"]:not([class*=":bg-violet-5"]),
+html.light-mode [class*="bg-violet-6"]:not([class*=":bg-violet-6"]),
+html.light-mode [class*="bg-violet-7"]:not([class*=":bg-violet-7"]),
+html.light-mode [class*="bg-violet-8"]:not([class*=":bg-violet-8"]),
+html.light-mode [class*="bg-violet-9"]:not([class*=":bg-violet-9"]),
+html.light-mode [class*="bg-purple-4"]:not([class*=":bg-purple-4"]),
+html.light-mode [class*="bg-purple-5"]:not([class*=":bg-purple-5"]),
+html.light-mode [class*="bg-purple-6"]:not([class*=":bg-purple-6"]),
+html.light-mode [class*="bg-purple-7"]:not([class*=":bg-purple-7"]),
+html.light-mode [class*="bg-purple-8"]:not([class*=":bg-purple-8"]),
+html.light-mode [class*="bg-purple-9"]:not([class*=":bg-purple-9"]),
+html.light-mode [class*="bg-fuchsia-4"]:not([class*=":bg-fuchsia-4"]),
+html.light-mode [class*="bg-fuchsia-5"]:not([class*=":bg-fuchsia-5"]),
+html.light-mode [class*="bg-fuchsia-6"]:not([class*=":bg-fuchsia-6"]),
+html.light-mode [class*="bg-fuchsia-7"]:not([class*=":bg-fuchsia-7"]),
+html.light-mode [class*="bg-fuchsia-8"]:not([class*=":bg-fuchsia-8"]),
+html.light-mode [class*="bg-fuchsia-9"]:not([class*=":bg-fuchsia-9"]),
+html.light-mode [class*="bg-pink-4"]:not([class*=":bg-pink-4"]),
+html.light-mode [class*="bg-pink-5"]:not([class*=":bg-pink-5"]),
+html.light-mode [class*="bg-pink-6"]:not([class*=":bg-pink-6"]),
+html.light-mode [class*="bg-pink-7"]:not([class*=":bg-pink-7"]),
+html.light-mode [class*="bg-pink-8"]:not([class*=":bg-pink-8"]),
+html.light-mode [class*="bg-pink-9"]:not([class*=":bg-pink-9"]),
+html.light-mode [class*="bg-rose-4"]:not([class*=":bg-rose-4"]),
+html.light-mode [class*="bg-rose-5"]:not([class*=":bg-rose-5"]),
+html.light-mode [class*="bg-rose-6"]:not([class*=":bg-rose-6"]),
+html.light-mode [class*="bg-rose-7"]:not([class*=":bg-rose-7"]),
+html.light-mode [class*="bg-rose-8"]:not([class*=":bg-rose-8"]),
+html.light-mode [class*="bg-rose-9"]:not([class*=":bg-rose-9"]),
+html.light-mode [class*="bg-red-4"]:not([class*=":bg-red-4"]),
+html.light-mode [class*="bg-red-5"]:not([class*=":bg-red-5"]),
+html.light-mode [class*="bg-red-6"]:not([class*=":bg-red-6"]),
+html.light-mode [class*="bg-red-7"]:not([class*=":bg-red-7"]),
+html.light-mode [class*="bg-red-8"]:not([class*=":bg-red-8"]),
+html.light-mode [class*="bg-red-9"]:not([class*=":bg-red-9"]),
+html.light-mode [class*="bg-orange-4"]:not([class*=":bg-orange-4"]),
+html.light-mode [class*="bg-orange-5"]:not([class*=":bg-orange-5"]),
+html.light-mode [class*="bg-orange-6"]:not([class*=":bg-orange-6"]),
+html.light-mode [class*="bg-orange-7"]:not([class*=":bg-orange-7"]),
+html.light-mode [class*="bg-orange-8"]:not([class*=":bg-orange-8"]),
+html.light-mode [class*="bg-orange-9"]:not([class*=":bg-orange-9"]),
+html.light-mode [class*="bg-amber-4"]:not([class*=":bg-amber-4"]),
+html.light-mode [class*="bg-amber-5"]:not([class*=":bg-amber-5"]),
+html.light-mode [class*="bg-amber-6"]:not([class*=":bg-amber-6"]),
+html.light-mode [class*="bg-amber-7"]:not([class*=":bg-amber-7"]),
+html.light-mode [class*="bg-amber-8"]:not([class*=":bg-amber-8"]),
+html.light-mode [class*="bg-amber-9"]:not([class*=":bg-amber-9"]),
+html.light-mode [class*="bg-yellow-4"]:not([class*=":bg-yellow-4"]),
+html.light-mode [class*="bg-yellow-5"]:not([class*=":bg-yellow-5"]),
+html.light-mode [class*="bg-yellow-6"]:not([class*=":bg-yellow-6"]),
+html.light-mode [class*="bg-yellow-7"]:not([class*=":bg-yellow-7"]),
+html.light-mode [class*="bg-yellow-8"]:not([class*=":bg-yellow-8"]),
+html.light-mode [class*="bg-yellow-9"]:not([class*=":bg-yellow-9"]),
+html.light-mode [class*="bg-lime-4"]:not([class*=":bg-lime-4"]),
+html.light-mode [class*="bg-lime-5"]:not([class*=":bg-lime-5"]),
+html.light-mode [class*="bg-lime-6"]:not([class*=":bg-lime-6"]),
+html.light-mode [class*="bg-lime-7"]:not([class*=":bg-lime-7"]),
+html.light-mode [class*="bg-lime-8"]:not([class*=":bg-lime-8"]),
+html.light-mode [class*="bg-lime-9"]:not([class*=":bg-lime-9"]),
+html.light-mode [class*="bg-green-4"]:not([class*=":bg-green-4"]),
+html.light-mode [class*="bg-green-5"]:not([class*=":bg-green-5"]),
+html.light-mode [class*="bg-green-6"]:not([class*=":bg-green-6"]),
+html.light-mode [class*="bg-green-7"]:not([class*=":bg-green-7"]),
+html.light-mode [class*="bg-green-8"]:not([class*=":bg-green-8"]),
+html.light-mode [class*="bg-green-9"]:not([class*=":bg-green-9"]),
+html.light-mode [class*="bg-emerald-4"]:not([class*=":bg-emerald-4"]),
+html.light-mode [class*="bg-emerald-5"]:not([class*=":bg-emerald-5"]),
+html.light-mode [class*="bg-emerald-6"]:not([class*=":bg-emerald-6"]),
+html.light-mode [class*="bg-emerald-7"]:not([class*=":bg-emerald-7"]),
+html.light-mode [class*="bg-emerald-8"]:not([class*=":bg-emerald-8"]),
+html.light-mode [class*="bg-emerald-9"]:not([class*=":bg-emerald-9"]),
+html.light-mode [class*="bg-teal-4"]:not([class*=":bg-teal-4"]),
+html.light-mode [class*="bg-teal-5"]:not([class*=":bg-teal-5"]),
+html.light-mode [class*="bg-teal-6"]:not([class*=":bg-teal-6"]),
+html.light-mode [class*="bg-teal-7"]:not([class*=":bg-teal-7"]),
+html.light-mode [class*="bg-teal-8"]:not([class*=":bg-teal-8"]),
+html.light-mode [class*="bg-teal-9"]:not([class*=":bg-teal-9"]),
+html.light-mode [class*="bg-cyan-4"]:not([class*=":bg-cyan-4"]),
+html.light-mode [class*="bg-cyan-5"]:not([class*=":bg-cyan-5"]),
+html.light-mode [class*="bg-cyan-6"]:not([class*=":bg-cyan-6"]),
+html.light-mode [class*="bg-cyan-7"]:not([class*=":bg-cyan-7"]),
+html.light-mode [class*="bg-cyan-8"]:not([class*=":bg-cyan-8"]),
+html.light-mode [class*="bg-cyan-9"]:not([class*=":bg-cyan-9"]),
+html.light-mode [class*="bg-sky-4"]:not([class*=":bg-sky-4"]),
+html.light-mode [class*="bg-sky-5"]:not([class*=":bg-sky-5"]),
+html.light-mode [class*="bg-sky-6"]:not([class*=":bg-sky-6"]),
+html.light-mode [class*="bg-sky-7"]:not([class*=":bg-sky-7"]),
+html.light-mode [class*="bg-sky-8"]:not([class*=":bg-sky-8"]),
+html.light-mode [class*="bg-sky-9"]:not([class*=":bg-sky-9"]),
+html.light-mode [class*="bg-blue-4"]:not([class*=":bg-blue-4"]),
+html.light-mode [class*="bg-blue-5"]:not([class*=":bg-blue-5"]),
+html.light-mode [class*="bg-blue-6"]:not([class*=":bg-blue-6"]),
+html.light-mode [class*="bg-blue-7"]:not([class*=":bg-blue-7"]),
+html.light-mode [class*="bg-blue-8"]:not([class*=":bg-blue-8"]),
+html.light-mode [class*="bg-blue-9"]:not([class*=":bg-blue-9"]),
+html.light-mode [class*="bg-gradient"],
+html.light-mode [class*="bg-linear"],
+html.light-mode [class*="bg-[var(--accent)"],
+html.light-mode .nx-btn-primary,
+html.light-mode [class*="bg-slate-8"]:not([class*=":bg-slate-8"]):not([class*="bg-black/5"]):not([class*="bg-black/1"]):not([class*="bg-black/2"]):not([class*="bg-black/3"]):not([class*="bg-black/4"]):not([class*="bg-slate-800/5"]):not([class*="bg-slate-800/1"]):not([class*="bg-slate-800/2"]):not([class*="bg-slate-800/3"]):not([class*="bg-slate-800/4"]):not([class*="bg-slate-900/5"]):not([class*="bg-slate-900/1"]):not([class*="bg-slate-900/2"]):not([class*="bg-slate-900/3"]):not([class*="bg-slate-900/4"]):not([class*="bg-slate-950/5"]):not([class*="bg-slate-950/1"]):not([class*="bg-slate-950/2"]):not([class*="bg-slate-950/3"]):not([class*="bg-slate-950/4"]):not([class*="bg-zinc-800/5"]):not([class*="bg-zinc-800/1"]):not([class*="bg-zinc-800/2"]):not([class*="bg-zinc-800/3"]):not([class*="bg-zinc-800/4"]):not([class*="bg-zinc-900/5"]):not([class*="bg-zinc-900/1"]):not([class*="bg-zinc-900/2"]):not([class*="bg-zinc-900/3"]):not([class*="bg-zinc-900/4"]):not([class*="bg-neutral-900/5"]):not([class*="bg-neutral-900/1"]):not([class*="bg-neutral-900/2"]):not([class*="bg-neutral-900/3"]):not([class*="bg-neutral-900/4"]):not([class*="bg-gray-900/5"]):not([class*="bg-gray-900/1"]):not([class*="bg-gray-900/2"]):not([class*="bg-gray-900/3"]):not([class*="bg-gray-900/4"]):not([class*="bg-slate-800/"]):not([class*="bg-slate-850/"]),
+html.light-mode [class*="bg-slate-9"]:not([class*=":bg-slate-9"]):not([class*="bg-black/5"]):not([class*="bg-black/1"]):not([class*="bg-black/2"]):not([class*="bg-black/3"]):not([class*="bg-black/4"]):not([class*="bg-slate-800/5"]):not([class*="bg-slate-800/1"]):not([class*="bg-slate-800/2"]):not([class*="bg-slate-800/3"]):not([class*="bg-slate-800/4"]):not([class*="bg-slate-900/5"]):not([class*="bg-slate-900/1"]):not([class*="bg-slate-900/2"]):not([class*="bg-slate-900/3"]):not([class*="bg-slate-900/4"]):not([class*="bg-slate-950/5"]):not([class*="bg-slate-950/1"]):not([class*="bg-slate-950/2"]):not([class*="bg-slate-950/3"]):not([class*="bg-slate-950/4"]):not([class*="bg-zinc-800/5"]):not([class*="bg-zinc-800/1"]):not([class*="bg-zinc-800/2"]):not([class*="bg-zinc-800/3"]):not([class*="bg-zinc-800/4"]):not([class*="bg-zinc-900/5"]):not([class*="bg-zinc-900/1"]):not([class*="bg-zinc-900/2"]):not([class*="bg-zinc-900/3"]):not([class*="bg-zinc-900/4"]):not([class*="bg-neutral-900/5"]):not([class*="bg-neutral-900/1"]):not([class*="bg-neutral-900/2"]):not([class*="bg-neutral-900/3"]):not([class*="bg-neutral-900/4"]):not([class*="bg-gray-900/5"]):not([class*="bg-gray-900/1"]):not([class*="bg-gray-900/2"]):not([class*="bg-gray-900/3"]):not([class*="bg-gray-900/4"]):not([class*="bg-slate-900/"]):not([class*="bg-slate-950/"]),
+html.light-mode [class*="bg-zinc-8"]:not([class*=":bg-zinc-8"]):not([class*="bg-black/5"]):not([class*="bg-black/1"]):not([class*="bg-black/2"]):not([class*="bg-black/3"]):not([class*="bg-black/4"]):not([class*="bg-slate-800/5"]):not([class*="bg-slate-800/1"]):not([class*="bg-slate-800/2"]):not([class*="bg-slate-800/3"]):not([class*="bg-slate-800/4"]):not([class*="bg-slate-900/5"]):not([class*="bg-slate-900/1"]):not([class*="bg-slate-900/2"]):not([class*="bg-slate-900/3"]):not([class*="bg-slate-900/4"]):not([class*="bg-slate-950/5"]):not([class*="bg-slate-950/1"]):not([class*="bg-slate-950/2"]):not([class*="bg-slate-950/3"]):not([class*="bg-slate-950/4"]):not([class*="bg-zinc-800/5"]):not([class*="bg-zinc-800/1"]):not([class*="bg-zinc-800/2"]):not([class*="bg-zinc-800/3"]):not([class*="bg-zinc-800/4"]):not([class*="bg-zinc-900/5"]):not([class*="bg-zinc-900/1"]):not([class*="bg-zinc-900/2"]):not([class*="bg-zinc-900/3"]):not([class*="bg-zinc-900/4"]):not([class*="bg-neutral-900/5"]):not([class*="bg-neutral-900/1"]):not([class*="bg-neutral-900/2"]):not([class*="bg-neutral-900/3"]):not([class*="bg-neutral-900/4"]):not([class*="bg-gray-900/5"]):not([class*="bg-gray-900/1"]):not([class*="bg-gray-900/2"]):not([class*="bg-gray-900/3"]):not([class*="bg-gray-900/4"]):not([class*="bg-zinc-800/"]):not([class*="bg-zinc-850/"]),
+html.light-mode [class*="bg-zinc-9"]:not([class*=":bg-zinc-9"]):not([class*="bg-black/5"]):not([class*="bg-black/1"]):not([class*="bg-black/2"]):not([class*="bg-black/3"]):not([class*="bg-black/4"]):not([class*="bg-slate-800/5"]):not([class*="bg-slate-800/1"]):not([class*="bg-slate-800/2"]):not([class*="bg-slate-800/3"]):not([class*="bg-slate-800/4"]):not([class*="bg-slate-900/5"]):not([class*="bg-slate-900/1"]):not([class*="bg-slate-900/2"]):not([class*="bg-slate-900/3"]):not([class*="bg-slate-900/4"]):not([class*="bg-slate-950/5"]):not([class*="bg-slate-950/1"]):not([class*="bg-slate-950/2"]):not([class*="bg-slate-950/3"]):not([class*="bg-slate-950/4"]):not([class*="bg-zinc-800/5"]):not([class*="bg-zinc-800/1"]):not([class*="bg-zinc-800/2"]):not([class*="bg-zinc-800/3"]):not([class*="bg-zinc-800/4"]):not([class*="bg-zinc-900/5"]):not([class*="bg-zinc-900/1"]):not([class*="bg-zinc-900/2"]):not([class*="bg-zinc-900/3"]):not([class*="bg-zinc-900/4"]):not([class*="bg-neutral-900/5"]):not([class*="bg-neutral-900/1"]):not([class*="bg-neutral-900/2"]):not([class*="bg-neutral-900/3"]):not([class*="bg-neutral-900/4"]):not([class*="bg-gray-900/5"]):not([class*="bg-gray-900/1"]):not([class*="bg-gray-900/2"]):not([class*="bg-gray-900/3"]):not([class*="bg-gray-900/4"]):not([class*="bg-zinc-900/"]):not([class*="bg-zinc-950/"]),
+html.light-mode [class*="bg-black"]:not([class*=":bg-black"]):not([class*="bg-black/5"]):not([class*="bg-black/1"]):not([class*="bg-black/2"]):not([class*="bg-black/3"]):not([class*="bg-black/4"]):not([class*="bg-slate-800/5"]):not([class*="bg-slate-800/1"]):not([class*="bg-slate-800/2"]):not([class*="bg-slate-800/3"]):not([class*="bg-slate-800/4"]):not([class*="bg-slate-900/5"]):not([class*="bg-slate-900/1"]):not([class*="bg-slate-900/2"]):not([class*="bg-slate-900/3"]):not([class*="bg-slate-900/4"]):not([class*="bg-slate-950/5"]):not([class*="bg-slate-950/1"]):not([class*="bg-slate-950/2"]):not([class*="bg-slate-950/3"]):not([class*="bg-slate-950/4"]):not([class*="bg-zinc-800/5"]):not([class*="bg-zinc-800/1"]):not([class*="bg-zinc-800/2"]):not([class*="bg-zinc-800/3"]):not([class*="bg-zinc-800/4"]):not([class*="bg-zinc-900/5"]):not([class*="bg-zinc-900/1"]):not([class*="bg-zinc-900/2"]):not([class*="bg-zinc-900/3"]):not([class*="bg-zinc-900/4"]):not([class*="bg-neutral-900/5"]):not([class*="bg-neutral-900/1"]):not([class*="bg-neutral-900/2"]):not([class*="bg-neutral-900/3"]):not([class*="bg-neutral-900/4"]):not([class*="bg-gray-900/5"]):not([class*="bg-gray-900/1"]):not([class*="bg-gray-900/2"]):not([class*="bg-gray-900/3"]):not([class*="bg-gray-900/4"]),
+html.light-mode [data-nx-ile],
+html.light-mode .nx-sombre { --t-blanc: #ffffff; }
+
+html.light-mode .text-white { color: var(--t-blanc); }
+
+/* ─────────────── LE GRIS TROP SOMBRE, EN MODE SOMBRE ───────────────
+   Mesuré sur les 47 espaces : 459 textes sous le seuil de lisibilité EN MODE
+   SOMBRE aussi — et 332 d'entre eux sont le même gris, « text-slate-500 »,
+   à dix pixels. #64748b sur le fond de Nexus donne 3,7 à 4,2 de contraste là
+   où il en faut 4,5. Ce n'est pas invisible, c'est pire : c'est lisible avec
+   effort, tout le temps, sur des étiquettes qu'Aharon lit toute la journée.
+
+   Nexus a déjà la bonne couleur pour ça : « --nexus-muted » (#94a3b8), qui
+   monte à 6,5. On s'en sert. Le mode clair a sa propre règle plus haut, et
+   « :not(.light-mode) » garantit qu'elles ne se marchent pas dessus.        */
+html:not(.light-mode) .text-slate-500,
+html:not(.light-mode) .text-slate-600,
+html:not(.light-mode) .text-zinc-500,
+html:not(.light-mode) .text-gray-500,
+html:not(.light-mode) .text-neutral-500 { color: var(--nexus-muted); }
+
+/* ─────────────── LES VOILES SOMBRES POSÉS SUR DU CLAIR ───────────────
+   Beaucoup d'écrans creusent une sous-surface avec un voile noir à moitié
+   transparent — « bg-black/40 », « bg-slate-900/30 ». Sur le fond noir du
+   thème sombre, cela fait un creux discret, et c'est très bien. Sur une carte
+   blanche, cela fait une PLAQUE GRISE au milieu du blanc, avec du texte pâle
+   par-dessus : 2,5 de contraste. C'est ce qu'on voyait dans l'espace Cloud —
+   trois pavés gris dont on devinait le texte.
+
+   En mode clair, le voile change de sens : ce n'est plus de l'ombre posée sur
+   du noir, c'est un creux posé sur du blanc. On l'éclaircit, et — c'est le
+   point important — ces surfaces ne prennent PAS l'échappatoire « sombre » :
+   le texte y reste l'encre normale du thème.
+
+   On ne touche QU'AUX VOILES FAIBLES (de 5 à 55 %). Un « bg-slate-900/90 »
+   est une vraie surface noire, voulue comme telle : elle reste noire, et son
+   texte reste clair.                                                        */
+
+html.light-mode [class*="bg-black/5"]:not([class*=":bg-black/5"]):not([class*="bg-black/100"]),
+html.light-mode [class*="bg-black/1"]:not([class*=":bg-black/1"]):not([class*="bg-black/100"]),
+html.light-mode [class*="bg-black/2"]:not([class*=":bg-black/2"]):not([class*="bg-black/100"]),
+html.light-mode [class*="bg-black/3"]:not([class*=":bg-black/3"]):not([class*="bg-black/100"]),
+html.light-mode [class*="bg-black/4"]:not([class*=":bg-black/4"]):not([class*="bg-black/100"]),
+html.light-mode [class*="bg-slate-800/5"]:not([class*=":bg-slate-800/5"]):not([class*="bg-slate-800/100"]),
+html.light-mode [class*="bg-slate-800/1"]:not([class*=":bg-slate-800/1"]):not([class*="bg-slate-800/100"]),
+html.light-mode [class*="bg-slate-800/2"]:not([class*=":bg-slate-800/2"]):not([class*="bg-slate-800/100"]),
+html.light-mode [class*="bg-slate-800/3"]:not([class*=":bg-slate-800/3"]):not([class*="bg-slate-800/100"]),
+html.light-mode [class*="bg-slate-800/4"]:not([class*=":bg-slate-800/4"]):not([class*="bg-slate-800/100"]),
+html.light-mode [class*="bg-slate-900/5"]:not([class*=":bg-slate-900/5"]):not([class*="bg-slate-900/100"]),
+html.light-mode [class*="bg-slate-900/1"]:not([class*=":bg-slate-900/1"]):not([class*="bg-slate-900/100"]),
+html.light-mode [class*="bg-slate-900/2"]:not([class*=":bg-slate-900/2"]):not([class*="bg-slate-900/100"]),
+html.light-mode [class*="bg-slate-900/3"]:not([class*=":bg-slate-900/3"]):not([class*="bg-slate-900/100"]),
+html.light-mode [class*="bg-slate-900/4"]:not([class*=":bg-slate-900/4"]):not([class*="bg-slate-900/100"]),
+html.light-mode [class*="bg-slate-950/5"]:not([class*=":bg-slate-950/5"]):not([class*="bg-slate-950/100"]),
+html.light-mode [class*="bg-slate-950/1"]:not([class*=":bg-slate-950/1"]):not([class*="bg-slate-950/100"]),
+html.light-mode [class*="bg-slate-950/2"]:not([class*=":bg-slate-950/2"]):not([class*="bg-slate-950/100"]),
+html.light-mode [class*="bg-slate-950/3"]:not([class*=":bg-slate-950/3"]):not([class*="bg-slate-950/100"]),
+html.light-mode [class*="bg-slate-950/4"]:not([class*=":bg-slate-950/4"]):not([class*="bg-slate-950/100"]),
+html.light-mode [class*="bg-zinc-800/5"]:not([class*=":bg-zinc-800/5"]):not([class*="bg-zinc-800/100"]),
+html.light-mode [class*="bg-zinc-800/1"]:not([class*=":bg-zinc-800/1"]):not([class*="bg-zinc-800/100"]),
+html.light-mode [class*="bg-zinc-800/2"]:not([class*=":bg-zinc-800/2"]):not([class*="bg-zinc-800/100"]),
+html.light-mode [class*="bg-zinc-800/3"]:not([class*=":bg-zinc-800/3"]):not([class*="bg-zinc-800/100"]),
+html.light-mode [class*="bg-zinc-800/4"]:not([class*=":bg-zinc-800/4"]):not([class*="bg-zinc-800/100"]),
+html.light-mode [class*="bg-zinc-900/5"]:not([class*=":bg-zinc-900/5"]):not([class*="bg-zinc-900/100"]),
+html.light-mode [class*="bg-zinc-900/1"]:not([class*=":bg-zinc-900/1"]):not([class*="bg-zinc-900/100"]),
+html.light-mode [class*="bg-zinc-900/2"]:not([class*=":bg-zinc-900/2"]):not([class*="bg-zinc-900/100"]),
+html.light-mode [class*="bg-zinc-900/3"]:not([class*=":bg-zinc-900/3"]):not([class*="bg-zinc-900/100"]),
+html.light-mode [class*="bg-zinc-900/4"]:not([class*=":bg-zinc-900/4"]):not([class*="bg-zinc-900/100"]),
+html.light-mode [class*="bg-neutral-900/5"]:not([class*=":bg-neutral-900/5"]):not([class*="bg-neutral-900/100"]),
+html.light-mode [class*="bg-neutral-900/1"]:not([class*=":bg-neutral-900/1"]):not([class*="bg-neutral-900/100"]),
+html.light-mode [class*="bg-neutral-900/2"]:not([class*=":bg-neutral-900/2"]):not([class*="bg-neutral-900/100"]),
+html.light-mode [class*="bg-neutral-900/3"]:not([class*=":bg-neutral-900/3"]):not([class*="bg-neutral-900/100"]),
+html.light-mode [class*="bg-neutral-900/4"]:not([class*=":bg-neutral-900/4"]):not([class*="bg-neutral-900/100"]),
+html.light-mode [class*="bg-gray-900/5"]:not([class*=":bg-gray-900/5"]):not([class*="bg-gray-900/100"]),
+html.light-mode [class*="bg-gray-900/1"]:not([class*=":bg-gray-900/1"]):not([class*="bg-gray-900/100"]),
+html.light-mode [class*="bg-gray-900/2"]:not([class*=":bg-gray-900/2"]):not([class*="bg-gray-900/100"]),
+html.light-mode [class*="bg-gray-900/3"]:not([class*=":bg-gray-900/3"]):not([class*="bg-gray-900/100"]),
+html.light-mode [class*="bg-gray-900/4"]:not([class*=":bg-gray-900/4"]):not([class*="bg-gray-900/100"]) {
+  background-color: color-mix(in srgb, var(--nexus-text) 6%, transparent);
+}

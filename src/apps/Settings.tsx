@@ -275,7 +275,7 @@ export default function Settings() {
               className="nx-btn nx-btn-secondary text-xs"
               style={
                 dockPos === d.key
-                  ? { borderColor: "var(--accent)", color: "var(--accent)" }
+                  ? { borderColor: "var(--accent)", color: "var(--accent-texte)" }
                   : { borderColor: "#27272a", color: "#a1a1aa" }
               }
             >
@@ -294,7 +294,7 @@ export default function Settings() {
           className="nx-btn nx-btn-secondary w-fit text-xs"
           style={
             iconColors
-              ? { borderColor: "var(--accent)", color: "var(--accent)" }
+              ? { borderColor: "var(--accent)", color: "var(--accent-texte)" }
               : { borderColor: "#27272a", color: "#a1a1aa" }
           }
         >
@@ -372,7 +372,7 @@ export default function Settings() {
               className="nx-btn nx-btn-secondary text-xs"
               style={
                 background === b.key
-                  ? { borderColor: "var(--accent)", color: "var(--accent)" }
+                  ? { borderColor: "var(--accent)", color: "var(--accent-texte)" }
                   : { borderColor: "#27272a", color: "#a1a1aa" }
               }
             >
@@ -394,7 +394,7 @@ export default function Settings() {
               className="nx-btn nx-btn-secondary text-xs"
               style={
                 widgets[w.key]
-                  ? { borderColor: "var(--accent)", color: "var(--accent)" }
+                  ? { borderColor: "var(--accent)", color: "var(--accent-texte)" }
                   : { borderColor: "#27272a", color: "#a1a1aa" }
               }
             >
@@ -545,7 +545,7 @@ export default function Settings() {
             className="nx-btn nx-btn-secondary text-xs"
             style={
               reduceMotion
-                ? { borderColor: "var(--accent)", color: "var(--accent)" }
+                ? { borderColor: "var(--accent)", color: "var(--accent-texte)" }
                 : { borderColor: "#27272a", color: "#a1a1aa" }
             }
           >
@@ -556,7 +556,7 @@ export default function Settings() {
             className="nx-btn nx-btn-secondary text-xs"
             style={
               largeText
-                ? { borderColor: "var(--accent)", color: "var(--accent)" }
+                ? { borderColor: "var(--accent)", color: "var(--accent-texte)" }
                 : { borderColor: "#27272a", color: "#a1a1aa" }
             }
           >

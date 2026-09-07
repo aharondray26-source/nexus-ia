@@ -1,0 +1,20 @@
+{
+  "$schema": "../gen/schemas/windows-schema.json",
+  "identifier": "principal",
+  "description": "Ce que l'interface de Nexus a le droit de demander à la coquille Windows. Tout le reste — le disque, le registre, les applications — passe par nos propres commandes, qui vérifient ce qu'on leur donne.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-set-focus",
+    "core:window:allow-unminimize",
+    "core:window:allow-start-dragging",
+    "core:event:allow-listen",
+    "core:event:allow-emit",
+    "opener:default",
+    "dialog:default",
+    "notification:default",
+    "global-shortcut:default"
+  ]
+}

@@ -68,7 +68,7 @@ export default function OnThisDay() {
             >
               <span
                 className="shrink-0 text-xs font-semibold"
-                style={{ color: "var(--accent)" }}
+                style={{ color: "var(--accent-texte)" }}
               >
                 {e.year}
               </span>
